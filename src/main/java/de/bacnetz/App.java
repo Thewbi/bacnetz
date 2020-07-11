@@ -1,40 +1,179 @@
 package de.bacnetz;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.bacnetz.common.Utils;
+import de.bacnetz.common.utils.NetworkUtils;
+import de.bacnetz.controller.DefaultMessageController;
 import de.bacnetz.stack.IPv4Packet;
+import de.bacnetz.stack.MulticastListenerReaderThread;
 import de.bacnetz.stack.UDPPacket;
 
 /**
  *
  */
 public class App {
-	
-	private static final int DEFAULT_PORT = 0xBAC0;
 
-	public static void main(String[] args) throws IOException {
+	private static final Logger LOG = LogManager.getLogger(App.class);
 
-		DatagramSocket serverDatagramSocket = new DatagramSocket(DEFAULT_PORT);
+//	private static final String ENCODING = "Cp1252";
+
+//	private static final String ENCODING = "ISO-8859-1";
+
+	private static final String ENCODING = "UTF-8";
+
+	public static void main(final String[] args) throws IOException {
+//		runMainOld();
+		runMain();
+//		runFixVendorCSV();
+	}
+
+	private static void runFixVendorCSV() throws IOException {
+
+		boolean firstLine = true;
+
+		final File file = new File("C:\\Temp\\BACnetVerndors_fix.csv");
+		final FileOutputStream fileOutputStream = new FileOutputStream(file);
+
+		final BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream, ENCODING));
+
+		BufferedReader reader;
+		try {
+			reader = new BufferedReader(new FileReader("C:\\Temp\\BACnetVerndors.csv"));
+			String line = reader.readLine();
+			line = StringUtils.trim(line);
+
+			StringBuffer stringBuffer = new StringBuffer();
+
+			while (line != null) {
+
+				System.out.println(line);
+
+				if (line.startsWith(";;;")) {
+					stringBuffer.append(" ").append(line.substring(3));
+				} else {
+
+					if (!firstLine) {
+						stringBuffer.append("\n");
+						final String outString = stringBuffer.toString();
+						bufferedWriter.write(outString);
+						stringBuffer = new StringBuffer();
+						stringBuffer.append(line);
+					} else {
+						stringBuffer.append(line);
+					}
+
+					firstLine = false;
+				}
+
+				// read next line
+				line = reader.readLine();
+				line = StringUtils.trim(line);
+			}
+			reader.close();
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+
+		bufferedWriter.close();
+	}
+
+	private static void runMain() throws SocketException, UnknownHostException, IOException {
+
+		final Map<Integer, String> vendorMap = readVendorMap("src/main/resources/BACnetVendors.csv");
+
+		final DefaultMessageController defaultMessageController = new DefaultMessageController();
+		defaultMessageController.setVendorMap(vendorMap);
+
+		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
+		multicastListenerReaderThread.setVendorMap(vendorMap);
+		multicastListenerReaderThread.setBindPort(NetworkUtils.DEFAULT_PORT);
+		multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
+
+		new Thread(multicastListenerReaderThread).start();
+	}
+
+	private static Map<Integer, String> readVendorMap(final String filename) throws IOException {
+
+		final File file = new File(filename);
+		LOG.info(file.getAbsoluteFile());
+
+		final Map<Integer, String> map = new HashMap<>();
+
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader(filename));
+			String line = null;
+			while ((line = reader.readLine()) != null) {
+
+				line = StringUtils.trim(line);
+
+				final String[] split = line.split(";");
+
+				final int vendorId = Integer.parseInt(split[0]);
+				String vendorName = split[1];
+
+				if (StringUtils.isBlank(vendorName)) {
+					vendorName = "";
+					for (int i = 2; i < split.length; i++) {
+						if (i > 2) {
+							vendorName += " ";
+						}
+						vendorName += split[i];
+					}
+				}
+
+				map.put(vendorId, vendorName);
+			}
+
+		} catch (final IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (reader != null) {
+				reader.close();
+			}
+		}
+
+		return map;
+	}
+
+	@SuppressWarnings("unused")
+	private static void runMainOld() throws SocketException, UnknownHostException, IOException {
+
+		final DatagramSocket serverDatagramSocket = new DatagramSocket(NetworkUtils.DEFAULT_PORT);
 		serverDatagramSocket.setBroadcast(true);
 
 		new Thread(new Runnable() {
 
 			@Override
 			public void run() {
-				boolean running = true;
 
+				final boolean running = true;
 				while (running) {
 
-					byte[] serverBuffer = new byte[256];
-					DatagramPacket packet = new DatagramPacket(serverBuffer, serverBuffer.length);
+					final byte[] serverBuffer = new byte[256];
+					final DatagramPacket packet = new DatagramPacket(serverBuffer, serverBuffer.length);
 					try {
 						serverDatagramSocket.receive(packet);
-					} catch (IOException e) {
+					} catch (final IOException e) {
 						e.printStackTrace();
 					}
 
@@ -44,10 +183,10 @@ public class App {
 					System.out.println("Length: " + packet.getLength());
 					System.out.println(Utils.bytesToHex(packet.getData(), packet.getOffset(), packet.getLength()));
 
-					InetAddress address = packet.getAddress();
+					final InetAddress address = packet.getAddress();
 					System.out.println("Address: " + address);
 
-					SocketAddress socketAddress = packet.getSocketAddress();
+					final SocketAddress socketAddress = packet.getSocketAddress();
 					System.out.println("SocketAddress: " + socketAddress);
 
 //	                int port = packet.getPort();
@@ -65,7 +204,8 @@ public class App {
 //	                }
 //	                socket.send(packet);
 				}
-				serverDatagramSocket.close();
+
+//				serverDatagramSocket.close();
 			}
 		}).start();
 
@@ -73,7 +213,7 @@ public class App {
 		// 40 11 F9 40 C0 A8 00 1F C0 A8 00 1E 00 14 00 0A 00 0A 35 C5 48 69 00 00 00 00
 		// 00 00 00 00 00 00 00 00 00 00 00 00
 
-		IPv4Packet ipv4Packet = new IPv4Packet();
+		final IPv4Packet ipv4Packet = new IPv4Packet();
 		ipv4Packet.version = 0x45;
 		ipv4Packet.service = 0x00;
 		ipv4Packet.totalLength = 0x1E;
@@ -113,7 +253,7 @@ public class App {
 		ipv4Packet.targetIP[2] = (byte) 0x00;
 		ipv4Packet.targetIP[3] = (byte) 0xFF;
 
-		UDPPacket udpPacket = new UDPPacket();
+		final UDPPacket udpPacket = new UDPPacket();
 		udpPacket.sourcePort = (short) 0xBAC0;
 		udpPacket.destinationPort = (short) 0xBAC0;
 		udpPacket.length = (short) 0x14;
@@ -164,15 +304,15 @@ public class App {
 
 		// because the Java DatagramPacket class constructs the UDP header for us, we do
 		// only need to supply the UDP payload
-		byte[] buf = udpPacket.getBytesPayloadOnly();
+		final byte[] buf = udpPacket.getBytesPayloadOnly();
 
 		// address
-		String broadcastIP = Utils.retrieveNetworkInterfaceBroadcastIPs().get(0);
+		final String broadcastIP = Utils.retrieveNetworkInterfaceBroadcastIPs().get(0);
 //			InetAddress targetInetAddress = InetAddress.getByName("localhost");
-		InetAddress targetInetAddress = InetAddress.getByName(broadcastIP);
-		int targetPort = DEFAULT_PORT;
+		final InetAddress targetInetAddress = InetAddress.getByName(broadcastIP);
+		final int targetPort = NetworkUtils.DEFAULT_PORT;
 
-		DatagramPacket packet = new DatagramPacket(buf, 0, buf.length, targetInetAddress, targetPort);
+		final DatagramPacket packet = new DatagramPacket(buf, 0, buf.length, targetInetAddress, targetPort);
 
 		// broadcast - the port from which this broadcast is sent out is not specified!
 //			datagramSocket.setBroadcast(true);

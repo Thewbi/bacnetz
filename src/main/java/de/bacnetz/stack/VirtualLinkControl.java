@@ -1,0 +1,60 @@
+package de.bacnetz.stack;
+
+import de.bacnetz.common.Utils;
+
+public class VirtualLinkControl {
+
+	private int type;
+
+	private int function;
+
+	private int length;
+
+	public void fromBytes(final byte[] data, final int startIndex) {
+
+		int offset = 0;
+
+		type = data[startIndex + offset++] & 0xFF;
+		function = data[startIndex + offset++] & 0xFF;
+		length = Utils.bytesToUnsignedShort(data[startIndex + offset++], data[startIndex + offset++], true);
+	}
+
+	public int getDataLength() {
+		return 4;
+	}
+
+	public void toBytes(final byte[] data, final int offset) {
+		data[offset + 0] = (byte) type;
+		data[offset + 1] = (byte) function;
+		Utils.addShortToBuffer(data, offset + 2, (short) length);
+	}
+
+	public int getType() {
+		return type;
+	}
+
+	public void setType(final int type) {
+		this.type = type;
+	}
+
+	public int getFunction() {
+		return function;
+	}
+
+	public void setFunction(final int function) {
+		this.function = function;
+	}
+
+	public int getLength() {
+		return length;
+	}
+
+	public void setLength(final int length) {
+		this.length = length;
+	}
+
+	public int getStructureLength() {
+		return 4;
+	}
+
+}
