@@ -3,6 +3,7 @@ package de.bacnetz.stack;
 import org.junit.jupiter.api.Test;
 
 import de.bacnetz.common.Utils;
+import de.bacnetz.controller.DefaultMessageController;
 
 public class MulticastListenerReaderThreadTest {
 
@@ -51,6 +52,19 @@ public class MulticastListenerReaderThreadTest {
 		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810b001401001000c4020027102201e0910021b2");
 
 		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
+		multicastListenerReaderThread.parseBuffer(hexStringToByteArray);
+	}
+
+	@Test
+	public void testConfirmedREQ_ReadPropertyMultiple() {
+
+		final byte[] hexStringToByteArray = Utils
+				.hexStringToByteArray("810a0019010c012e030012680243990e0c020027101e09701f");
+
+		final DefaultMessageController defaultMessageController = new DefaultMessageController();
+
+		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
+		multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
 		multicastListenerReaderThread.parseBuffer(hexStringToByteArray);
 	}
 

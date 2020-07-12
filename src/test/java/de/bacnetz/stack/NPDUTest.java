@@ -49,6 +49,37 @@ public class NPDUTest {
 	}
 
 	@Test
+	public void testDeserializeReadPropertyMultiple() {
+
+		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("010c012e03001268");
+
+		final NPDU npdu = new NPDU();
+		npdu.fromBytes(hexStringToByteArray, 0);
+
+		// version is 1
+		assertEquals(0x01, npdu.getVersion());
+
+		// control byte says that a APDU is present, destination information is present
+		// and priority is normal
+		assertEquals(0x0C, npdu.getControl());
+		assertTrue(npdu.isAPDUMessage());
+		assertFalse(npdu.isDestinationSpecifierPresent());
+		assertTrue(npdu.isSourceSpecifierPresent());
+		assertTrue(npdu.isConfirmedRequestPDUPresent());
+		assertEquals(NetworkPriority.NORMAL_MESSAGE, npdu.getNetworkPriority());
+
+		// destination network information
+		assertEquals(0x00, npdu.getDestinationNetworkNumber());
+		assertEquals(0x00, npdu.getDestinationMACLayerAddressLength());
+		assertEquals(0x00, npdu.getDestinationHopCount());
+
+		// source network information
+		assertEquals(0x012E, npdu.getSourceNetworkAddress());
+		assertEquals(0x03, npdu.getSourceMacLayerAddressLength());
+		assertEquals(0x001268, npdu.getSourceMac());
+	}
+
+	@Test
 	public void testSerialize() {
 
 		final NPDU npdu = new NPDU();

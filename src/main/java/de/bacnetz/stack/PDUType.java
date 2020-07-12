@@ -4,15 +4,19 @@ public enum PDUType {
 
 	CONFIRMED_SERVICE_REQUEST_PDU(0x00),
 
-	UNCONFIRMED_SERVICE_REQUEST_PDU(0x01);
+	UNCONFIRMED_SERVICE_REQUEST_PDU(0x01),
+
+	COMPLEX_ACK_PDU(0x03);
 
 	public static final int CONFIRMED_SERVICE_REQUEST_PDU_CODE = 0x00;
 
 	public static final int UNCONFIRMED_SERVICE_REQUEST_PDU_CODE = 0x01;
 
+	public static final int COMPLEX_ACK_PDU_CODE = 0x03;
+
 	private final int id;
 
-	PDUType(final int id) {
+	private PDUType(final int id) {
 		this.id = id;
 	}
 
@@ -25,6 +29,9 @@ public enum PDUType {
 
 		case UNCONFIRMED_SERVICE_REQUEST_PDU_CODE:
 			return UNCONFIRMED_SERVICE_REQUEST_PDU;
+
+		case COMPLEX_ACK_PDU_CODE:
+			return COMPLEX_ACK_PDU;
 
 		default:
 			throw new RuntimeException("Unknown id " + id);

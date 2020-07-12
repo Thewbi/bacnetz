@@ -110,13 +110,16 @@ public class MulticastListenerReaderThread implements Runnable {
 
 		LOG.info("\n" + apdu.toString());
 
-		final Message response = null;
-
 		if (CollectionUtils.isNotEmpty(messageControllers)) {
 
 			for (final MessageController messageController : messageControllers) {
 
-				return messageController.processMessage(new DefaultMessage(virtualLinkControl, npdu, apdu));
+				final DefaultMessage defaultMessage = new DefaultMessage();
+				defaultMessage.setVirtualLinkControl(virtualLinkControl);
+				defaultMessage.setNpdu(npdu);
+				defaultMessage.setApdu(apdu);
+
+				return messageController.processMessage(defaultMessage);
 			}
 		}
 

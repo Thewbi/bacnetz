@@ -1,10 +1,7 @@
 package de.bacnetz.controller;
 
-import org.apache.commons.collections4.CollectionUtils;
-
 import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.NPDU;
-import de.bacnetz.stack.ServiceParameter;
 import de.bacnetz.stack.VirtualLinkControl;
 
 public class DefaultMessage implements Message {
@@ -20,9 +17,32 @@ public class DefaultMessage implements Message {
 	}
 
 	public DefaultMessage(final VirtualLinkControl virtualLinkControl, final NPDU npdu, final APDU apdu) {
-		this.virtualLinkControl = virtualLinkControl;
-		this.npdu = npdu;
-		this.apdu = apdu;
+		this.virtualLinkControl = new VirtualLinkControl(virtualLinkControl);
+		this.npdu = new NPDU(npdu);
+		this.apdu = new APDU(apdu);
+	}
+
+	public DefaultMessage(final Message message) {
+		this.virtualLinkControl = new VirtualLinkControl(message.getVirtualLinkControl());
+		this.npdu = new NPDU(message.getNpdu());
+		this.apdu = new APDU(message.getApdu());
+	}
+
+	public int getDataLength() {
+
+		int dataLength = 0;
+
+		if (virtualLinkControl != null) {
+			dataLength += virtualLinkControl.getDataLength();
+		}
+		if (npdu != null) {
+			dataLength += npdu.getDataLength();
+		}
+		if (apdu != null) {
+			dataLength += apdu.getDataLength();
+		}
+
+		return dataLength;
 	}
 
 	@Override
@@ -40,12 +60,6 @@ public class DefaultMessage implements Message {
 
 		if (apdu != null) {
 			length += apdu.getDataLength();
-
-			if (CollectionUtils.isNotEmpty(apdu.getServiceParameters())) {
-				for (final ServiceParameter serviceParameter : apdu.getServiceParameters()) {
-					length += serviceParameter.getDataLength();
-				}
-			}
 		}
 
 		final byte[] data = new byte[length];
@@ -64,15 +78,6 @@ public class DefaultMessage implements Message {
 		if (apdu != null) {
 			apdu.toBytes(data, offset);
 			offset += apdu.getDataLength();
-
-			if (CollectionUtils.isNotEmpty(apdu.getServiceParameters())) {
-
-				for (final ServiceParameter serviceParameter : apdu.getServiceParameters()) {
-
-					serviceParameter.toBytes(data, offset);
-					offset += serviceParameter.getDataLength();
-				}
-			}
 		}
 
 		return data;

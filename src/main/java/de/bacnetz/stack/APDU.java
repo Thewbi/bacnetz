@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -22,6 +23,8 @@ import de.bacnetz.common.Utils;
  */
 public class APDU {
 
+	public static final int SYSTEM_STATUS = 112;
+
 	private static final Logger LOG = LogManager.getLogger(APDU.class);
 
 	private PDUType pduType;
@@ -38,14 +41,117 @@ public class APDU {
 
 	private int structureLength;
 
+	private int segmentationControl;
+
+	private ObjectIdentifierServiceParameter objectIdentifierServiceParameter;
+
+	/**
+	 * "Serial number" used by the requester to associate the response with the
+	 * request. All segments of a segmented request must have the same invokeID. The
+	 * invokeID should be incremented for each new BACnet-Confirmed-Request-PDU.
+	 * This facilitates debugging, as it allows responses to be correlated with the
+	 * requests which caused them. The invokeID will increment in each example which
+	 * follows.
+	 */
+	private int invokeId;
+
 	private Map<Integer, String> vendorMap = new HashMap<>();
 
+	public APDU() {
+
+	}
+
+	public APDU(final APDU other) {
+		this.pduType = other.pduType;
+		this.segmentation = other.segmentation;
+		this.moreSegmentsFollow = other.moreSegmentsFollow;
+		this.segmentedResponseAccepted = other.segmentedResponseAccepted;
+		this.serviceChoice = other.serviceChoice;
+		this.serviceParameters.clear();
+		if (CollectionUtils.isNotEmpty(other.getServiceParameters())) {
+			for (final ServiceParameter otherServiceParameter : other.getServiceParameters()) {
+				this.serviceParameters.add(new ServiceParameter(otherServiceParameter));
+			}
+		}
+		this.structureLength = other.structureLength;
+		this.segmentationControl = other.segmentationControl;
+		this.invokeId = other.invokeId;
+		this.vendorMap = other.vendorMap;
+		if (other.getObjectIdentifierServiceParameter() != null) {
+			objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter(
+					other.getObjectIdentifierServiceParameter());
+		}
+	}
+
 	public int getDataLength() {
-		throw new RuntimeException("Not implemented exception!");
+
+		int dataLength = 0;
+
+		// 1 byte: PDU type + PDU flags
+		dataLength++;
+
+		// invoke id
+		if (invokeId > 0) {
+			dataLength++;
+		}
+
+		// service choice
+		if (serviceChoice != null) {
+			dataLength++;
+		}
+
+		// object identifier
+		if (objectIdentifierServiceParameter != null) {
+			dataLength += objectIdentifierServiceParameter.getDataLength();
+		}
+
+		// service parameters
+		if (CollectionUtils.isNotEmpty(serviceParameters)) {
+
+			for (final ServiceParameter serviceParameter : serviceParameters) {
+				dataLength += serviceParameter.getDataLength();
+			}
+		}
+
+		return dataLength;
 	}
 
 	public void toBytes(final byte[] data, final int offset) {
-		throw new RuntimeException("Not implemented exception!");
+
+		int index = 0;
+
+		// 1 Byte: APDU Type and APDU Flags
+		data[offset + index++] = (byte) (((pduType.getId()) << 4) & 0xFF);
+
+		// 1 Byte: invoke ID
+		if (invokeId > 0) {
+			data[offset + index++] = (byte) invokeId;
+		}
+
+		// 1 Byte: service choice
+//		data[offset + index++] = (byte) ServiceChoice.I_AM_CODE;
+		data[offset + index++] = (byte) serviceChoice.getId();
+
+		// object identifier
+		if (objectIdentifierServiceParameter != null) {
+
+			objectIdentifierServiceParameter.toBytes(data, offset + index);
+			index += objectIdentifierServiceParameter.getDataLength();
+		}
+
+		// service parameters (such as ObjectIdentifierServiceParameter)
+		if (CollectionUtils.isNotEmpty(serviceParameters)) {
+
+			int i = 0;
+			for (final ServiceParameter serviceParameter : serviceParameters) {
+
+				LOG.info("" + i);
+				serviceParameter.toBytes(data, offset + index);
+				index += serviceParameter.getDataLength();
+
+				i++;
+			}
+		}
 	}
 
 	public void fromBytes(final byte[] data, final int startIndex) {
@@ -53,9 +159,15 @@ public class APDU {
 		int offset = 0;
 		structureLength = 0;
 
+		//
+		// PDU type
+
 		// bits 7-4 are the PDU type
 		final int pduTypeBits = (data[startIndex + offset] & 0xF0) >> 4;
 		pduType = PDUType.fromInt(pduTypeBits);
+
+		//
+		// PDU flags
 
 		// bit 3 is the segmentation bit
 		segmentation = 0 < (data[startIndex + offset] & 0x08);
@@ -74,11 +186,25 @@ public class APDU {
 		// bit 1 is the segmentedResponseAccepted bit
 		segmentedResponseAccepted = 0 < (data[startIndex + offset] & 0x02);
 		if (segmentedResponseAccepted) {
-			throw new RuntimeException("Not implemented yet!");
+//			throw new RuntimeException("Not implemented yet!");
+			LOG.trace("segmentedResponseAccepted bit");
 		}
 
 		offset++;
 		structureLength++;
+
+		//
+		// Response Information
+//		if (npdu.isConfirmedRequestPDUPresent()) {
+		if (segmentedResponseAccepted) {
+			segmentationControl = data[startIndex + offset] & 0xFF;
+			offset++;
+
+			// TODO: when is there a invokeID???
+			// invoke ID
+			invokeId = data[startIndex + offset] & 0xFF;
+			offset++;
+		}
 
 		// service choice
 		final int serviceChoiceCode = data[startIndex + offset] & 0xFF;
@@ -97,9 +223,78 @@ public class APDU {
 			structureLength += processIAm(startIndex + offset, data);
 			break;
 
+		case READ_PROPERTY_MULTIPLE:
+			structureLength += processReadPropertyMultiple(startIndex + offset, data);
+			break;
+
 		default:
 			throw new RuntimeException("Not implemented: " + serviceChoice);
 		}
+	}
+
+	public byte[] getBytes() {
+
+		final int dataLength = getDataLength();
+
+		final byte[] result = new byte[dataLength];
+		toBytes(result, 0);
+
+		return result;
+	}
+
+	/**
+	 * <pre>
+	 * ReadPropertyMultiple-Request ::= SEQUENCE {
+	 *   listOfReadAccessSpecs SEQUENCE OF ReadAccessSpecification
+	 * }
+	 * 
+	 * ReadAccessSpecification ::= SEQUENCE {
+	 *   objectIdentifier [0] BACnetObjectIdentifier,
+	 *   listOfPropertyReferences [1] SEQUENCE OF BACnetPropertyReference
+	 * }
+	 * 
+	 * BACnetPropertyReference ::= SEQUENCE {
+	 *   propertyIdentifier [0] BACnetPropertyIdentifier,
+	 *   propertyArrayIndex [1] Unsigned OPTIONAL --used only with array datatype
+	 *   -- if omitted with an array the entire array is referenced
+	 * }
+	 * 
+	 * BACnetPropertyIdentifier is ???
+	 * </pre>
+	 * 
+	 * @param offset
+	 * @param data
+	 * 
+	 * @return the length of the parsed structure
+	 */
+	private int processReadPropertyMultiple(final int offset, final byte[] data) {
+
+		int index = 0;
+
+		// bacnet object identifier
+		objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+		index += objectIdentifierServiceParameter.fromBytes(data, offset + index);
+
+		// bracket open
+		final ServiceParameter bracketOpenServiceParameter = new ServiceParameter();
+		getServiceParameters().add(bracketOpenServiceParameter);
+		index += bracketOpenServiceParameter.fromBytes(data, offset + index);
+
+		final ServiceParameter serviceParameter = new ServiceParameter();
+		getServiceParameters().add(serviceParameter);
+		index += serviceParameter.fromBytes(data, offset + index);
+
+		// DEBUG
+		if (serviceParameter.getPayload()[0] == SYSTEM_STATUS) {
+			LOG.info("System Status: 112");
+		}
+
+		// bracket close
+		final ServiceParameter bracketCloseServiceParameter = new ServiceParameter();
+		getServiceParameters().add(bracketCloseServiceParameter);
+		index += bracketCloseServiceParameter.fromBytes(data, offset + index);
+
+		return index;
 	}
 
 	/**
@@ -120,6 +315,7 @@ public class APDU {
 	 * 
 	 * @param offset
 	 * @param data
+	 * 
 	 * @return
 	 */
 	private int processIAm(int offset, final byte[] data) {
@@ -150,33 +346,9 @@ public class APDU {
 		serviceParameters.add(serviceParameter);
 
 		final int vendorId = (serviceParameter.getPayload()[0] & 0xFF);
-		LOG.info("VendorId: " + vendorMap.get(vendorId));
-
-//		if (offset < data.length) {
-//
-//			// parse optional service parameters
-//			boolean parameterParsingDone = false;
-//			while (!parameterParsingDone) {
-//
-//				final ServiceParameter serviceParameter = new ServiceParameter();
-//
-//				// parse service parameters until the list ends
-//				final int bytesProcessed = serviceParameter.fromBytes(data, offset);
-//				structureLength += bytesProcessed;
-//				if (0 == bytesProcessed) {
-//					parameterParsingDone = true;
-//					break;
-//				}
-//
-//				serviceParameters.add(serviceParameter);
-//
-//				offset += bytesProcessed;
-//				if ((offset) >= data.length) {
-//					parameterParsingDone = true;
-//					break;
-//				}
-//			}
-//		}
+		if (vendorMap.containsKey(vendorId)) {
+			LOG.info("VendorId: " + vendorMap.get(vendorId));
+		}
 
 		return structureLength;
 	}
@@ -280,6 +452,15 @@ public class APDU {
 
 	public void setVendorMap(final Map<Integer, String> vendorMap) {
 		this.vendorMap = vendorMap;
+	}
+
+	public ObjectIdentifierServiceParameter getObjectIdentifierServiceParameter() {
+		return objectIdentifierServiceParameter;
+	}
+
+	public void setObjectIdentifierServiceParameter(
+			final ObjectIdentifierServiceParameter objectIdentifierServiceParameter) {
+		this.objectIdentifierServiceParameter = objectIdentifierServiceParameter;
 	}
 
 }

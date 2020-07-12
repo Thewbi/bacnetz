@@ -10,6 +10,16 @@ public class VirtualLinkControl {
 
 	private int length;
 
+	public VirtualLinkControl() {
+
+	}
+
+	public VirtualLinkControl(final VirtualLinkControl other) {
+		this.type = other.getType();
+		this.function = other.getFunction();
+		this.length = other.getLength();
+	}
+
 	public void fromBytes(final byte[] data, final int startIndex) {
 
 		int offset = 0;
@@ -27,6 +37,13 @@ public class VirtualLinkControl {
 		data[offset + 0] = (byte) type;
 		data[offset + 1] = (byte) function;
 		Utils.addShortToBuffer(data, offset + 2, (short) length);
+	}
+
+	public byte[] getBytes() {
+		final byte[] bytes = new byte[4];
+		toBytes(bytes, 0);
+
+		return bytes;
 	}
 
 	public int getType() {

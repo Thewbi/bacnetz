@@ -25,9 +25,33 @@ public class NPDU {
 	/** 0 indicates Broadcast on Destination Network */
 	private int destinationMACLayerAddressLength;
 
+	private int destinationMac;
+
 	private int destinationHopCount;
 
+	private int sourceNetworkAddress;
+
+	private int sourceMacLayerAddressLength;
+
+	private int sourceMac;
+
 	private int structureLength;
+
+	public NPDU() {
+
+	}
+
+	public NPDU(final NPDU other) {
+		this.version = other.version;
+		this.control = other.control;
+		this.destinationNetworkNumber = other.destinationNetworkNumber;
+		this.destinationMACLayerAddressLength = other.destinationMACLayerAddressLength;
+		this.destinationHopCount = other.destinationHopCount;
+		this.sourceNetworkAddress = other.sourceNetworkAddress;
+		this.sourceMacLayerAddressLength = other.sourceMacLayerAddressLength;
+		this.sourceMac = other.sourceMac;
+		this.structureLength = other.structureLength;
+	}
 
 	public void fromBytes(final byte[] data, final int startIndex) {
 
@@ -47,20 +71,31 @@ public class NPDU {
 			destinationHopCount = data[startIndex + offset++] & 0xFF;
 			structureLength += 4;
 		} else {
-//			throw new RuntimeException("Not implemented yet!");
-			LOG.info("No destination network information is present!");
+			LOG.trace("No destination network information is present!");
 		}
 
 		if (isSourceSpecifierPresent()) {
-			throw new RuntimeException("Not implemented yet!");
+			sourceNetworkAddress = Utils.bytesToUnsignedShort(data[startIndex + offset++], data[startIndex + offset++],
+					true);
+			sourceMacLayerAddressLength = data[startIndex + offset++] & 0xFF;
+
+			for (int i = 0; i < sourceMacLayerAddressLength; i++) {
+				if (i > 0) {
+					sourceMac <<= 8;
+				}
+				sourceMac |= (data[startIndex + offset++] & 0xFF);
+			}
+
+			structureLength += (3 + sourceMacLayerAddressLength);
 		}
 
 		if (!isAPDUMessage()) {
 			throw new RuntimeException("Not implemented yet!");
 		}
 
+		// reply is expected
 		if (isConfirmedRequestPDUPresent()) {
-			throw new RuntimeException("Not implemented yet!");
+			LOG.trace("Reply is expected!");
 		}
 	}
 
@@ -71,7 +106,18 @@ public class NPDU {
 
 		// destination specifier has four byte
 		if (isDestinationSpecifierPresent()) {
-			dataLength += 4;
+
+			// 2 byte: destination network address
+			dataLength += 2;
+
+			// 1 byte: mac layer address length
+			dataLength += 1;
+
+			// n bytes: for the mac itself
+			dataLength += destinationMACLayerAddressLength;
+
+			// 1 byte: hopCount
+			dataLength += 1;
 		}
 
 		return dataLength;
@@ -85,11 +131,31 @@ public class NPDU {
 		data[offset + index++] = (byte) control;
 
 		if (isDestinationSpecifierPresent()) {
+
+			// 2 byte network number
 			Utils.addShortToBuffer(data, offset + index, (short) destinationNetworkNumber);
 			index += 2;
 			data[offset + index++] = (byte) destinationMACLayerAddressLength;
+
+			if (destinationMACLayerAddressLength > 0) {
+
+				for (int i = 0; i < destinationMACLayerAddressLength; i++) {
+
+					data[offset + index++] = (byte) ((destinationMac >> (8 * (destinationMACLayerAddressLength - 1 - i))
+							& 0xFF));
+				}
+			}
+
 			data[offset + index++] = (byte) destinationHopCount;
 		}
+	}
+
+	public byte[] getBytes() {
+
+		final byte[] result = new byte[getDataLength()];
+		toBytes(result, 0);
+
+		return result;
 	}
 
 	/**
@@ -216,6 +282,38 @@ public class NPDU {
 
 	public int getStructureLength() {
 		return structureLength;
+	}
+
+	public int getSourceNetworkAddress() {
+		return sourceNetworkAddress;
+	}
+
+	public void setSourceNetworkAddress(final int sourceNetworkAddress) {
+		this.sourceNetworkAddress = sourceNetworkAddress;
+	}
+
+	public int getSourceMacLayerAddressLength() {
+		return sourceMacLayerAddressLength;
+	}
+
+	public void setSourceMacLayerAddressLength(final int sourceMacLayerAddressLength) {
+		this.sourceMacLayerAddressLength = sourceMacLayerAddressLength;
+	}
+
+	public int getSourceMac() {
+		return sourceMac;
+	}
+
+	public void setSourceMac(final int sourceMac) {
+		this.sourceMac = sourceMac;
+	}
+
+	public int getDestinationMac() {
+		return destinationMac;
+	}
+
+	public void setDestinationMac(final int destinationMac) {
+		this.destinationMac = destinationMac;
 	}
 
 }

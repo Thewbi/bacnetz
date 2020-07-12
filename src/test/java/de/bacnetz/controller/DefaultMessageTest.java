@@ -1,59 +1,35 @@
-package de.bacnetz.stack;
+package de.bacnetz.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
 import de.bacnetz.common.Utils;
+import de.bacnetz.stack.APDU;
+import de.bacnetz.stack.NPDU;
+import de.bacnetz.stack.ObjectIdentifierServiceParameter;
+import de.bacnetz.stack.PDUType;
+import de.bacnetz.stack.ServiceChoice;
+import de.bacnetz.stack.ServiceParameter;
+import de.bacnetz.stack.TagClass;
+import de.bacnetz.stack.VirtualLinkControl;
 
-public class APDUTest {
-
-	@Test
-	public void testDeserialize() {
-
-		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("10080a1f471a1f47");
-
-		final APDU apdu = new APDU();
-		apdu.fromBytes(hexStringToByteArray, 0);
-
-		assertEquals(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU, apdu.getPduType());
-		assertFalse(apdu.isSegmentation());
-		assertFalse(apdu.isMoreSegmentsFollow());
-		assertFalse(apdu.isSegmentedResponseAccepted());
-
-		assertEquals(ServiceChoice.WHO_IS, apdu.getServiceChoice());
-
-		final List<ServiceParameter> serviceParameters = apdu.getServiceParameters();
-		assertEquals(2, serviceParameters.size());
-	}
-
-	@Test
-	public void testDeserializeReadPropertyMultiple() {
-
-		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("0243990e0c020027101e09701f");
-
-		final APDU apdu = new APDU();
-		apdu.fromBytes(hexStringToByteArray, 0);
-
-		assertEquals(PDUType.CONFIRMED_SERVICE_REQUEST_PDU, apdu.getPduType());
-		assertFalse(apdu.isSegmentation());
-		assertFalse(apdu.isMoreSegmentsFollow());
-		assertTrue(apdu.isSegmentedResponseAccepted());
-
-		assertEquals(ServiceChoice.READ_PROPERTY_MULTIPLE, apdu.getServiceChoice());
-
-		final List<ServiceParameter> serviceParameters = apdu.getServiceParameters();
-		assertEquals(3, serviceParameters.size());
-	}
+public class DefaultMessageTest {
 
 	@Test
 	public void testSerialize() {
+
+		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
+		virtualLinkControl.setType(0x81);
+		virtualLinkControl.setFunction(0x0B);
+		virtualLinkControl.setLength(0x14);
+
+		final NPDU npdu = new NPDU();
+		npdu.setVersion(0x01);
+		npdu.setControl(0x00);
 
 		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
 		objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
@@ -86,26 +62,27 @@ public class APDUTest {
 //		apdu.setSegmentation(segmentation);
 //		apdu.setSegmentedResponseAccepted(segmentedResponseAccepted);
 		apdu.setServiceChoice(ServiceChoice.I_AM);
-		apdu.setVendorMap(new HashMap<Integer, String>());
+		apdu.setVendorMap(new HashMap<>());
 		apdu.getServiceParameters().add(objectIdentifierServiceParameter);
 		apdu.getServiceParameters().add(maximumAPDUServiceParameter);
 		apdu.getServiceParameters().add(segmentationSupportedServiceParameter);
 		apdu.getServiceParameters().add(vendorIdServiceParameter);
 
-		final byte[] data = new byte[20];
-		apdu.toBytes(data, 2);
+		final DefaultMessage defaultMessage = new DefaultMessage();
+		defaultMessage.setVirtualLinkControl(virtualLinkControl);
+		defaultMessage.setNpdu(npdu);
+		defaultMessage.setApdu(apdu);
 
-		final byte[] expected = new byte[] { 0x00, 0x00, (byte) 0x10, (byte) 0x00, (byte) 0xc4, (byte) 0x02, 0x00, 0x27,
-				0x11, 0x22, 0x01, (byte) 0xe0, (byte) 0x91, 0x00, 0x21, (byte) 0xb2, 0x00, 0x00, 0x00, 0x00 };
+		final byte[] bytes = defaultMessage.getBytes();
 
-		System.out.println("Result:   " + Utils.byteArrayToStringNoPrefix(data));
+		// 81 0B 00 14 01 00 10 00 C4 02 00 27 11 22 01 E0 91 00 21 B2
+		final byte[] expected = new byte[] { (byte) 0x81, 0x0B, (byte) 0x00, (byte) 0x14, (byte) 0x01, (byte) 0x00,
+				0x10, 0x00, (byte) 0xC4, 0x02, 0x00, (byte) 0x27, (byte) 0x11, 0x22, (byte) 0x01, (byte) 0xE0,
+				(byte) 0x91, 0x00, 0x21, (byte) 0xB2 };
+
+		System.out.println("Result:   " + Utils.byteArrayToStringNoPrefix(bytes));
 		System.out.println("Expected: " + Utils.byteArrayToStringNoPrefix(expected));
 
-		// 1000c4020027102201e0910021b2
-
-		// the APDU Type serializes into a two byte long array
-		assertEquals(14, apdu.getDataLength());
-		assertTrue(Arrays.equals(data, expected));
+		assertTrue(Arrays.equals(bytes, expected));
 	}
-
 }

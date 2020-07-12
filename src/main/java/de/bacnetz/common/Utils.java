@@ -83,7 +83,21 @@ public class Utils {
 	}
 
 	public static int bufferToInt(final byte[] buffer, final int idx) {
-		return ((buffer[idx] & 0xff) << 8) + (buffer[idx + 1] & 0xff);
+		return ((buffer[idx] & 0xff) << 24) + ((buffer[idx + 1] & 0xff) << 16) + ((buffer[idx + 2] & 0xff) << 8)
+				+ (buffer[idx + 3] & 0xff);
+	}
+
+	public static void intToBuffer(final int data, final byte[] buffer, final int offset) {
+
+		final byte a = (byte) ((data >> 24) & 0xff);
+		final byte b = (byte) ((data >> 16) & 0xff);
+		final byte c = (byte) ((data >> 8) & 0xff);
+		final byte d = (byte) ((data >> 0) & 0xff);
+
+		buffer[offset + 0] = a;
+		buffer[offset + 1] = b;
+		buffer[offset + 2] = c;
+		buffer[offset + 3] = d;
 	}
 
 	public static int addShortToBuffer(final byte[] buffer, int idx, final short data) {

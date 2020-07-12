@@ -51,7 +51,9 @@ public enum ServiceChoice {
 
 	UTC_TIME_SYNCHRONIZATION(0x09),
 
-	WRITE_GROUP(0x0A);
+	WRITE_GROUP(0x0A),
+
+	READ_PROPERTY_MULTIPLE(0x0E);
 
 	public static final int I_AM_CODE = 0x00;
 
@@ -81,6 +83,8 @@ public enum ServiceChoice {
 	public static final int UTC_TIME_SYNCHRONIZATION_CODE = 0x09;
 
 	public static final int WRITE_GROUP_CODE = 0x0A;
+
+	public static final int READ_PROPERTY_MULTIPLE_CODE = 0x0E;
 
 	private final int id;
 
@@ -124,6 +128,9 @@ public enum ServiceChoice {
 
 		case WRITE_GROUP_CODE:
 			return WRITE_GROUP;
+
+		case READ_PROPERTY_MULTIPLE_CODE:
+			return READ_PROPERTY_MULTIPLE;
 
 		default:
 			throw new RuntimeException("Unknown id " + id);
