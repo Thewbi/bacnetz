@@ -30,7 +30,9 @@ public class DefaultMessage implements Message {
 	public DefaultMessage(final Message message) {
 		this.virtualLinkControl = new VirtualLinkControl(message.getVirtualLinkControl());
 		this.npdu = new NPDU(message.getNpdu());
-		this.apdu = new APDU(message.getApdu());
+		if (message.getApdu() != null) {
+			this.apdu = new APDU(message.getApdu());
+		}
 	}
 
 	public int getDataLength() {

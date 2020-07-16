@@ -35,9 +35,11 @@ public enum NetworkLayerMessageType {
 
 	WHO_IS_ROUTER_TO_NETWORK(0x00),
 
+	I_AM_ROUTER_TO_NETWORK(0x01),
+
 	WHAT_IS_NETWORK_NUMBER(0x12),
 
-	UNNOWN_NETWORK_LAYER_MESSAGE_TYPE(0xFFFFFFFF);
+	UNKNOWN_NETWORK_LAYER_MESSAGE_TYPE(0xFFFFFFFF);
 
 	private static final Logger LOG = LogManager.getLogger(NetworkLayerMessageType.class);
 
@@ -49,9 +51,11 @@ public enum NetworkLayerMessageType {
 
 	public static final int WHO_IS_ROUTER_TO_NETWORK_CODE = 0x00;
 
+	public static final int I_AM_ROUTER_TO_NETWORK_CODE = 0x01;
+
 	public static final int WHAT_IS_NETWORK_NUMBER_CODE = 0x12;
 
-	public static final int UNNOWN_NETWORK_LAYER_MESSAGE_TYPE_CODE = 0xFFFFFFFF;
+	public static final int UNKNOWN_NETWORK_LAYER_MESSAGE_TYPE_CODE = 0xFFFFFFFF;
 
 	public static NetworkLayerMessageType fromInt(final int id) {
 
@@ -60,12 +64,15 @@ public enum NetworkLayerMessageType {
 		case WHO_IS_ROUTER_TO_NETWORK_CODE:
 			return WHO_IS_ROUTER_TO_NETWORK;
 
+		case I_AM_ROUTER_TO_NETWORK_CODE:
+			return I_AM_ROUTER_TO_NETWORK;
+
 		case WHAT_IS_NETWORK_NUMBER_CODE:
 			return WHAT_IS_NETWORK_NUMBER;
 
 		default:
 			LOG.warn("Unknown id " + id);
-			return UNNOWN_NETWORK_LAYER_MESSAGE_TYPE;
+			return UNKNOWN_NETWORK_LAYER_MESSAGE_TYPE;
 		}
 	}
 

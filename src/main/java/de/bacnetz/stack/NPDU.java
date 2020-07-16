@@ -150,6 +150,7 @@ public class NPDU {
 			LOG.trace("Request does not contain a APDU!");
 		}
 		if (isNetworkLayerMessage()) {
+
 			// next byte is network layer message type
 			networkLayerMessageType = NetworkLayerMessageType.fromInt(data[startIndex + offset++] & 0xFF);
 			structureLength += 1;

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -397,11 +398,13 @@ public class APDU {
 		offset += serviceParameter.fromBytes(data, offset);
 		serviceParameters.add(serviceParameter);
 
-		final int vendorId = (serviceParameter.getPayload()[0] & 0xFF);
+		if (ArrayUtils.isNotEmpty(serviceParameter.getPayload())) {
+			final int vendorId = (serviceParameter.getPayload()[0] & 0xFF);
 
-		// DEBUG
-		if (vendorMap.containsKey(vendorId)) {
-			LOG.trace("VendorId: " + vendorMap.get(vendorId));
+			// DEBUG
+			if (vendorMap.containsKey(vendorId)) {
+				LOG.trace("VendorId: " + vendorMap.get(vendorId));
+			}
 		}
 
 		return structureLength;

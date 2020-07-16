@@ -87,8 +87,8 @@ public class MulticastListenerReaderThread implements Runnable {
 				continue;
 			}
 
-			// open point to point connection to sender
-			final DatagramSocket ptpSenderSocket = new DatagramSocket();
+//			// open point to point connection to sender
+//			final DatagramSocket ptpSenderSocket = new DatagramSocket();
 
 			// Debug
 			LOG.info("Received from inetAddress: " + datagramPacketAddress + " From socketAddress "
@@ -134,9 +134,9 @@ public class MulticastListenerReaderThread implements Runnable {
 
 			}
 
-			if (ptpSenderSocket != null) {
-				ptpSenderSocket.close();
-			}
+//			if (ptpSenderSocket != null) {
+//				ptpSenderSocket.close();
+//			}
 
 			LOG.trace("done");
 		}
@@ -159,13 +159,14 @@ public class MulticastListenerReaderThread implements Runnable {
 		npdu.fromBytes(data, offset);
 		offset += npdu.getStructureLength();
 
-		// deserialize the APDU part of the message
-		final APDU apdu = new APDU();
-		apdu.setVendorMap(vendorMap);
-		apdu.fromBytes(data, offset, payloadLength);
-		offset += apdu.getStructureLength();
-
-		LOG.trace("\n" + apdu.toString());
+		APDU apdu = null;
+		if (npdu.isAPDUMessage()) {
+			// deserialize the APDU part of the message
+			apdu = new APDU();
+			apdu.setVendorMap(vendorMap);
+			apdu.fromBytes(data, offset, payloadLength);
+			offset += apdu.getStructureLength();
+		}
 
 		// find a controller that is able to create a response matching the request
 		if (CollectionUtils.isNotEmpty(messageControllers)) {
@@ -190,9 +191,6 @@ public class MulticastListenerReaderThread implements Runnable {
 
 		multicastSocket = new MulticastSocket(inetSocketAddress);
 		multicastSocket.setReuseAddress(true);
-
-//		final InetAddress inetAddress = InetAddress.getByName(NetworkUtils.BACNET_MULTICAST_IP);
-//		multicastSocket.joinGroup(inetAddress);
 
 		LOG.info("Multicast listener on " + NetworkUtils.BACNET_MULTICAST_IP + " started.");
 

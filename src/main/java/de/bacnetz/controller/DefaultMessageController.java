@@ -44,6 +44,9 @@ public class DefaultMessageController implements MessageController {
 		case WHO_IS_ROUTER_TO_NETWORK:
 			return null;
 
+		case I_AM_ROUTER_TO_NETWORK:
+			return null;
+
 		case WHAT_IS_NETWORK_NUMBER:
 			return null;
 
@@ -128,10 +131,21 @@ public class DefaultMessageController implements MessageController {
 			final ServiceParameter upperBoundServiceParameter = serviceParameters.get(1);
 
 			final boolean bigEndian = true;
-			final int lowerBound = Utils.bytesToUnsignedShort(lowerBoundServiceParameter.getPayload()[0],
-					lowerBoundServiceParameter.getPayload()[1], bigEndian);
-			final int upperBound = Utils.bytesToUnsignedShort(upperBoundServiceParameter.getPayload()[0],
-					upperBoundServiceParameter.getPayload()[1], bigEndian);
+			int lowerBound = 0;
+			if (lowerBoundServiceParameter.getPayload().length == 1) {
+				lowerBound = lowerBoundServiceParameter.getPayload()[0];
+			} else {
+				lowerBound = Utils.bytesToUnsignedShort(lowerBoundServiceParameter.getPayload()[0],
+						lowerBoundServiceParameter.getPayload()[1], bigEndian);
+			}
+
+			int upperBound = 0;
+			if (upperBoundServiceParameter.getPayload().length == 1) {
+				upperBound = upperBoundServiceParameter.getPayload()[0];
+			} else {
+				upperBound = Utils.bytesToUnsignedShort(upperBoundServiceParameter.getPayload()[0],
+						upperBoundServiceParameter.getPayload()[1], bigEndian);
+			}
 
 			LOG.trace("Who-Is lower-bound: {} ({})",
 					Utils.byteArrayToStringNoPrefix(lowerBoundServiceParameter.getPayload()), lowerBound);
@@ -216,92 +230,92 @@ public class DefaultMessageController implements MessageController {
 		// 0x1961 = 6497d
 		case 0x1961:
 			LOG.info("Supported Services Property");
-			return processSupportedServicesProperty(requestMessage);
+			return processSupportedServicesProperty(0x61, requestMessage);
 
 		// Segmentation supported
 		// 0x196B = 6507d
 		case 0x196B:
 			LOG.info("Segmentation supported");
-			return processSegmentationSupportedProperty(requestMessage);
+			return processSegmentationSupportedProperty(0x6B, requestMessage);
 
 		// max-apdu-length-accepted
 		// 0x193E = 6462d
 		case 0x193E:
 			LOG.info("max-apdu-length-accepted");
-			return processMaxAPDULengthAcceptedProperty(requestMessage);
+			return processMaxAPDULengthAcceptedProperty(0x3E, requestMessage);
 
 		// max-segments-accepted
 		// 0x19A7 = 6567d
 		case 0x19A7:
 			LOG.info("max-segments-accepted");
-			return processMaxSegmentsAcceptedProperty(requestMessage);
+			return processMaxSegmentsAcceptedProperty(0xA7, requestMessage);
 
 		// 0x190A = 6410d APDU-Segment-Timeout
 		case 0x190A:
 			LOG.info("APDU-Segment-Timeout");
-			return processAPDUSegmentTimeoutProperty(requestMessage);
+			return processAPDUSegmentTimeoutProperty(0x0A, requestMessage);
 
 		// 0x190B = 6411d APDU-Timeout
 		case 0x190B:
 			LOG.info("APDU-Timeout");
-			return processAPDUTimeoutProperty(requestMessage);
+			return processAPDUTimeoutProperty(0x0B, requestMessage);
 
 		// 0x199B = 6555d database-revision (155d = 0x9B) defined in ASHRAE on page 696
 		case 0x199B:
 			LOG.info("database-revision");
-			return processDatabaseRevisionProperty(requestMessage);
+			return processDatabaseRevisionProperty(0x9B, requestMessage);
 
 		// 0x198B = 6539d protocol-revision
 		case 0x198B:
 			LOG.info("protocol-revision");
-			return processProtocolRevisionProperty(requestMessage);
+			return processProtocolRevisionProperty(0x8B, requestMessage);
 
 		// 0x1962 = 6498d protocol-version
 		case 0x1962:
 			LOG.info("protocol-version");
-			return processProtocolVersionProperty(requestMessage);
+			return processProtocolVersionProperty(0x62, requestMessage);
 
 		// 0x19C4 = 6596 (0xC4 = 196d) last-restart-reason
 		case 0x19C4:
 			LOG.info("last-restart-reason");
-			return processLastRestartReasonProperty(requestMessage);
+			return processLastRestartReasonProperty(0xC4, requestMessage);
 
 		// 0x194c = 6476d (0x4c = 76) object list
 		case 0x194c:
 			LOG.info("object list");
-			return processObjectListProperty(requestMessage);
+			return processObjectListProperty(0x4c, requestMessage);
 
 		default:
 			throw new NotImplementedException("Unknown property! PropertyIdentifier = " + propertyIdentifier);
 		}
 	}
 
-	private Message processObjectListProperty(final Message requestMessage) {
+	private Message processObjectListProperty(final int propertyKey, final Message requestMessage) {
 		// 0x02 = ????
-		return returnIntegerProperty(requestMessage, 0x4c, new byte[] { (byte) 0x02 });
+		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x02 });
 	}
 
-	private Message processLastRestartReasonProperty(final Message requestMessage) {
+	private Message processLastRestartReasonProperty(final int propertyKey, final Message requestMessage) {
 		// coldstart 1
-		return returnIntegerProperty(requestMessage, 0xC4, new byte[] { (byte) 0x01 });
+		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
 	}
 
-	private Message processProtocolVersionProperty(final Message requestMessage) {
+	private Message processProtocolVersionProperty(final int propertyKey, final Message requestMessage) {
 		// protocol version 1
-		return returnIntegerProperty(requestMessage, 0x62, new byte[] { (byte) 0x01 });
+		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
 	}
 
-	private Message processProtocolRevisionProperty(final Message requestMessage) {
+	private Message processProtocolRevisionProperty(final int propertyKey, final Message requestMessage) {
 		// database revision 12d = 0x0C
-		return returnIntegerProperty(requestMessage, 0x8B, new byte[] { (byte) 0x0C });
+		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x0C });
 	}
 
-	private Message processDatabaseRevisionProperty(final Message requestMessage) {
+	private Message processDatabaseRevisionProperty(final int propertyKey, final Message requestMessage) {
 		// database revivion 3
-		return returnIntegerProperty(requestMessage, 0x9B, new byte[] { (byte) 0x03 });
+		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x03 });
 	}
 
-	private Message processAPDUSegmentTimeoutProperty(final Message requestMessage) {
+	private Message processAPDUSegmentTimeoutProperty(final int propertyKey, final Message requestMessage) {
 
 		// APDU Segment-Timeout:
 		// Dieser Wert in Millisekunden legt fest, nach welcher Zeitspanne ein
@@ -309,7 +323,8 @@ public class DefaultMessageController implements MessageController {
 		// wird, wenn die Segmentbestätigung ausbleibt. Der Standardwert beträgt
 		// 2000 Millisekunden.
 		// 2000d == 0x07D0
-		return returnIntegerProperty(requestMessage, 0x0A, new byte[] { (byte) 0x07, (byte) 0xD0 });
+		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey,
+				new byte[] { (byte) 0x07, (byte) 0xD0 });
 //		final int deviceInstanceNumber = DEVICE_INSTANCE_NUMBER;
 //
 //		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
@@ -391,11 +406,11 @@ public class DefaultMessageController implements MessageController {
 //		return result;
 	}
 
-	private Message processMaxSegmentsAcceptedProperty(final Message requestMessage) {
+	private Message processMaxSegmentsAcceptedProperty(final int propertyKey, final Message requestMessage) {
 
 		// APDU Max Segments Accepted:
 		// Legt fest, wie viele Segmente maximal akzeptiert werden.
-		return returnIntegerProperty(requestMessage, 0xA7, new byte[] { (byte) 0x01 });
+		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
 
 //		final int deviceInstanceNumber = DEVICE_INSTANCE_NUMBER;
 //
@@ -474,14 +489,15 @@ public class DefaultMessageController implements MessageController {
 //		return result;
 	}
 
-	private Message processAPDUTimeoutProperty(final Message requestMessage) {
+	private Message processAPDUTimeoutProperty(final int propertyKey, final Message requestMessage) {
 
 		// ADPU Timeout:
 		// Dieser Wert in Millisekunden legt fest, nach welcher Zeitspanne ein
 		// quittierpflichtiges Telegramm als fehlgeschlagen gewertet wird, wenn die
 		// Bestätigung ausbleibt. Der Standardwert beträgt 3000 ms.
 		// 3000d == 0x0BB8
-		return returnIntegerProperty(requestMessage, 0x0B, new byte[] { (byte) 0x0B, (byte) 0xB8 });
+		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey,
+				new byte[] { (byte) 0x0B, (byte) 0xB8 });
 
 //		final int deviceInstanceNumber = DEVICE_INSTANCE_NUMBER;
 //
@@ -563,168 +579,184 @@ public class DefaultMessageController implements MessageController {
 //		return result;
 	}
 
-	private Message processMaxAPDULengthAcceptedProperty(final Message requestMessage) {
-		final int deviceInstanceNumber = DEVICE_INSTANCE_NUMBER;
+	private Message processMaxAPDULengthAcceptedProperty(final int propertyKey, final Message requestMessage) {
 
-		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
-		virtualLinkControl.setType(0x81);
-		virtualLinkControl.setFunction(0x0A);
-		virtualLinkControl.setLength(0x00);
-
-		final NPDU npdu = new NPDU();
-		npdu.setVersion(0x01);
-		npdu.setControl(0x00);
-//		npdu.setSourceNetworkAddress(requestMessage.getNpdu().getDestinationNetworkNumber());
-//		npdu.setDestinationMACLayerAddressLength(requestMessage.getNpdu().getDestinationMACLayerAddressLength());
-//		npdu.setDestinationMac(requestMessage.getNpdu().getDestinationMac());
-
-		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-		objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-		// who are context tag numbers determined???
-//		objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
-		objectIdentifierServiceParameter.setTagNumber(0x00);
-		objectIdentifierServiceParameter.setLengthValueType(4);
-		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-		objectIdentifierServiceParameter.setInstanceNumber(deviceInstanceNumber);
-
-		final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
-		propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-		// who are context tag numbers determined???
-//		protocolServicesSupportedServiceParameter.setTagNumber(ServiceParameter.UNKOWN_TAG_NUMBER);
-		propertyIdentifierServiceParameter.setTagNumber(0x01);
-		propertyIdentifierServiceParameter.setLengthValueType(1);
-		// 0x61 = 97d = Property Identifier: protocol-services-supported
-		// 0x6B = 107d = Property Identifier: segmentation-supported
-		// 0x3E = 62d = Property Identifier: max-apdu-length-accepted
-		propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) 0x3E });
-
-		final ServiceParameter openingTagServiceParameter = new ServiceParameter();
-		openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-		openingTagServiceParameter.setTagNumber(0x03);
-		openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
-
-		final ServiceParameter valueServiceParameter = new ServiceParameter();
-		valueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-		valueServiceParameter.setTagNumber(ServiceParameter.UNSIGNED_INTEGER_CODE);
-		valueServiceParameter.setLengthValueType(0x02);
 		// Maximum APDU Length is dependent on the physical layer used, for example the
 		// maximum APDU size for BACnet/IP is 1497 octets, but for BACnet MS/TP
 		// segments, the maximum APDU size is only 480 octets.
 		//
 		// 1497d = 0x05D9
-		valueServiceParameter.setPayload(new byte[] { (byte) 0x05, (byte) 0xD9 });
+		// 62d = 0x3E
+		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x05D9 });
+//		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x3E });
 
-		final ServiceParameter closingTagServiceParameter = new ServiceParameter();
-		closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-		closingTagServiceParameter.setTagNumber(0x03);
-		closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
-
-		final APDU apdu = new APDU();
-		apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
-		apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-		apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
-		apdu.setVendorMap(vendorMap);
-//		apdu.setObjectIdentifierServiceParameter(objectIdentifierServiceParameter);
-		apdu.getServiceParameters().add(objectIdentifierServiceParameter);
-		apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
-		apdu.getServiceParameters().add(openingTagServiceParameter);
-		apdu.getServiceParameters().add(valueServiceParameter);
-		apdu.getServiceParameters().add(closingTagServiceParameter);
-
-		final DefaultMessage result = new DefaultMessage();
-		result.setVirtualLinkControl(virtualLinkControl);
-		result.setNpdu(npdu);
-		result.setApdu(apdu);
-
-		virtualLinkControl.setLength(result.getDataLength());
-
-		final byte[] bytes = result.getBytes();
-		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
-
-		return result;
+//		final int deviceInstanceNumber = DEVICE_INSTANCE_NUMBER;
+//
+//		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
+//		virtualLinkControl.setType(0x81);
+//		virtualLinkControl.setFunction(0x0A);
+//		virtualLinkControl.setLength(0x00);
+//
+//		final NPDU npdu = new NPDU();
+//		npdu.setVersion(0x01);
+//		npdu.setControl(0x00);
+////		npdu.setSourceNetworkAddress(requestMessage.getNpdu().getDestinationNetworkNumber());
+////		npdu.setDestinationMACLayerAddressLength(requestMessage.getNpdu().getDestinationMACLayerAddressLength());
+////		npdu.setDestinationMac(requestMessage.getNpdu().getDestinationMac());
+//
+//		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+//		objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+//		// who are context tag numbers determined???
+////		objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
+//		objectIdentifierServiceParameter.setTagNumber(0x00);
+//		objectIdentifierServiceParameter.setLengthValueType(4);
+//		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+//		objectIdentifierServiceParameter.setInstanceNumber(deviceInstanceNumber);
+//
+//		final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
+//		propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+//		// who are context tag numbers determined???
+////		protocolServicesSupportedServiceParameter.setTagNumber(ServiceParameter.UNKOWN_TAG_NUMBER);
+//		propertyIdentifierServiceParameter.setTagNumber(0x01);
+//		propertyIdentifierServiceParameter.setLengthValueType(1);
+//		// 0x61 = 97d = Property Identifier: protocol-services-supported
+//		// 0x6B = 107d = Property Identifier: segmentation-supported
+//		// 0x3E = 62d = Property Identifier: max-apdu-length-accepted
+//		propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) 0x3E });
+//
+//		final ServiceParameter openingTagServiceParameter = new ServiceParameter();
+//		openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+//		openingTagServiceParameter.setTagNumber(0x03);
+//		openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
+//
+//		final ServiceParameter valueServiceParameter = new ServiceParameter();
+//		valueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+//		valueServiceParameter.setTagNumber(ServiceParameter.UNSIGNED_INTEGER_CODE);
+//		valueServiceParameter.setLengthValueType(0x02);
+//		// Maximum APDU Length is dependent on the physical layer used, for example the
+//		// maximum APDU size for BACnet/IP is 1497 octets, but for BACnet MS/TP
+//		// segments, the maximum APDU size is only 480 octets.
+//		//
+//		// 1497d = 0x05D9
+//		valueServiceParameter.setPayload(new byte[] { (byte) 0x05, (byte) 0xD9 });
+//
+//		final ServiceParameter closingTagServiceParameter = new ServiceParameter();
+//		closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+//		closingTagServiceParameter.setTagNumber(0x03);
+//		closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
+//
+//		final APDU apdu = new APDU();
+//		apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
+//		apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
+//		apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+//		apdu.setVendorMap(vendorMap);
+////		apdu.setObjectIdentifierServiceParameter(objectIdentifierServiceParameter);
+//		apdu.getServiceParameters().add(objectIdentifierServiceParameter);
+//		apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
+//		apdu.getServiceParameters().add(openingTagServiceParameter);
+//		apdu.getServiceParameters().add(valueServiceParameter);
+//		apdu.getServiceParameters().add(closingTagServiceParameter);
+//
+//		final DefaultMessage result = new DefaultMessage();
+//		result.setVirtualLinkControl(virtualLinkControl);
+//		result.setNpdu(npdu);
+//		result.setApdu(apdu);
+//
+//		virtualLinkControl.setLength(result.getDataLength());
+//
+//		final byte[] bytes = result.getBytes();
+//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
+//
+//		return result;
 	}
 
-	private Message processSegmentationSupportedProperty(final Message requestMessage) {
+	private Message processSegmentationSupportedProperty(final int propertyKey, final Message requestMessage) {
 
-		final int deviceInstanceNumber = DEVICE_INSTANCE_NUMBER;
-
-		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
-		virtualLinkControl.setType(0x81);
-		virtualLinkControl.setFunction(0x0A);
-		virtualLinkControl.setLength(0x00);
-
-		final NPDU npdu = new NPDU();
-		npdu.setVersion(0x01);
-		npdu.setControl(0x00);
-//		npdu.setSourceNetworkAddress(requestMessage.getNpdu().getDestinationNetworkNumber());
-//		npdu.setDestinationMACLayerAddressLength(requestMessage.getNpdu().getDestinationMACLayerAddressLength());
-//		npdu.setDestinationMac(requestMessage.getNpdu().getDestinationMac());
-
-		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-		objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-		// who are context tag numbers determined???
-//		objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
-		objectIdentifierServiceParameter.setTagNumber(0x00);
-		objectIdentifierServiceParameter.setLengthValueType(4);
-		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-		objectIdentifierServiceParameter.setInstanceNumber(deviceInstanceNumber);
-
-		final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
-		propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-		// who are context tag numbers determined???
-//		protocolServicesSupportedServiceParameter.setTagNumber(ServiceParameter.UNKOWN_TAG_NUMBER);
-		propertyIdentifierServiceParameter.setTagNumber(0x01);
-		propertyIdentifierServiceParameter.setLengthValueType(1);
-		// 0x61 = 97d = Protocol Identifier: protocol-services-supported
-		// 0x6B = 107d = Protocol Identifier: segmentation-supported
-		propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) 0x6B });
-
-		final ServiceParameter openingTagServiceParameter = new ServiceParameter();
-		openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-		openingTagServiceParameter.setTagNumber(0x03);
-		openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
-
-		final ServiceParameter valueServiceParameter = new ServiceParameter();
-		valueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-		valueServiceParameter.setTagNumber(ServiceParameter.UNSIGNED_INTEGER_CODE);
-		valueServiceParameter.setLengthValueType(0x01);
 		// segmented-both (0)
 		// segmented-transmit (1)
 		// segmented-receive (2)
 		// no-segmentation (3)
-		valueServiceParameter.setPayload(new byte[] { (byte) 0x03 });
+		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x00 });
 
-		final ServiceParameter closingTagServiceParameter = new ServiceParameter();
-		closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-		closingTagServiceParameter.setTagNumber(0x03);
-		closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
-
-		final APDU apdu = new APDU();
-		apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
-		apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-		apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
-		apdu.setVendorMap(vendorMap);
-//		apdu.setObjectIdentifierServiceParameter(objectIdentifierServiceParameter);
-		apdu.getServiceParameters().add(objectIdentifierServiceParameter);
-		apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
-		apdu.getServiceParameters().add(openingTagServiceParameter);
-		apdu.getServiceParameters().add(valueServiceParameter);
-		apdu.getServiceParameters().add(closingTagServiceParameter);
-
-		final DefaultMessage result = new DefaultMessage();
-		result.setVirtualLinkControl(virtualLinkControl);
-		result.setNpdu(npdu);
-		result.setApdu(apdu);
-
-		virtualLinkControl.setLength(result.getDataLength());
-
-		final byte[] bytes = result.getBytes();
-		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
-
-		return result;
+//		final int deviceInstanceNumber = DEVICE_INSTANCE_NUMBER;
+//
+//		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
+//		virtualLinkControl.setType(0x81);
+//		virtualLinkControl.setFunction(0x0A);
+//		virtualLinkControl.setLength(0x00);
+//
+//		final NPDU npdu = new NPDU();
+//		npdu.setVersion(0x01);
+//		npdu.setControl(0x00);
+////		npdu.setSourceNetworkAddress(requestMessage.getNpdu().getDestinationNetworkNumber());
+////		npdu.setDestinationMACLayerAddressLength(requestMessage.getNpdu().getDestinationMACLayerAddressLength());
+////		npdu.setDestinationMac(requestMessage.getNpdu().getDestinationMac());
+//
+//		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+//		objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+//		// who are context tag numbers determined???
+////		objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
+//		objectIdentifierServiceParameter.setTagNumber(0x00);
+//		objectIdentifierServiceParameter.setLengthValueType(4);
+//		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+//		objectIdentifierServiceParameter.setInstanceNumber(deviceInstanceNumber);
+//
+//		final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
+//		propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+//		// who are context tag numbers determined???
+////		protocolServicesSupportedServiceParameter.setTagNumber(ServiceParameter.UNKOWN_TAG_NUMBER);
+//		propertyIdentifierServiceParameter.setTagNumber(0x01);
+//		propertyIdentifierServiceParameter.setLengthValueType(1);
+//		// 0x61 = 97d = Protocol Identifier: protocol-services-supported
+//		// 0x6B = 107d = Protocol Identifier: segmentation-supported
+//		propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) 0x6B });
+//
+//		final ServiceParameter openingTagServiceParameter = new ServiceParameter();
+//		openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+//		openingTagServiceParameter.setTagNumber(0x03);
+//		openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
+//
+//		final ServiceParameter valueServiceParameter = new ServiceParameter();
+//		valueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+//		valueServiceParameter.setTagNumber(ServiceParameter.UNSIGNED_INTEGER_CODE);
+//		valueServiceParameter.setLengthValueType(0x01);
+//		// segmented-both (0)
+//		// segmented-transmit (1)
+//		// segmented-receive (2)
+//		// no-segmentation (3)
+//		valueServiceParameter.setPayload(new byte[] { (byte) 0x03 });
+//
+//		final ServiceParameter closingTagServiceParameter = new ServiceParameter();
+//		closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+//		closingTagServiceParameter.setTagNumber(0x03);
+//		closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
+//
+//		final APDU apdu = new APDU();
+//		apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
+//		apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
+//		apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+//		apdu.setVendorMap(vendorMap);
+////		apdu.setObjectIdentifierServiceParameter(objectIdentifierServiceParameter);
+//		apdu.getServiceParameters().add(objectIdentifierServiceParameter);
+//		apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
+//		apdu.getServiceParameters().add(openingTagServiceParameter);
+//		apdu.getServiceParameters().add(valueServiceParameter);
+//		apdu.getServiceParameters().add(closingTagServiceParameter);
+//
+//		final DefaultMessage result = new DefaultMessage();
+//		result.setVirtualLinkControl(virtualLinkControl);
+//		result.setNpdu(npdu);
+//		result.setApdu(apdu);
+//
+//		virtualLinkControl.setLength(result.getDataLength());
+//
+//		final byte[] bytes = result.getBytes();
+//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
+//
+//		return result;
 	}
 
-	private DefaultMessage processSupportedServicesProperty(final Message requestMessage) {
+	private DefaultMessage processSupportedServicesProperty(final int propertyKey, final Message requestMessage) {
 
 		// return Unconfirmed request i-Am device,10001
 		final int deviceInstanceNumber = DEVICE_INSTANCE_NUMBER;
@@ -758,7 +790,7 @@ public class DefaultMessageController implements MessageController {
 		protocolServicesSupportedServiceParameter.setTagNumber(0x01);
 		protocolServicesSupportedServiceParameter.setLengthValueType(1);
 		// 0x61 = 97d = Protocol Identifier: protocol-services-supported
-		protocolServicesSupportedServiceParameter.setPayload(new byte[] { (byte) 0x61 });
+		protocolServicesSupportedServiceParameter.setPayload(new byte[] { (byte) propertyKey });
 
 		final ServiceParameter openingTagServiceParameter = new ServiceParameter();
 		openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -958,7 +990,7 @@ public class DefaultMessageController implements MessageController {
 		return null;
 	}
 
-	private Message returnIntegerProperty(final Message requestMessage, final int propertyId, final byte[] payload) {
+	private Message returnIntegerProperty(final int invokeId, final int propertyId, final byte[] payload) {
 
 		final int deviceInstanceNumber = DEVICE_INSTANCE_NUMBER;
 
@@ -1009,7 +1041,7 @@ public class DefaultMessageController implements MessageController {
 
 		final APDU apdu = new APDU();
 		apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
-		apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
+		apdu.setInvokeId(invokeId);
 		apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
 		apdu.setVendorMap(vendorMap);
 //		apdu.setObjectIdentifierServiceParameter(objectIdentifierServiceParameter);
