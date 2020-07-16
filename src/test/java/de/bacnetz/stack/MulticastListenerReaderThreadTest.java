@@ -17,7 +17,7 @@ public class MulticastListenerReaderThreadTest {
 		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810B00120120FFFF00FF10080A1F471A1F47");
 
 		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
-		multicastListenerReaderThread.parseBuffer(hexStringToByteArray);
+		multicastListenerReaderThread.parseBuffer(hexStringToByteArray, hexStringToByteArray.length);
 	}
 
 	/**
@@ -30,7 +30,7 @@ public class MulticastListenerReaderThreadTest {
 		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810B000801001008");
 
 		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
-		multicastListenerReaderThread.parseBuffer(hexStringToByteArray);
+		multicastListenerReaderThread.parseBuffer(hexStringToByteArray, hexStringToByteArray.length);
 	}
 
 	/**
@@ -43,7 +43,7 @@ public class MulticastListenerReaderThreadTest {
 		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810B001401001000C4020027102201E0910021B2");
 
 		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
-		multicastListenerReaderThread.parseBuffer(hexStringToByteArray);
+		multicastListenerReaderThread.parseBuffer(hexStringToByteArray, hexStringToByteArray.length);
 	}
 
 	@Test
@@ -52,7 +52,7 @@ public class MulticastListenerReaderThreadTest {
 		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810b001401001000c4020027102201e0910021b2");
 
 		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
-		multicastListenerReaderThread.parseBuffer(hexStringToByteArray);
+		multicastListenerReaderThread.parseBuffer(hexStringToByteArray, hexStringToByteArray.length);
 	}
 
 	@Test
@@ -65,7 +65,45 @@ public class MulticastListenerReaderThreadTest {
 
 		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
 		multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
-		multicastListenerReaderThread.parseBuffer(hexStringToByteArray);
+		multicastListenerReaderThread.parseBuffer(hexStringToByteArray, hexStringToByteArray.length);
+	}
+
+	@Test
+	public void testConfirmedREQ_WhoIs() {
+
+		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810B00120120FFFF00FF10080A1F461A1F46");
+
+		final DefaultMessageController defaultMessageController = new DefaultMessageController();
+
+		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
+		multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
+		multicastListenerReaderThread.parseBuffer(hexStringToByteArray, hexStringToByteArray.length);
+	}
+
+	@Test
+	public void testConfirmedREQ_WhoIs2() {
+
+		final byte[] hexStringToByteArray = Utils
+				.hexStringToByteArray("810B00180128FFFF00012E03001268FE10080A27111A2711");
+
+		final DefaultMessageController defaultMessageController = new DefaultMessageController();
+
+		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
+		multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
+		multicastListenerReaderThread.parseBuffer(hexStringToByteArray, hexStringToByteArray.length);
+	}
+
+	@Test
+	public void testConfirmedREQ_WhoIs3() {
+
+		final byte[] hexStringToByteArray = Utils
+				.hexStringToByteArray("810A0017010C012E030012680245700C0C020027111961");
+
+		final DefaultMessageController defaultMessageController = new DefaultMessageController();
+
+		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
+		multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
+		multicastListenerReaderThread.parseBuffer(hexStringToByteArray, hexStringToByteArray.length);
 	}
 
 }

@@ -43,6 +43,8 @@ public class APDU {
 
 	private int segmentationControl;
 
+	private int propertyIdentifier;
+
 	private ObjectIdentifierServiceParameter objectIdentifierServiceParameter;
 
 	/**
@@ -108,10 +110,18 @@ public class APDU {
 		// service parameters
 		if (CollectionUtils.isNotEmpty(serviceParameters)) {
 
+			int i = 0;
 			for (final ServiceParameter serviceParameter : serviceParameters) {
-				dataLength += serviceParameter.getDataLength();
+
+				final int tempDataLength = serviceParameter.getDataLength();
+				dataLength += tempDataLength;
+
+				LOG.trace("ServiceParameter {}) DataLength: {}", i, tempDataLength);
+				i++;
 			}
 		}
+
+		LOG.trace("APDU DataLength: {}", dataLength);
 
 		return dataLength;
 	}
@@ -129,7 +139,6 @@ public class APDU {
 		}
 
 		// 1 Byte: service choice
-//		data[offset + index++] = (byte) ServiceChoice.I_AM_CODE;
 		data[offset + index++] = (byte) serviceChoice.getId();
 
 		// object identifier
@@ -142,19 +151,15 @@ public class APDU {
 		// service parameters (such as ObjectIdentifierServiceParameter)
 		if (CollectionUtils.isNotEmpty(serviceParameters)) {
 
-			int i = 0;
 			for (final ServiceParameter serviceParameter : serviceParameters) {
 
-				LOG.info("" + i);
 				serviceParameter.toBytes(data, offset + index);
 				index += serviceParameter.getDataLength();
-
-				i++;
 			}
 		}
 	}
 
-	public void fromBytes(final byte[] data, final int startIndex) {
+	public void fromBytes(final byte[] data, final int startIndex, final int payloadLength) {
 
 		int offset = 0;
 		structureLength = 0;
@@ -186,7 +191,6 @@ public class APDU {
 		// bit 1 is the segmentedResponseAccepted bit
 		segmentedResponseAccepted = 0 < (data[startIndex + offset] & 0x02);
 		if (segmentedResponseAccepted) {
-//			throw new RuntimeException("Not implemented yet!");
 			LOG.trace("segmentedResponseAccepted bit");
 		}
 
@@ -195,8 +199,9 @@ public class APDU {
 
 		//
 		// Response Information
-//		if (npdu.isConfirmedRequestPDUPresent()) {
-		if (segmentedResponseAccepted) {
+		// The ReadProperty request for max-apdu-length-accepted does not set the bit 2
+		// but still contains segmentation information
+		if (segmentedResponseAccepted || pduType == PDUType.CONFIRMED_SERVICE_REQUEST_PDU) {
 			segmentationControl = data[startIndex + offset] & 0xFF;
 			offset++;
 
@@ -216,11 +221,15 @@ public class APDU {
 		switch (serviceChoice) {
 
 		case WHO_IS:
-			structureLength += processWhoIs(startIndex + offset, data);
+			structureLength += processWhoIs(startIndex + offset, data, payloadLength);
 			break;
 
 		case I_AM:
 			structureLength += processIAm(startIndex + offset, data);
+			break;
+
+		case READ_PROPERTY:
+			structureLength += processReadProperty(startIndex + offset, data);
 			break;
 
 		case READ_PROPERTY_MULTIPLE:
@@ -228,7 +237,7 @@ public class APDU {
 			break;
 
 		default:
-			throw new RuntimeException("Not implemented: " + serviceChoice);
+			LOG.warn("Not implemented: " + serviceChoice.name());
 		}
 	}
 
@@ -243,6 +252,40 @@ public class APDU {
 	}
 
 	/**
+	 * Read in data from the incoming byte array into the APDU. The APDU is later
+	 * put into a message object.
+	 * 
+	 * At this point the APDU structure has been parse up to the Service Choice.
+	 * 
+	 * TODO: this should be put into a converter.
+	 * 
+	 * @param offset
+	 * @param data
+	 * @return
+	 */
+	private int processReadProperty(final int offset, final byte[] data) {
+
+		int index = 0;
+
+		// bacnet object identifier
+		objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+		index += objectIdentifierServiceParameter.fromBytes(data, offset + index);
+
+		final boolean bigEndian = true;
+		propertyIdentifier = Utils.bytesToUnsignedShort(data[offset + index], data[offset + index + 1], bigEndian);
+		index += 2;
+
+		return index;
+	}
+
+	/**
+	 * Read in data from the incoming byte array into the APDU. The APDU is later
+	 * put into a message object.
+	 * 
+	 * At this point the APDU structure has been parse up to the Service Choice.
+	 * 
+	 * TODO: this should be put into a converter.
+	 * 
 	 * <pre>
 	 * ReadPropertyMultiple-Request ::= SEQUENCE {
 	 *   listOfReadAccessSpecs SEQUENCE OF ReadAccessSpecification
@@ -298,6 +341,13 @@ public class APDU {
 	}
 
 	/**
+	 * Read in data from the incoming byte array into the APDU. The APDU is later
+	 * put into a message object.
+	 * 
+	 * At this point the APDU structure has been parse up to the Service Choice.
+	 * 
+	 * TODO: this should be put into a converter.
+	 * 
 	 * ANSI/ASHRAE Standard 135-2012 (page 651)
 	 * 
 	 * The grammar defines the I-Am Request as a sequence of four Service
@@ -332,8 +382,10 @@ public class APDU {
 		serviceParameter = new ServiceParameter();
 		offset += serviceParameter.fromBytes(data, offset);
 		serviceParameters.add(serviceParameter);
-		LOG.info("maxAPDULengthAccepted: "
-				+ Utils.bytesToUnsignedShort(serviceParameter.getPayload()[0], serviceParameter.getPayload()[1], true));
+
+//		// DEBUG
+//		LOG.trace("maxAPDULengthAccepted: "
+//				+ Utils.bytesToUnsignedShort(serviceParameter.getPayload()[0], serviceParameter.getPayload()[1], true));
 
 		// segmentationSupported
 		serviceParameter = new ServiceParameter();
@@ -346,18 +398,33 @@ public class APDU {
 		serviceParameters.add(serviceParameter);
 
 		final int vendorId = (serviceParameter.getPayload()[0] & 0xFF);
+
+		// DEBUG
 		if (vendorMap.containsKey(vendorId)) {
-			LOG.info("VendorId: " + vendorMap.get(vendorId));
+			LOG.trace("VendorId: " + vendorMap.get(vendorId));
 		}
 
 		return structureLength;
 	}
 
-	private int processWhoIs(int offset, final byte[] data) {
+	/**
+	 * Read in data from the incoming byte array into the APDU. The APDU is later
+	 * put into a message object.
+	 *
+	 * At this point the APDU structure has been parse up to the Service Choice.
+	 * 
+	 * TODO: this should be put into a converter.
+	 * 
+	 * @param offset
+	 * @param data
+	 * @param payloadLength
+	 * @return
+	 */
+	private int processWhoIs(int offset, final byte[] data, final int payloadLength) {
 
 		int structureLength = 0;
 
-		if (offset < data.length) {
+		if (offset < payloadLength) {
 
 			// parse optional service parameters
 			boolean parameterParsingDone = false;
@@ -376,7 +443,7 @@ public class APDU {
 				serviceParameters.add(serviceParameter);
 
 				offset += bytesProcessed;
-				if ((offset) >= data.length) {
+				if (offset >= payloadLength) {
 					parameterParsingDone = true;
 					break;
 				}
@@ -461,6 +528,22 @@ public class APDU {
 	public void setObjectIdentifierServiceParameter(
 			final ObjectIdentifierServiceParameter objectIdentifierServiceParameter) {
 		this.objectIdentifierServiceParameter = objectIdentifierServiceParameter;
+	}
+
+	public int getInvokeId() {
+		return invokeId;
+	}
+
+	public void setInvokeId(final int invokeId) {
+		this.invokeId = invokeId;
+	}
+
+	public int getPropertyIdentifier() {
+		return propertyIdentifier;
+	}
+
+	public void setPropertyIdentifier(final int propertyIdentifier) {
+		this.propertyIdentifier = propertyIdentifier;
 	}
 
 }

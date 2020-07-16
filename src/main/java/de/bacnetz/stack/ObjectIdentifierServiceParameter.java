@@ -36,7 +36,7 @@ public class ObjectIdentifierServiceParameter extends ServiceParameter {
 
 		final int result = super.fromBytes(data, offset);
 
-		LOG.info(Utils.byteArrayToStringNoPrefix(getPayload()));
+		LOG.trace(Utils.byteArrayToStringNoPrefix(getPayload()));
 
 		final int bufferToInt = Utils.bufferToInt(getPayload(), 0);
 

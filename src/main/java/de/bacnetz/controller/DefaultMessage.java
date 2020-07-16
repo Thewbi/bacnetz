@@ -1,10 +1,15 @@
 package de.bacnetz.controller;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.NPDU;
 import de.bacnetz.stack.VirtualLinkControl;
 
 public class DefaultMessage implements Message {
+
+	private static final Logger LOG = LogManager.getLogger(DefaultMessage.class);
 
 	private VirtualLinkControl virtualLinkControl;
 
@@ -50,16 +55,29 @@ public class DefaultMessage implements Message {
 
 		int length = 0;
 
+		int virtualLinkControlDataLength = 0;
+		int npduDataLength = 0;
+		int apduDataLength = 0;
+
 		if (virtualLinkControl != null) {
-			length += virtualLinkControl.getDataLength();
+			virtualLinkControlDataLength = virtualLinkControl.getDataLength();
+			LOG.trace("VirtualLinkControl.getDataLenght() {}", virtualLinkControlDataLength);
+
+			length += virtualLinkControlDataLength;
 		}
 
 		if (npdu != null) {
-			length += npdu.getDataLength();
+			npduDataLength = npdu.getDataLength();
+			LOG.trace("NPDU.getDataLenght() {}", npduDataLength);
+
+			length += npduDataLength;
 		}
 
 		if (apdu != null) {
-			length += apdu.getDataLength();
+			apduDataLength = apdu.getDataLength();
+			LOG.trace("APDU.getDataLenght() {}", apduDataLength);
+
+			length += apduDataLength;
 		}
 
 		final byte[] data = new byte[length];
@@ -67,17 +85,17 @@ public class DefaultMessage implements Message {
 
 		if (virtualLinkControl != null) {
 			virtualLinkControl.toBytes(data, offset);
-			offset += virtualLinkControl.getDataLength();
+			offset += virtualLinkControlDataLength;
 		}
 
 		if (npdu != null) {
 			npdu.toBytes(data, offset);
-			offset += npdu.getDataLength();
+			offset += npduDataLength;
 		}
 
 		if (apdu != null) {
 			apdu.toBytes(data, offset);
-			offset += apdu.getDataLength();
+			offset += apduDataLength;
 		}
 
 		return data;

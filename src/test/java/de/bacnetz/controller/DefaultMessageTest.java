@@ -20,7 +20,9 @@ import de.bacnetz.stack.VirtualLinkControl;
 public class DefaultMessageTest {
 
 	@Test
-	public void testSerialize() {
+	public void testSerialize_IAM_10001() {
+
+		final int deviceInstanceNumber = 10001;
 
 		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
 		virtualLinkControl.setType(0x81);
@@ -36,7 +38,7 @@ public class DefaultMessageTest {
 		objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
 		objectIdentifierServiceParameter.setLengthValueType(4);
 		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-		objectIdentifierServiceParameter.setInstanceNumber(10001);
+		objectIdentifierServiceParameter.setInstanceNumber(deviceInstanceNumber);
 
 		final ServiceParameter maximumAPDUServiceParameter = new ServiceParameter();
 		maximumAPDUServiceParameter.setTagClass(TagClass.APPLICATION_TAG);

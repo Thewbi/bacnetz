@@ -41,9 +41,10 @@ public class App {
 	private static final String ENCODING = "UTF-8";
 
 	public static void main(final String[] args) throws IOException {
-//		runMainOld();
 		runMain();
+
 //		runFixVendorCSV();
+//		runMainOld();
 	}
 
 	private static void runFixVendorCSV() throws IOException {

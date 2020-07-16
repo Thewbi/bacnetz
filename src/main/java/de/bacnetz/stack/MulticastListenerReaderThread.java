@@ -3,6 +3,7 @@ package de.bacnetz.stack;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.SocketAddress;
@@ -68,48 +69,105 @@ public class MulticastListenerReaderThread implements Runnable {
 
 			// blocking call
 			broadcastDatagramSocket.receive(datagramPacket);
+			final int bytesReceived = datagramPacket.getLength();
 
-			LOG.info(datagramPacket);
-			LOG.info(Utils.byteArrayToStringNoPrefix(datagramPacket.getData()));
+			if (bytesReceived >= data.length) {
+				throw new RuntimeException("Buffer too small. Might have been truncated!");
+			}
 
-			final Message response = parseBuffer(data);
+			final InetAddress datagramPacketAddress = datagramPacket.getAddress();
+			LOG.trace(datagramPacketAddress + "isAnyLocalAddress(): " + datagramPacketAddress.isAnyLocalAddress());
+			LOG.trace(datagramPacketAddress + "isLinkLocalAddress(): " + datagramPacketAddress.isLinkLocalAddress());
+			LOG.trace(datagramPacketAddress + "isLoopbackAddress(): " + datagramPacketAddress.isLoopbackAddress());
+
+			final SocketAddress datagramPacketSocketAddress = datagramPacket.getSocketAddress();
+
+			// do not process your own broadcast messages
+			if (datagramPacketAddress.equals(InetAddress.getByName("192.168.2.1"))) {
+				continue;
+			}
+
+			// open point to point connection to sender
+			final DatagramSocket ptpSenderSocket = new DatagramSocket();
+
+			// Debug
+			LOG.info("Received from inetAddress: " + datagramPacketAddress + " From socketAddress "
+					+ datagramPacketSocketAddress + " Data: "
+					+ Utils.byteArrayToStringNoPrefix(datagramPacket.getData()));
+
+			// parse and process the request message and return a response message
+			final Message response = parseBuffer(data, bytesReceived);
 			if (response != null) {
-
-				final SocketAddress socketAddress = new InetSocketAddress(NetworkUtils.BACNET_MULTICAST_IP,
-						NetworkUtils.DEFAULT_PORT);
 
 				final byte[] bytes = response.getBytes();
 
-				final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, socketAddress);
-				broadcastDatagramSocket.send(responseDatagramPacket);
+				LOG.info("ServiceChoice: {}", response.getApdu().getServiceChoice().name());
+
+				final boolean broadcast = response.getApdu().getServiceChoice() == ServiceChoice.I_AM;
+				if (broadcast) {
+
+					LOG.info("BroadCast");
+
+					// broadcast response
+					final SocketAddress socketAddress = new InetSocketAddress(NetworkUtils.BACNET_MULTICAST_IP,
+							NetworkUtils.DEFAULT_PORT);
+					final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length,
+							socketAddress);
+					broadcastDatagramSocket.send(responseDatagramPacket);
+
+				} else {
+
+					LOG.info("PointToPoint");
+
+					// point to point response
+					final InetAddress destinationAddress = datagramPacketAddress;
+					final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length,
+							destinationAddress, NetworkUtils.DEFAULT_PORT);
+//					ptpSenderSocket.send(responseDatagramPacket);
+					broadcastDatagramSocket.send(responseDatagramPacket);
+
+				}
+
+			} else {
+
+				LOG.trace("Controller returned a null message!");
+
 			}
 
-			LOG.info("done");
+			if (ptpSenderSocket != null) {
+				ptpSenderSocket.close();
+			}
+
+			LOG.trace("done");
 		}
 	}
 
 	/**
 	 * @param data
 	 */
-	public Message parseBuffer(final byte[] data) {
+	public Message parseBuffer(final byte[] data, final int payloadLength) {
 
 		int offset = 0;
 
+		// deserialize the virtual link control part of the message
 		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
 		virtualLinkControl.fromBytes(data, 0);
 		offset += virtualLinkControl.getStructureLength();
 
+		// deserialize the NPDU part of the message
 		final NPDU npdu = new NPDU();
 		npdu.fromBytes(data, offset);
 		offset += npdu.getStructureLength();
 
+		// deserialize the APDU part of the message
 		final APDU apdu = new APDU();
 		apdu.setVendorMap(vendorMap);
-		apdu.fromBytes(data, offset);
+		apdu.fromBytes(data, offset, payloadLength);
 		offset += apdu.getStructureLength();
 
-		LOG.info("\n" + apdu.toString());
+		LOG.trace("\n" + apdu.toString());
 
+		// find a controller that is able to create a response matching the request
 		if (CollectionUtils.isNotEmpty(messageControllers)) {
 
 			for (final MessageController messageController : messageControllers) {

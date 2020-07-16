@@ -20,7 +20,7 @@ public class APDUTest {
 		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("10080a1f471a1f47");
 
 		final APDU apdu = new APDU();
-		apdu.fromBytes(hexStringToByteArray, 0);
+		apdu.fromBytes(hexStringToByteArray, 0, hexStringToByteArray.length);
 
 		assertEquals(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU, apdu.getPduType());
 		assertFalse(apdu.isSegmentation());
@@ -39,7 +39,7 @@ public class APDUTest {
 		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("0243990e0c020027101e09701f");
 
 		final APDU apdu = new APDU();
-		apdu.fromBytes(hexStringToByteArray, 0);
+		apdu.fromBytes(hexStringToByteArray, 0, hexStringToByteArray.length);
 
 		assertEquals(PDUType.CONFIRMED_SERVICE_REQUEST_PDU, apdu.getPduType());
 		assertFalse(apdu.isSegmentation());
@@ -106,6 +106,25 @@ public class APDUTest {
 		// the APDU Type serializes into a two byte long array
 		assertEquals(14, apdu.getDataLength());
 		assertTrue(Arrays.equals(data, expected));
+	}
+
+	@Test
+	public void testDeserializeReadProperty() {
+
+		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("02457A0C0C020027111961");
+
+		final APDU apdu = new APDU();
+		apdu.fromBytes(hexStringToByteArray, 0, hexStringToByteArray.length);
+
+		assertEquals(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU, apdu.getPduType());
+		assertFalse(apdu.isSegmentation());
+		assertFalse(apdu.isMoreSegmentsFollow());
+		assertFalse(apdu.isSegmentedResponseAccepted());
+
+		assertEquals(ServiceChoice.WHO_IS, apdu.getServiceChoice());
+
+		final List<ServiceParameter> serviceParameters = apdu.getServiceParameters();
+		assertEquals(2, serviceParameters.size());
 	}
 
 }

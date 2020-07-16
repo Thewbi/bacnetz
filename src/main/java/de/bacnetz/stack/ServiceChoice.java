@@ -1,5 +1,8 @@
 package de.bacnetz.stack;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * ANSI/ASHRAE Standard 135-2012 Page 650.
  * 
@@ -53,7 +56,19 @@ public enum ServiceChoice {
 
 	WRITE_GROUP(0x0A),
 
-	READ_PROPERTY_MULTIPLE(0x0E);
+	READ_PROPERTY(0x0C),
+
+	READ_PROPERTY_MULTIPLE(0x0E),
+
+	UNNOWN_SERVICE_CHOICE(0xFFFFFFFF),
+
+	UNNOWN_SERVICE_CHOICE_128(0x80),
+
+	UNNOWN_SERVICE_CHOICE_129(0x81),
+
+	UNNOWN_SERVICE_CHOICE_130(0x82);
+
+	private static final Logger LOG = LogManager.getLogger(ServiceChoice.class);
 
 	public static final int I_AM_CODE = 0x00;
 
@@ -84,7 +99,17 @@ public enum ServiceChoice {
 
 	public static final int WRITE_GROUP_CODE = 0x0A;
 
+	public static final int READ_PROPERTY_CODE = 0x0C;
+
 	public static final int READ_PROPERTY_MULTIPLE_CODE = 0x0E;
+
+	public static final int UNNOWN_SERVICE_CHOICE_CODE = 0xFFFFFFFF; // 128
+
+	public static final int UNNOWN_SERVICE_CHOICE_128_CODE = 0x80; // 128
+
+	public static final int UNNOWN_SERVICE_CHOICE_129_CODE = 0x81; // 129
+
+	public static final int UNNOWN_SERVICE_CHOICE_130_CODE = 0x82; // 130
 
 	private final int id;
 
@@ -129,11 +154,27 @@ public enum ServiceChoice {
 		case WRITE_GROUP_CODE:
 			return WRITE_GROUP;
 
+		case READ_PROPERTY_CODE:
+			return READ_PROPERTY;
+
 		case READ_PROPERTY_MULTIPLE_CODE:
 			return READ_PROPERTY_MULTIPLE;
 
+		case UNNOWN_SERVICE_CHOICE_CODE:
+			return UNNOWN_SERVICE_CHOICE;
+
+		case UNNOWN_SERVICE_CHOICE_128_CODE:
+			return UNNOWN_SERVICE_CHOICE_128;
+
+		case UNNOWN_SERVICE_CHOICE_129_CODE:
+			return UNNOWN_SERVICE_CHOICE_129;
+
+		case UNNOWN_SERVICE_CHOICE_130_CODE:
+			return UNNOWN_SERVICE_CHOICE_130;
+
 		default:
-			throw new RuntimeException("Unknown id " + id);
+			LOG.warn("Unknown id " + id);
+			return UNNOWN_SERVICE_CHOICE;
 		}
 	}
 

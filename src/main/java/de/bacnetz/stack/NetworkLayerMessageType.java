@@ -1,5 +1,8 @@
 package de.bacnetz.stack;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * 6.2.4 Network Layer Message Type
  * 
@@ -29,5 +32,45 @@ package de.bacnetz.stack;
  * </ul>
  */
 public enum NetworkLayerMessageType {
+
+	WHO_IS_ROUTER_TO_NETWORK(0x00),
+
+	WHAT_IS_NETWORK_NUMBER(0x12),
+
+	UNNOWN_NETWORK_LAYER_MESSAGE_TYPE(0xFFFFFFFF);
+
+	private static final Logger LOG = LogManager.getLogger(NetworkLayerMessageType.class);
+
+	private final int id;
+
+	NetworkLayerMessageType(final int id) {
+		this.id = id;
+	}
+
+	public static final int WHO_IS_ROUTER_TO_NETWORK_CODE = 0x00;
+
+	public static final int WHAT_IS_NETWORK_NUMBER_CODE = 0x12;
+
+	public static final int UNNOWN_NETWORK_LAYER_MESSAGE_TYPE_CODE = 0xFFFFFFFF;
+
+	public static NetworkLayerMessageType fromInt(final int id) {
+
+		switch (id) {
+
+		case WHO_IS_ROUTER_TO_NETWORK_CODE:
+			return WHO_IS_ROUTER_TO_NETWORK;
+
+		case WHAT_IS_NETWORK_NUMBER_CODE:
+			return WHAT_IS_NETWORK_NUMBER;
+
+		default:
+			LOG.warn("Unknown id " + id);
+			return UNNOWN_NETWORK_LAYER_MESSAGE_TYPE;
+		}
+	}
+
+	public int getId() {
+		return id;
+	}
 
 }

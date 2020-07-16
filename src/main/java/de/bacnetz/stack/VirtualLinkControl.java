@@ -6,6 +6,13 @@ public class VirtualLinkControl {
 
 	private int type;
 
+	/**
+	 * <ul>
+	 * <li />Original-Unicast-NPDU (0x0A) J.2.11.1 Original-Unicast-NPDU: Format
+	 * <li />Original-Broadcast-NPDU (0x0B) J.2.12.1 Original-Broadcast-NPDU: Format
+	 * <li />Forwarded-NPDU (0x04)
+	 * </ul>
+	 */
 	private int function;
 
 	private int length;

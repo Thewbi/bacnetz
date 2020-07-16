@@ -9,7 +9,41 @@ import de.bacnetz.common.Utils;
  * Network Layer Protocol Data Unit
  * 
  * Structure Definition in 6.2 Network Layer PDU Structure in ANSI/ASHRAE
- * Standard 135-2012.
+ * Standard 135-2012 on page 55
+ * 
+ * 
+ * <pre>
+ * Bit 7: 1 indicates that the NSDU conveys a network layer message. Message Type field is present.
+ * 0 indicates that the NSDU contains a BACnet APDU. Message Type field is absent.
+ * 
+ * Bit 6: Reserved. Shall be zero.
+ * 
+ * Bit 5: Destination specifier where:
+ * 0 = DNET, DLEN, DADR, and Hop Count absent
+ * 1 = DNET, DLEN, and Hop Count present
+ * DLEN = 0 denotes broadcast MAC DADR and DADR field is absent
+ * DLEN > 0 specifies length of DADR field
+ * 
+ * Bit 4: Reserved. Shall be zero.
+ * 
+ * Bit 3: Source specifier where:
+ * 0 = SNET, SLEN, and SADR absent
+ * 1 = SNET, SLEN, and SADR present
+ * SLEN = 0 Invalid
+ * SLEN > 0 specifies length of SADR field
+ * 
+ * Bit 2: The value of this bit corresponds to the data_expecting_reply parameter in the N-UNITDATA primitives.
+ * 1 indicates that a BACnet-Confirmed-Request-PDU, a segment of a BACnet-ComplexACK-PDU, or a network
+ * layer message expecting a reply is present.
+ * 0 indicates that other than a BACnet-Confirmed-Request-PDU, a segment of a BACnet-ComplexACK-PDU, or a
+ * network layer message expecting a reply is present.
+ * 
+ * Bits 1,0: Network priority where:
+ * B'11' = Life Safety message
+ * B'10' = Critical Equipment message
+ * B'01' = Urgent message
+ * B '00' = Normal message
+ * </pre>
  */
 public class NPDU {
 
@@ -36,6 +70,8 @@ public class NPDU {
 	private int sourceMac;
 
 	private int structureLength;
+
+	private NetworkLayerMessageType networkLayerMessageType;
 
 	public NPDU() {
 
@@ -65,19 +101,34 @@ public class NPDU {
 		structureLength++;
 
 		if (isDestinationSpecifierPresent()) {
+
 			destinationNetworkNumber = Utils.bytesToUnsignedShort(data[startIndex + offset++],
 					data[startIndex + offset++], true);
+			structureLength += 2;
+
 			destinationMACLayerAddressLength = data[startIndex + offset++] & 0xFF;
-			destinationHopCount = data[startIndex + offset++] & 0xFF;
-			structureLength += 4;
+			structureLength += 1;
+
+			for (int i = 0; i < destinationMACLayerAddressLength; i++) {
+				if (i > 0) {
+					destinationMac <<= 8;
+				}
+				destinationMac |= (data[startIndex + offset++] & 0xFF);
+			}
+			structureLength += destinationMACLayerAddressLength;
+
 		} else {
 			LOG.trace("No destination network information is present!");
 		}
 
 		if (isSourceSpecifierPresent()) {
+
 			sourceNetworkAddress = Utils.bytesToUnsignedShort(data[startIndex + offset++], data[startIndex + offset++],
 					true);
+			structureLength += 2;
+
 			sourceMacLayerAddressLength = data[startIndex + offset++] & 0xFF;
+			structureLength += 1;
 
 			for (int i = 0; i < sourceMacLayerAddressLength; i++) {
 				if (i > 0) {
@@ -86,11 +137,22 @@ public class NPDU {
 				sourceMac |= (data[startIndex + offset++] & 0xFF);
 			}
 
-			structureLength += (3 + sourceMacLayerAddressLength);
+			structureLength += sourceMacLayerAddressLength;
+		}
+
+		// when is there a destination hop count?????
+		if (isDestinationSpecifierPresent()) {
+			destinationHopCount = data[startIndex + offset++] & 0xFF;
+			structureLength += 1;
 		}
 
 		if (!isAPDUMessage()) {
-			throw new RuntimeException("Not implemented yet!");
+			LOG.trace("Request does not contain a APDU!");
+		}
+		if (isNetworkLayerMessage()) {
+			// next byte is network layer message type
+			networkLayerMessageType = NetworkLayerMessageType.fromInt(data[startIndex + offset++] & 0xFF);
+			structureLength += 1;
 		}
 
 		// reply is expected
@@ -170,8 +232,13 @@ public class NPDU {
 	 * @return true -> APDU is present, 0 --> it is a Network message
 	 */
 	public boolean isAPDUMessage() {
-		// 0x80 => 1000 0000
+		// bit 7 is zero => 0xxx xxxx
 		return 0 == (control & 0x80);
+	}
+
+	public boolean isNetworkLayerMessage() {
+		// bit 7 is one => 1xxx xxxx
+		return !isAPDUMessage();
 	}
 
 	/**
@@ -314,6 +381,14 @@ public class NPDU {
 
 	public void setDestinationMac(final int destinationMac) {
 		this.destinationMac = destinationMac;
+	}
+
+	public NetworkLayerMessageType getNetworkLayerMessageType() {
+		return networkLayerMessageType;
+	}
+
+	public void setNetworkLayerMessageType(final NetworkLayerMessageType networkLayerMessageType) {
+		this.networkLayerMessageType = networkLayerMessageType;
 	}
 
 }

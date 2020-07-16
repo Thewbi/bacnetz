@@ -12,9 +12,15 @@ public class ServiceParameter {
 
 	public static final int ENUMERATED_CODE = 9;
 
+	public static final int UNKOWN_TAG_NUMBER = 1;
+
 	public static final int UNSIGNED_INTEGER_CODE = 2;
 
+	public static final int APPLICATION_TAG_NUMBER_BIT_STRING = 8;
+
 	public static final int BACNET_OBJECT_IDENTIFIER = 12;
+
+	public static final int EXTENDED_VALUE = 0x05;
 
 	private int tagNumber;
 
@@ -152,7 +158,11 @@ public class ServiceParameter {
 				return 1;
 			}
 
-//			throw new RuntimeException("Not implemented!");
+		} else if (tagClass == TagClass.APPLICATION_TAG) {
+
+			if (lengthValueType == ServiceParameter.EXTENDED_VALUE) {
+				return getPayload().length + 1;
+			}
 		}
 
 		return lengthValueType + 1;
