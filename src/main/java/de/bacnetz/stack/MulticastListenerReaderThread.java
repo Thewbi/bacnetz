@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.SocketAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +22,9 @@ import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.controller.DefaultMessage;
 import de.bacnetz.controller.Message;
 import de.bacnetz.controller.MessageController;
+import de.bacnetz.conversion.ByteArrayToMessageConverter;
+import de.bacnetz.factory.MessageFactory;
+import de.bacnetz.factory.MessageType;
 
 public class MulticastListenerReaderThread implements Runnable {
 
@@ -57,8 +61,23 @@ public class MulticastListenerReaderThread implements Runnable {
 
 	private void runBroadCastListener() throws IOException {
 
+		final MessageFactory messageFactory = new MessageFactory();
+		final Message whoIsMessage = messageFactory.create(MessageType.WHO_IS, 25, 25);
+
+//		sendViaMulticastSocket(whoIsMessage);
+
 		broadcastDatagramSocket = new DatagramSocket(NetworkUtils.DEFAULT_PORT);
 		broadcastDatagramSocket.setBroadcast(true);
+
+//		LOG.info(">>> Sending who is ...");
+//		final byte[] buffer = whoIsMessage.getBytes();
+//		final InetAddress broadcastInetAddress = InetAddress.getByName("192.168.2.1");
+//		final DatagramPacket whoIsDatagramPacket = new DatagramPacket(buffer, buffer.length, broadcastInetAddress,
+//				NetworkUtils.DEFAULT_PORT);
+//		broadcastDatagramSocket.send(whoIsDatagramPacket);
+//		LOG.info(">>> Sending who is done.");
+
+//		sendMessage(null, whoIsMessage);
 
 		LOG.info("Broadcast listener on Port " + NetworkUtils.DEFAULT_PORT + " started.");
 
@@ -87,96 +106,118 @@ public class MulticastListenerReaderThread implements Runnable {
 				continue;
 			}
 
-//			// open point to point connection to sender
-//			final DatagramSocket ptpSenderSocket = new DatagramSocket();
-
 			// Debug
-			LOG.info("Received from inetAddress: " + datagramPacketAddress + " From socketAddress "
+			LOG.info("<<< Received from inetAddress: " + datagramPacketAddress + " From socketAddress "
 					+ datagramPacketSocketAddress + " Data: "
 					+ Utils.byteArrayToStringNoPrefix(datagramPacket.getData()));
 
 			// parse and process the request message and return a response message
 			final Message response = parseBuffer(data, bytesReceived);
 			if (response != null) {
-
-				final byte[] bytes = response.getBytes();
-
-				LOG.info("ServiceChoice: {}", response.getApdu().getServiceChoice().name());
-
-				final boolean broadcast = response.getApdu().getServiceChoice() == ServiceChoice.I_AM;
-				if (broadcast) {
-
-					LOG.info("BroadCast");
-
-					// broadcast response
-					final SocketAddress socketAddress = new InetSocketAddress(NetworkUtils.BACNET_MULTICAST_IP,
-							NetworkUtils.DEFAULT_PORT);
-					final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length,
-							socketAddress);
-					broadcastDatagramSocket.send(responseDatagramPacket);
-
-				} else {
-
-					LOG.info("PointToPoint");
-
-					// point to point response
-					final InetAddress destinationAddress = datagramPacketAddress;
-					final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length,
-							destinationAddress, NetworkUtils.DEFAULT_PORT);
-//					ptpSenderSocket.send(responseDatagramPacket);
-					broadcastDatagramSocket.send(responseDatagramPacket);
-
-				}
-
+				sendMessage(datagramPacketAddress, response);
 			} else {
-
 				LOG.trace("Controller returned a null message!");
-
 			}
-
-//			if (ptpSenderSocket != null) {
-//				ptpSenderSocket.close();
-//			}
 
 			LOG.trace("done");
 		}
 	}
 
 	/**
+	 * Throws java.net.SocketException: Not a multicast address when using the
+	 * address: 192.168.2.255
+	 * 
+	 * @param message
+	 * @throws UnknownHostException
+	 * @throws IOException
+	 */
+	private void sendViaMulticastSocket(final Message message) throws UnknownHostException, IOException {
+
+//		final InetAddress group = InetAddress.getByName(NetworkUtils.BACNET_MULTICAST_IP);
+		final InetAddress group = InetAddress.getByName("224.0.0.0");
+
+		// https://docs.oracle.com/javase/tutorial/networking/datagrams/broadcasting.html
+		final MulticastSocket socket = new MulticastSocket(NetworkUtils.DEFAULT_PORT);
+		socket.joinGroup(group);
+
+		final SocketAddress socketAddress = new InetSocketAddress(NetworkUtils.BACNET_MULTICAST_IP,
+				NetworkUtils.DEFAULT_PORT);
+		final byte[] bytes = message.getBytes();
+		final DatagramPacket multiCastDatagramPacket = new DatagramPacket(bytes, bytes.length, socketAddress);
+		socket.send(multiCastDatagramPacket);
+
+		socket.leaveGroup(group);
+		socket.close();
+	}
+
+	private void sendMessage(final InetAddress datagramPacketAddress, final Message message) throws IOException {
+
+		LOG.info(">>> ServiceChoice: {}", message.getApdu().getServiceChoice().name());
+
+		boolean broadcast = message.getApdu().getServiceChoice() == ServiceChoice.I_AM;
+		broadcast |= message.getApdu().getServiceChoice() == ServiceChoice.WHO_IS;
+
+		if (broadcast) {
+
+			LOG.info(">>> BroadCast");
+
+			// broadcast response to the bacnet default port
+			broadcastMessage(message);
+
+		} else {
+
+			LOG.info(">>> PointToPoint");
+
+			// point to point response
+			pointToPointMessage(message, datagramPacketAddress);
+
+		}
+	}
+
+	private void pointToPointMessage(final Message message, final InetAddress datagramPacketAddress)
+			throws IOException {
+
+		final byte[] bytes = message.getBytes();
+
+		final InetAddress destinationAddress = datagramPacketAddress;
+		final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, destinationAddress,
+				NetworkUtils.DEFAULT_PORT);
+		broadcastDatagramSocket.send(responseDatagramPacket);
+	}
+
+	private void broadcastMessage(final Message message) throws IOException {
+
+		final byte[] bytes = message.getBytes();
+
+		LOG.info(">>> Broadcast Sending: " + Utils.byteArrayToStringNoPrefix(bytes));
+
+		final SocketAddress socketAddress = new InetSocketAddress(NetworkUtils.BACNET_MULTICAST_IP,
+				NetworkUtils.DEFAULT_PORT);
+		final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, socketAddress);
+		broadcastDatagramSocket.send(responseDatagramPacket);
+	}
+
+	/**
+	 * Takes the data read via the socket and parses the byte array into a bacnet
+	 * message (= VirtualLinkControl + NPDU + APDU). This messages is then put into
+	 * a controller for further processing. The controller returns a result message
+	 * or a null value. The controllers return value is returned by this function.
+	 * 
 	 * @param data
+	 * @param payloadLength
 	 */
 	public Message parseBuffer(final byte[] data, final int payloadLength) {
 
-		int offset = 0;
+		final ByteArrayToMessageConverter converter = new ByteArrayToMessageConverter();
+		converter.setPayloadLength(payloadLength);
+		converter.setVendorMap(vendorMap);
 
-		// deserialize the virtual link control part of the message
-		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
-		virtualLinkControl.fromBytes(data, 0);
-		offset += virtualLinkControl.getStructureLength();
-
-		// deserialize the NPDU part of the message
-		final NPDU npdu = new NPDU();
-		npdu.fromBytes(data, offset);
-		offset += npdu.getStructureLength();
-
-		APDU apdu = null;
-		if (npdu.isAPDUMessage()) {
-			// deserialize the APDU part of the message
-			apdu = new APDU();
-			apdu.setVendorMap(vendorMap);
-			apdu.fromBytes(data, offset, payloadLength);
-			offset += apdu.getStructureLength();
-		}
+		final DefaultMessage defaultMessage = converter.convert(data);
 
 		// find a controller that is able to create a response matching the request
 		if (CollectionUtils.isNotEmpty(messageControllers)) {
 
 			for (final MessageController messageController : messageControllers) {
-
-				final DefaultMessage defaultMessage = new DefaultMessage();
-				defaultMessage.setVirtualLinkControl(virtualLinkControl);
-				defaultMessage.setNpdu(npdu);
-				defaultMessage.setApdu(apdu);
 
 				return messageController.processMessage(defaultMessage);
 			}

@@ -10,11 +10,16 @@ import java.io.OutputStreamWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -23,6 +28,9 @@ import org.apache.logging.log4j.Logger;
 import de.bacnetz.common.Utils;
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.controller.DefaultMessageController;
+import de.bacnetz.controller.Message;
+import de.bacnetz.factory.MessageFactory;
+import de.bacnetz.factory.MessageType;
 import de.bacnetz.stack.IPv4Packet;
 import de.bacnetz.stack.MulticastListenerReaderThread;
 import de.bacnetz.stack.UDPPacket;
@@ -42,9 +50,85 @@ public class App {
 
 	public static void main(final String[] args) throws IOException {
 		runMain();
-
+//		runWhoIsThread();
 //		runFixVendorCSV();
 //		runMainOld();
+	}
+
+	private static void runWhoIsThread() {
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				while (true) {
+					try {
+						runBroadcast();
+					} catch (final SocketException e) {
+						e.printStackTrace();
+					}
+					try {
+						Thread.sleep(10000);
+					} catch (final InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+
+			}
+		}).run();
+	}
+
+	private static void runBroadcast() throws SocketException {
+
+		final MessageFactory messageFactory = new MessageFactory();
+//		final Message whoIsMessage = messageFactory.create(MessageType.WHO_IS, 25, 25);
+		final Message whoIsMessage = messageFactory.create(MessageType.WHO_IS);
+
+		final List<InetAddress> listAllBroadcastAddresses = listAllBroadcastAddresses();
+
+		// DEBUG
+		LOG.info(listAllBroadcastAddresses);
+
+		listAllBroadcastAddresses.stream().forEach(a -> {
+			try {
+				broadcast(whoIsMessage.getBytes(), a);
+			} catch (final IOException e) {
+				e.printStackTrace();
+			}
+		});
+
+		LOG.info("done");
+	}
+
+	public static void broadcast(final byte[] buffer, final InetAddress address) throws IOException {
+
+		LOG.info(">>> broadcast: " + Utils.byteArrayToStringNoPrefix(buffer));
+
+		// this socket does not bind on a specific port
+		final DatagramSocket socket = new DatagramSocket();
+		socket.setBroadcast(true);
+		final DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, NetworkUtils.DEFAULT_PORT);
+		socket.send(packet);
+		socket.close();
+	}
+
+	private static List<InetAddress> listAllBroadcastAddresses() throws SocketException {
+
+		final List<InetAddress> broadcastList = new ArrayList<>();
+
+		final Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+		while (interfaces.hasMoreElements()) {
+
+			final NetworkInterface networkInterface = interfaces.nextElement();
+
+			if (networkInterface.isLoopback() || !networkInterface.isUp()) {
+				continue;
+			}
+
+			networkInterface.getInterfaceAddresses().stream().map(a -> a.getBroadcast()).filter(Objects::nonNull)
+					.forEach(broadcastList::add);
+		}
+
+		return broadcastList;
 	}
 
 	private static void runFixVendorCSV() throws IOException {

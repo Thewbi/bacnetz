@@ -1,5 +1,6 @@
 package de.bacnetz.controller;
 
+import java.nio.ByteBuffer;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +12,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.bacnetz.common.Utils;
+import de.bacnetz.factory.MessageFactory;
+import de.bacnetz.factory.MessageType;
 import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.BACnetServicesSupportedBitString;
 import de.bacnetz.stack.NPDU;
@@ -29,6 +32,8 @@ public class DefaultMessageController implements MessageController {
 
 	private Map<Integer, String> vendorMap = new HashMap<>();
 
+	private final MessageFactory messageFactory = new MessageFactory();
+
 	@Override
 	public Message processMessage(final Message message) {
 		if (message.getApdu() == null) {
@@ -39,79 +44,96 @@ public class DefaultMessageController implements MessageController {
 	}
 
 	private Message processNonAPDUMessage(final Message message) {
+
+		LOG.warn("<<< Not handling: " + message.getNpdu().getNetworkLayerMessageType().name());
+
 		switch (message.getNpdu().getNetworkLayerMessageType()) {
-
 		case WHO_IS_ROUTER_TO_NETWORK:
-			return null;
-
 		case I_AM_ROUTER_TO_NETWORK:
-			return null;
-
+		case I_COULD_BE_ROUTER_TO_NETWORK:
+		case REJECT_MESSAGE_TO_NETWORK:
+		case ROUTER_BUSY_TO_NETWORK:
+		case ROUTER_AVAILABLE_TO_NETWORK:
+		case INITIALIZE_ROUTING_TABLE:
+		case INITIALIZE_ROUTING_TABLE_ACK:
+		case ESTABLISH_CONNECTION_TO_NETWORK:
+		case DISCONNECT_CONNECTION_TO_NETWORK:
+		case CHALLENGE_REQUEST:
+		case SECURITY_PAYLOAD:
+		case SECURITY_RESPONSE:
+		case REQUEST_KEY_UPDATE:
+		case UPDATE_KEY_SET:
+		case UPDATE_DISTRIBUTION_KEY:
+		case REQUEST_MASTER_KEY:
+		case SET_MASTER_KEY:
 		case WHAT_IS_NETWORK_NUMBER:
+		case NETWORK_NUMBER_IS:
 			return null;
 
 		default:
-			LOG.warn("Unknown message: " + message.getApdu().getServiceChoice());
+			LOG.warn("<<< Unknown message: " + message.getNpdu().getNetworkLayerMessageType());
 			return null;
 		}
 	}
 
 	private Message processAPDUMessage(final Message message) {
+
 		switch (message.getApdu().getServiceChoice()) {
+
 		case I_AM:
-			LOG.info("I_AM received!");
+			LOG.info(">>> I_AM received!");
 			return processIAMMessage(message);
 
 		/** 20.1.3 BACnet-Unconfirmed-Request-PDU */
 		case I_HAVE:
-			throw new RuntimeException("Not implemented yet! Message: " + message.getApdu().getServiceChoice());
+			throw new RuntimeException(">>> Not implemented yet! Message: " + message.getApdu().getServiceChoice());
 
 		/** 20.1.4 BACnet-SimpleACK-PDU */
 		case UNCONFIRMED_COV_NOTIFICATION:
-			throw new RuntimeException("Not implemented yet! Message: " + message.getApdu().getServiceChoice());
+			throw new RuntimeException(">>> Not implemented yet! Message: " + message.getApdu().getServiceChoice());
 
 		/** 20.1.5 BACnet-ComplexACK-PDU */
 		case UNCONFIRMED_EVENT_NOTIFICATION:
-			throw new RuntimeException("Not implemented yet! Message: " + message.getApdu().getServiceChoice());
+			throw new RuntimeException(">>> Not implemented yet! Message: " + message.getApdu().getServiceChoice());
 
 		/** 20.1.6 BACnet-SegmentACK-PDU */
 		case UNCONFIRMED_PRIVATE_TRANSFER:
-			throw new RuntimeException("Not implemented yet! Message: " + message.getApdu().getServiceChoice());
+			throw new RuntimeException(">>> Not implemented yet! Message: " + message.getApdu().getServiceChoice());
 
 		/** 20.1.7 BACnet-Error-PDU */
 		case UNCONFIRMED_TEXT_MESSAGE:
-			throw new RuntimeException("Not implemented yet! Message: " + message.getApdu().getServiceChoice());
+			throw new RuntimeException(">>> Not implemented yet! Message: " + message.getApdu().getServiceChoice());
 
 		/** 20.1.8 BACnet-Reject-PDU */
 		case TIME_SYNCHRONIZATION:
-			throw new RuntimeException("Not implemented yet! Message: " + message.getApdu().getServiceChoice());
+			throw new RuntimeException(">>> Not implemented yet! Message: " + message.getApdu().getServiceChoice());
 
 		/** 20.1.9 BACnet-Abort-PDU */
 		case WHO_HAS:
-			throw new RuntimeException("Not implemented yet! Message: " + message.getApdu().getServiceChoice());
+			throw new RuntimeException(">>> Not implemented yet! Message: " + message.getApdu().getServiceChoice());
 
 		/** 20.1.2 BACnet-Confirmed-Request-PDU */
 		case WHO_IS:
-			LOG.trace("WHO_IS received!");
+			LOG.trace(">>> WHO_IS received!");
 			return processWhoIsMessage(message);
 
 		case UTC_TIME_SYNCHRONIZATION:
-			throw new RuntimeException("Not implemented yet! Message: " + message.getApdu().getServiceChoice());
+			throw new RuntimeException(">>> Not implemented yet! Message: " + message.getApdu().getServiceChoice());
 
 		case WRITE_GROUP:
-			throw new RuntimeException("Not implemented yet! Message: " + message.getApdu().getServiceChoice());
+			throw new RuntimeException(">>> Not implemented yet! Message: " + message.getApdu().getServiceChoice());
 
 		case READ_PROPERTY:
-			LOG.trace("READ_PROPERTY received!");
+			LOG.trace(">>> READ_PROPERTY received!");
 			return processReadProperty(message);
 
 		case READ_PROPERTY_MULTIPLE:
-			LOG.info("READ_PROPERTY_MULTIPLE received!");
+			LOG.info(">>> READ_PROPERTY_MULTIPLE received!");
 			return processReadPropertyMultiple(message);
 
 		default:
 //			throw new RuntimeException("Unknown message: " + message.getApdu().getServiceChoice());
-			LOG.warn("Unknown message: " + message.getApdu().getServiceChoice());
+			LOG.warn(">>> Unknown message: " + message.getApdu().getServiceChoice());
 			return null;
 		}
 	}
@@ -229,60 +251,60 @@ public class DefaultMessageController implements MessageController {
 		// Supported Services Property
 		// 0x1961 = 6497d
 		case 0x1961:
-			LOG.info("Supported Services Property");
+			LOG.info("<<< Supported Services Property");
 			return processSupportedServicesProperty(0x61, requestMessage);
 
 		// Segmentation supported
 		// 0x196B = 6507d
 		case 0x196B:
-			LOG.info("Segmentation supported");
+			LOG.info("<<< Segmentation supported");
 			return processSegmentationSupportedProperty(0x6B, requestMessage);
 
 		// max-apdu-length-accepted
 		// 0x193E = 6462d
 		case 0x193E:
-			LOG.info("max-apdu-length-accepted");
+			LOG.info("<<< max-apdu-length-accepted");
 			return processMaxAPDULengthAcceptedProperty(0x3E, requestMessage);
 
 		// max-segments-accepted
 		// 0x19A7 = 6567d
 		case 0x19A7:
-			LOG.info("max-segments-accepted");
+			LOG.info("<<< max-segments-accepted");
 			return processMaxSegmentsAcceptedProperty(0xA7, requestMessage);
 
 		// 0x190A = 6410d APDU-Segment-Timeout
 		case 0x190A:
-			LOG.info("APDU-Segment-Timeout");
+			LOG.info("<<< APDU-Segment-Timeout");
 			return processAPDUSegmentTimeoutProperty(0x0A, requestMessage);
 
 		// 0x190B = 6411d APDU-Timeout
 		case 0x190B:
-			LOG.info("APDU-Timeout");
+			LOG.info("<<< APDU-Timeout");
 			return processAPDUTimeoutProperty(0x0B, requestMessage);
 
 		// 0x199B = 6555d database-revision (155d = 0x9B) defined in ASHRAE on page 696
 		case 0x199B:
-			LOG.info("database-revision");
+			LOG.info("<<< database-revision");
 			return processDatabaseRevisionProperty(0x9B, requestMessage);
 
 		// 0x198B = 6539d protocol-revision
 		case 0x198B:
-			LOG.info("protocol-revision");
+			LOG.info("<<< protocol-revision");
 			return processProtocolRevisionProperty(0x8B, requestMessage);
 
 		// 0x1962 = 6498d protocol-version
 		case 0x1962:
-			LOG.info("protocol-version");
+			LOG.info("<<< protocol-version");
 			return processProtocolVersionProperty(0x62, requestMessage);
 
 		// 0x19C4 = 6596 (0xC4 = 196d) last-restart-reason
 		case 0x19C4:
-			LOG.info("last-restart-reason");
+			LOG.info("<<< last-restart-reason");
 			return processLastRestartReasonProperty(0xC4, requestMessage);
 
 		// 0x194c = 6476d (0x4c = 76) object list
 		case 0x194c:
-			LOG.info("object list");
+			LOG.info("<<< object list");
 			return processObjectListProperty(0x4c, requestMessage);
 
 		default:
@@ -291,28 +313,38 @@ public class DefaultMessageController implements MessageController {
 	}
 
 	private Message processObjectListProperty(final int propertyKey, final Message requestMessage) {
-		// 0x02 = ????
-		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x02 });
+		throw new RuntimeException("Not implemented yet!");
+//		// 0x02 = ????
+//		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x02 });
 	}
 
 	private Message processLastRestartReasonProperty(final int propertyKey, final Message requestMessage) {
 		// coldstart 1
-		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
+		return messageFactory.create(MessageType.INTEGER_PROPERTY, DEVICE_INSTANCE_NUMBER,
+				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
+
+//		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
 	}
 
 	private Message processProtocolVersionProperty(final int propertyKey, final Message requestMessage) {
 		// protocol version 1
-		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
+//		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
+		return messageFactory.create(MessageType.INTEGER_PROPERTY, DEVICE_INSTANCE_NUMBER,
+				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
 	}
 
 	private Message processProtocolRevisionProperty(final int propertyKey, final Message requestMessage) {
 		// database revision 12d = 0x0C
-		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x0C });
+//		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x0C });
+		return messageFactory.create(MessageType.INTEGER_PROPERTY, DEVICE_INSTANCE_NUMBER,
+				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x0C });
 	}
 
 	private Message processDatabaseRevisionProperty(final int propertyKey, final Message requestMessage) {
 		// database revivion 3
-		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x03 });
+//		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x03 });
+		return messageFactory.create(MessageType.INTEGER_PROPERTY, DEVICE_INSTANCE_NUMBER,
+				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x03 });
 	}
 
 	private Message processAPDUSegmentTimeoutProperty(final int propertyKey, final Message requestMessage) {
@@ -323,15 +355,19 @@ public class DefaultMessageController implements MessageController {
 		// wird, wenn die Segmentbestätigung ausbleibt. Der Standardwert beträgt
 		// 2000 Millisekunden.
 		// 2000d == 0x07D0
-		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey,
-				new byte[] { (byte) 0x07, (byte) 0xD0 });
+//		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey,
+//				new byte[] { (byte) 0x07, (byte) 0xD0 });
+		return messageFactory.create(MessageType.INTEGER_PROPERTY, DEVICE_INSTANCE_NUMBER,
+				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x07, (byte) 0xD0 });
 	}
 
 	private Message processMaxSegmentsAcceptedProperty(final int propertyKey, final Message requestMessage) {
 
 		// APDU Max Segments Accepted:
 		// Legt fest, wie viele Segmente maximal akzeptiert werden.
-		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
+//		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
+		return messageFactory.create(MessageType.INTEGER_PROPERTY, DEVICE_INSTANCE_NUMBER,
+				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
 	}
 
 	private Message processAPDUTimeoutProperty(final int propertyKey, final Message requestMessage) {
@@ -341,8 +377,10 @@ public class DefaultMessageController implements MessageController {
 		// quittierpflichtiges Telegramm als fehlgeschlagen gewertet wird, wenn die
 		// Bestätigung ausbleibt. Der Standardwert beträgt 3000 ms.
 		// 3000d == 0x0BB8
-		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey,
-				new byte[] { (byte) 0x0B, (byte) 0xB8 });
+//		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey,
+//				new byte[] { (byte) 0x0B, (byte) 0xB8 });
+		return messageFactory.create(MessageType.INTEGER_PROPERTY, DEVICE_INSTANCE_NUMBER,
+				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x0B, (byte) 0xB8 });
 	}
 
 	private Message processMaxAPDULengthAcceptedProperty(final int propertyKey, final Message requestMessage) {
@@ -353,7 +391,9 @@ public class DefaultMessageController implements MessageController {
 		//
 		// 1497d = 0x05D9
 		// 62d = 0x3E
-		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x05D9 });
+//		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x05D9 });
+		return messageFactory.create(MessageType.INTEGER_PROPERTY, DEVICE_INSTANCE_NUMBER,
+				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x05, (byte) 0xD9 });
 	}
 
 	private Message processSegmentationSupportedProperty(final int propertyKey, final Message requestMessage) {
@@ -362,7 +402,9 @@ public class DefaultMessageController implements MessageController {
 		// segmented-transmit (1)
 		// segmented-receive (2)
 		// no-segmentation (3)
-		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x00 });
+//		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x00 });
+		return messageFactory.create(MessageType.INTEGER_PROPERTY, DEVICE_INSTANCE_NUMBER,
+				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x00 });
 	}
 
 	private DefaultMessage processSupportedServicesProperty(final int propertyKey, final Message requestMessage) {
@@ -438,14 +480,36 @@ public class DefaultMessageController implements MessageController {
 
 		virtualLinkControl.setLength(result.getDataLength());
 
-		final byte[] bytes = result.getBytes();
-		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
+//		final byte[] bytes = result.getBytes();
+//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
 		return result;
 	}
 
 	private byte[] getPayload() {
 
+		// retrieve the bits that describe which services are supported by this device
+		final BACnetServicesSupportedBitString bacnetServicesSupportedBitString = retrieveLoytecRouterServicesSupported();
+		final BitSet bitSet = bacnetServicesSupportedBitString.getBitSet();
+		final byte[] bitSetByteArray = bitSet.toByteArray();
+
+		// this is the result payload
+		final byte[] result = new byte[7];
+
+		// length value is 6 byte
+		result[0] = (byte) 0x06;
+		// first byte is an unused zero byte
+		// there is an unused zero byte at the beginning for some reason
+		result[1] = (byte) 0x00;
+		// the last 5 byte contain the bit set of all available services of this device
+		System.arraycopy(bitSetByteArray, 0, result, 2, bitSetByteArray.length);
+
+//		LOG.trace(Utils.byteArrayToStringNoPrefix(result));
+
+		return result;
+	}
+
+	private BACnetServicesSupportedBitString retrieveLoytecRouterServicesSupported() {
 		final BACnetServicesSupportedBitString bacnetServicesSupportedBitString = new BACnetServicesSupportedBitString();
 
 		bacnetServicesSupportedBitString.setAcknowledgeAlarm(false);
@@ -489,29 +553,7 @@ public class DefaultMessageController implements MessageController {
 		bacnetServicesSupportedBitString.setLifeSafetyOperation(false);
 		bacnetServicesSupportedBitString.setSubscribeCOVProperty(true);
 		bacnetServicesSupportedBitString.setGetEventInformation(false);
-
-		final BitSet bitSet = bacnetServicesSupportedBitString.getBitSet();
-		final byte[] byteArray = bitSet.toByteArray();
-
-//		final byte[] result = new byte[8];
-		final byte[] result = new byte[7];
-
-		// there is an unused zero byte at the beginning for some reason
-		System.arraycopy(byteArray, 0, result, 2, byteArray.length);
-
-		// length value is 6 byte
-		// first byte is an unused zero byte
-		// the last 5 byte contain the bit set of all available services of this device
-//		result[0] = (byte) 0x85;
-//		result[1] = (byte) 0x06;
-//		result[2] = (byte) 0x00;
-
-		result[0] = (byte) 0x06;
-		result[1] = (byte) 0x00;
-
-		LOG.info(Utils.byteArrayToStringNoPrefix(result));
-
-		return result;
+		return bacnetServicesSupportedBitString;
 	}
 
 	private Message processReadPropertyMultiple(final Message message) {
@@ -596,81 +638,29 @@ public class DefaultMessageController implements MessageController {
 	 * @return
 	 */
 	private Message processIAMMessage(final Message message) {
+
+		final APDU apdu = message.getApdu();
+
+		final ServiceParameter objectIdentifierServiceParameter = apdu.getServiceParameters().get(0);
+
+		final ServiceParameter vendorServiceParameter = apdu.getServiceParameters().get(3);
+		final byte[] payload = vendorServiceParameter.getPayload();
+
+		int vendorId = -1;
+		if (payload.length == 1) {
+			vendorId = payload[0] & 0xFF;
+		} else if (payload.length == 2) {
+			final ByteBuffer byteBuffer = ByteBuffer.wrap(payload);
+			vendorId = byteBuffer.getShort();
+		} else if (payload.length == 4) {
+			final ByteBuffer byteBuffer = ByteBuffer.wrap(payload);
+			vendorId = byteBuffer.getInt();
+		}
+
+		LOG.info(">>> InstanceNumber: {} VendorId: {} VendorName: {}",
+				objectIdentifierServiceParameter.getInstanceNumber(), vendorId, vendorMap.get(vendorId));
+
 		return null;
-	}
-
-	private Message returnIntegerProperty(final int invokeId, final int propertyId, final byte[] payload) {
-
-		final int deviceInstanceNumber = DEVICE_INSTANCE_NUMBER;
-
-		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
-		virtualLinkControl.setType(0x81);
-		virtualLinkControl.setFunction(0x0A);
-		virtualLinkControl.setLength(0x00);
-
-		final NPDU npdu = new NPDU();
-		npdu.setVersion(0x01);
-		npdu.setControl(0x00);
-//		npdu.setSourceNetworkAddress(requestMessage.getNpdu().getDestinationNetworkNumber());
-//		npdu.setDestinationMACLayerAddressLength(requestMessage.getNpdu().getDestinationMACLayerAddressLength());
-//		npdu.setDestinationMac(requestMessage.getNpdu().getDestinationMac());
-
-		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-		objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-		// who are context tag numbers determined???
-//		objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
-		objectIdentifierServiceParameter.setTagNumber(0x00);
-		objectIdentifierServiceParameter.setLengthValueType(4);
-		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-		objectIdentifierServiceParameter.setInstanceNumber(deviceInstanceNumber);
-
-		final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
-		propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-		// who are context tag numbers determined???
-//		protocolServicesSupportedServiceParameter.setTagNumber(ServiceParameter.UNKOWN_TAG_NUMBER);
-		propertyIdentifierServiceParameter.setTagNumber(0x01);
-		propertyIdentifierServiceParameter.setLengthValueType(1);
-		propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) propertyId });
-
-		final ServiceParameter openingTagServiceParameter = new ServiceParameter();
-		openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-		openingTagServiceParameter.setTagNumber(0x03);
-		openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
-
-		final ServiceParameter valueServiceParameter = new ServiceParameter();
-		valueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-		valueServiceParameter.setTagNumber(ServiceParameter.UNSIGNED_INTEGER_CODE);
-		valueServiceParameter.setLengthValueType(payload.length);
-		valueServiceParameter.setPayload(payload);
-
-		final ServiceParameter closingTagServiceParameter = new ServiceParameter();
-		closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-		closingTagServiceParameter.setTagNumber(0x03);
-		closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
-
-		final APDU apdu = new APDU();
-		apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
-		apdu.setInvokeId(invokeId);
-		apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
-		apdu.setVendorMap(vendorMap);
-//		apdu.setObjectIdentifierServiceParameter(objectIdentifierServiceParameter);
-		apdu.getServiceParameters().add(objectIdentifierServiceParameter);
-		apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
-		apdu.getServiceParameters().add(openingTagServiceParameter);
-		apdu.getServiceParameters().add(valueServiceParameter);
-		apdu.getServiceParameters().add(closingTagServiceParameter);
-
-		final DefaultMessage result = new DefaultMessage();
-		result.setVirtualLinkControl(virtualLinkControl);
-		result.setNpdu(npdu);
-		result.setApdu(apdu);
-
-		virtualLinkControl.setLength(result.getDataLength());
-
-		final byte[] bytes = result.getBytes();
-		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
-
-		return result;
 	}
 
 	public Map<Integer, String> getVendorMap() {
@@ -679,6 +669,7 @@ public class DefaultMessageController implements MessageController {
 
 	public void setVendorMap(final Map<Integer, String> vendorMap) {
 		this.vendorMap = vendorMap;
+		messageFactory.setVendorMap(vendorMap);
 	}
 
 }

@@ -119,9 +119,7 @@ public class ServiceParameter {
 					throw new RuntimeException("Unknown ObjectType: " + objectType);
 				}
 
-				int instanceNumber = (payload[1] & 0x3F) << 16;
-				instanceNumber += (payload[2] & 0xFF) << 8;
-				instanceNumber += (payload[3] & 0xFF) << 0;
+				final int instanceNumber = getInstanceNumber();
 				stringBuffer.append(", InstanceNumber: " + instanceNumber);
 				break;
 
@@ -147,6 +145,19 @@ public class ServiceParameter {
 		}
 
 		return stringBuffer.toString();
+	}
+
+	public int getInstanceNumber() {
+
+		if (ArrayUtils.isEmpty(payload)) {
+			return -1;
+		}
+
+		int instanceNumber = (payload[1] & 0x3F) << 16;
+		instanceNumber += (payload[2] & 0xFF) << 8;
+		instanceNumber += (payload[3] & 0xFF) << 0;
+
+		return instanceNumber;
 	}
 
 	public int getDataLength() {

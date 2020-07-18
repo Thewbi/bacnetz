@@ -460,6 +460,7 @@ public class APDU {
 	public String toString() {
 
 		final StringBuffer stringBuffer = new StringBuffer();
+
 		stringBuffer.append(pduType.toString()).append(" ").append(serviceChoice);
 		for (final ServiceParameter serviceParameter : serviceParameters) {
 			stringBuffer.append("\n").append(serviceParameter.toString());
