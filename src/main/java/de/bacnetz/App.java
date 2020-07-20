@@ -36,7 +36,10 @@ import de.bacnetz.stack.MulticastListenerReaderThread;
 import de.bacnetz.stack.UDPPacket;
 
 /**
- *
+ * <pre>
+ * bacnet and ((ip.dst == 192.168.2.1) or (ip.src == 192.168.2.1))
+ * bacnet and ((ip.dst == 192.168.2.255) or (ip.dst == 192.168.2.1) or (ip.src == 192.168.2.1))
+ * </pre>
  */
 public class App {
 
@@ -49,6 +52,12 @@ public class App {
 	private static final String ENCODING = "UTF-8";
 
 	public static void main(final String[] args) throws IOException {
+
+		final List<InetAddress> listAllBroadcastAddresses = listAllBroadcastAddresses();
+
+		// DEBUG
+		LOG.info(listAllBroadcastAddresses);
+
 		runMain();
 //		runWhoIsThread();
 //		runFixVendorCSV();
@@ -115,6 +124,9 @@ public class App {
 
 		final List<InetAddress> broadcastList = new ArrayList<>();
 
+		final Map<NetworkInterface, List<InetAddress>> allMap = new HashMap<>();
+		final Map<NetworkInterface, List<InetAddress>> broadcastMap = new HashMap<>();
+
 		final Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
 		while (interfaces.hasMoreElements()) {
 
@@ -124,8 +136,32 @@ public class App {
 				continue;
 			}
 
+			final List<InetAddress> interfaceBroadcastList = new ArrayList<>();
+			broadcastMap.put(networkInterface, interfaceBroadcastList);
+
+			final List<InetAddress> interfaceList = new ArrayList<>();
+			allMap.put(networkInterface, interfaceList);
+
+			networkInterface.getInterfaceAddresses().stream().map(a -> a.getAddress()).filter(Objects::nonNull)
+					.forEach(interfaceList::add);
+			networkInterface.getInterfaceAddresses().stream().map(a -> a.getBroadcast()).filter(Objects::nonNull)
+					.forEach(interfaceBroadcastList::add);
+
 			networkInterface.getInterfaceAddresses().stream().map(a -> a.getBroadcast()).filter(Objects::nonNull)
 					.forEach(broadcastList::add);
+
+		}
+
+		LOG.info("All");
+		for (final Map.Entry<NetworkInterface, List<InetAddress>> entry : allMap.entrySet()) {
+
+			LOG.info(entry.getKey() + " -> IP: " + entry.getValue());
+		}
+
+		LOG.info("Broadcast");
+		for (final Map.Entry<NetworkInterface, List<InetAddress>> entry : broadcastMap.entrySet()) {
+
+			LOG.info(entry.getKey() + " -> Broadcast: " + entry.getValue());
 		}
 
 		return broadcastList;

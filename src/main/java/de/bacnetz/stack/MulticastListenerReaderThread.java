@@ -19,12 +19,9 @@ import org.apache.logging.log4j.Logger;
 
 import de.bacnetz.common.Utils;
 import de.bacnetz.common.utils.NetworkUtils;
-import de.bacnetz.controller.DefaultMessage;
 import de.bacnetz.controller.Message;
 import de.bacnetz.controller.MessageController;
 import de.bacnetz.conversion.ByteArrayToMessageConverter;
-import de.bacnetz.factory.MessageFactory;
-import de.bacnetz.factory.MessageType;
 
 public class MulticastListenerReaderThread implements Runnable {
 
@@ -61,12 +58,17 @@ public class MulticastListenerReaderThread implements Runnable {
 
 	private void runBroadCastListener() throws IOException {
 
-		final MessageFactory messageFactory = new MessageFactory();
-		final Message whoIsMessage = messageFactory.create(MessageType.WHO_IS, 25, 25);
-
+//		final MessageFactory messageFactory = new MessageFactory();
+//		final Message whoIsMessage = messageFactory.create(MessageType.WHO_IS, 25, 25);
 //		sendViaMulticastSocket(whoIsMessage);
 
-		broadcastDatagramSocket = new DatagramSocket(NetworkUtils.DEFAULT_PORT);
+		final InetAddress inetAddress = InetAddress.getByName("192.168.2.1");
+//		final InetAddress inetAddress = InetAddress.getByName("192.168.2.2");
+//		final InetAddress inetAddress = InetAddress.getByName("192.168.2.255");
+
+		broadcastDatagramSocket = new DatagramSocket(NetworkUtils.DEFAULT_PORT, inetAddress);
+
+//		broadcastDatagramSocket = new DatagramSocket(NetworkUtils.DEFAULT_PORT);
 		broadcastDatagramSocket.setBroadcast(true);
 
 //		LOG.info(">>> Sending who is ...");
@@ -76,7 +78,6 @@ public class MulticastListenerReaderThread implements Runnable {
 //				NetworkUtils.DEFAULT_PORT);
 //		broadcastDatagramSocket.send(whoIsDatagramPacket);
 //		LOG.info(">>> Sending who is done.");
-
 //		sendMessage(null, whoIsMessage);
 
 		LOG.info("Broadcast listener on Port " + NetworkUtils.DEFAULT_PORT + " started.");
@@ -112,8 +113,11 @@ public class MulticastListenerReaderThread implements Runnable {
 					+ Utils.byteArrayToStringNoPrefix(datagramPacket.getData()));
 
 			// parse and process the request message and return a response message
-			final Message response = parseBuffer(data, bytesReceived);
+			final Message message = parseBuffer(data, bytesReceived);
+			final Message response = sendMessageToController(message);
+
 			if (response != null) {
+				// send answer to the network
 				sendMessage(datagramPacketAddress, response);
 			} else {
 				LOG.trace("Controller returned a null message!");
@@ -179,6 +183,11 @@ public class MulticastListenerReaderThread implements Runnable {
 
 		final byte[] bytes = message.getBytes();
 
+		if (message.getVirtualLinkControl().getLength() != bytes.length) {
+			throw new RuntimeException(
+					"Message is invalid! The length in the virtual link control does not match the real data length!");
+		}
+
 		final InetAddress destinationAddress = datagramPacketAddress;
 		final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, destinationAddress,
 				NetworkUtils.DEFAULT_PORT);
@@ -189,11 +198,17 @@ public class MulticastListenerReaderThread implements Runnable {
 
 		final byte[] bytes = message.getBytes();
 
+		if (message.getVirtualLinkControl().getLength() != bytes.length) {
+			throw new RuntimeException(
+					"Message is invalid! The length in the virtual link control does not match the real data length!");
+		}
+
 		LOG.info(">>> Broadcast Sending: " + Utils.byteArrayToStringNoPrefix(bytes));
 
 		final SocketAddress socketAddress = new InetSocketAddress(NetworkUtils.BACNET_MULTICAST_IP,
 				NetworkUtils.DEFAULT_PORT);
 		final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, socketAddress);
+
 		broadcastDatagramSocket.send(responseDatagramPacket);
 	}
 
@@ -212,14 +227,17 @@ public class MulticastListenerReaderThread implements Runnable {
 		converter.setPayloadLength(payloadLength);
 		converter.setVendorMap(vendorMap);
 
-		final DefaultMessage defaultMessage = converter.convert(data);
+		return converter.convert(data);
+	}
+
+	public Message sendMessageToController(final Message message) {
 
 		// find a controller that is able to create a response matching the request
 		if (CollectionUtils.isNotEmpty(messageControllers)) {
 
 			for (final MessageController messageController : messageControllers) {
 
-				return messageController.processMessage(defaultMessage);
+				return messageController.processMessage(message);
 			}
 		}
 

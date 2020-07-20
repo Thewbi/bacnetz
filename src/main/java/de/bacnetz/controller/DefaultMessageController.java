@@ -114,7 +114,7 @@ public class DefaultMessageController implements MessageController {
 
 		/** 20.1.2 BACnet-Confirmed-Request-PDU */
 		case WHO_IS:
-			LOG.trace(">>> WHO_IS received!");
+			LOG.info(">>> WHO_IS received!");
 			return processWhoIsMessage(message);
 
 		case UTC_TIME_SYNCHRONIZATION:
@@ -124,7 +124,7 @@ public class DefaultMessageController implements MessageController {
 			throw new RuntimeException(">>> Not implemented yet! Message: " + message.getApdu().getServiceChoice());
 
 		case READ_PROPERTY:
-			LOG.trace(">>> READ_PROPERTY received!");
+			LOG.info(">>> READ_PROPERTY received!");
 			return processReadProperty(message);
 
 		case READ_PROPERTY_MULTIPLE:
@@ -132,7 +132,6 @@ public class DefaultMessageController implements MessageController {
 			return processReadPropertyMultiple(message);
 
 		default:
-//			throw new RuntimeException("Unknown message: " + message.getApdu().getServiceChoice());
 			LOG.warn(">>> Unknown message: " + message.getApdu().getServiceChoice());
 			return null;
 		}
@@ -153,6 +152,8 @@ public class DefaultMessageController implements MessageController {
 			final ServiceParameter upperBoundServiceParameter = serviceParameters.get(1);
 
 			final boolean bigEndian = true;
+
+			// find lower bound as integer
 			int lowerBound = 0;
 			if (lowerBoundServiceParameter.getPayload().length == 1) {
 				lowerBound = lowerBoundServiceParameter.getPayload()[0];
@@ -161,6 +162,7 @@ public class DefaultMessageController implements MessageController {
 						lowerBoundServiceParameter.getPayload()[1], bigEndian);
 			}
 
+			// find uper bound as integer
 			int upperBound = 0;
 			if (upperBoundServiceParameter.getPayload().length == 1) {
 				upperBound = upperBoundServiceParameter.getPayload()[0];
@@ -190,7 +192,7 @@ public class DefaultMessageController implements MessageController {
 		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
 		virtualLinkControl.setType(0x81);
 		virtualLinkControl.setFunction(0x0B);
-		virtualLinkControl.setLength(0x14);
+		virtualLinkControl.setLength(0x00);
 
 		final NPDU npdu = new NPDU();
 		npdu.setVersion(0x01);
@@ -218,8 +220,15 @@ public class DefaultMessageController implements MessageController {
 		final ServiceParameter vendorIdServiceParameter = new ServiceParameter();
 		vendorIdServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
 		vendorIdServiceParameter.setTagNumber(ServiceParameter.UNSIGNED_INTEGER_CODE);
-		vendorIdServiceParameter.setLengthValueType(1);
-		vendorIdServiceParameter.setPayload(new byte[] { (byte) 0xB2 }); // 0xB2 = 178d = loytec
+
+		// 0xB2 = 178d = loytec
+//		byte[] vendorIdBuffer = new byte[] { (byte) 0xB2 };
+
+		// 0x021A = 538d = GEZE
+		final byte[] vendorIdBuffer = new byte[] { (byte) 0x02, (byte) 0x1A };
+
+		vendorIdServiceParameter.setLengthValueType(vendorIdBuffer.length);
+		vendorIdServiceParameter.setPayload(vendorIdBuffer);
 
 		final APDU apdu = new APDU();
 //		apdu.setMoreSegmentsFollow(moreSegmentsFollow);
@@ -237,6 +246,8 @@ public class DefaultMessageController implements MessageController {
 		result.setVirtualLinkControl(virtualLinkControl);
 		result.setNpdu(npdu);
 		result.setApdu(apdu);
+
+		virtualLinkControl.setLength(virtualLinkControl.getDataLength() + npdu.getDataLength() + apdu.getDataLength());
 
 		return result;
 	}
@@ -454,7 +465,7 @@ public class DefaultMessageController implements MessageController {
 				.setTagNumber(ServiceParameter.APPLICATION_TAG_NUMBER_BIT_STRING);
 		// 0x05 = extended value
 		protocolServicesSupportedBitStringServiceParameter.setLengthValueType(ServiceParameter.EXTENDED_VALUE);
-		protocolServicesSupportedBitStringServiceParameter.setPayload(getPayload());
+		protocolServicesSupportedBitStringServiceParameter.setPayload(getSupportedServicesPayload());
 
 		final ServiceParameter closingTagServiceParameter = new ServiceParameter();
 		closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -486,10 +497,11 @@ public class DefaultMessageController implements MessageController {
 		return result;
 	}
 
-	private byte[] getPayload() {
+	private byte[] getSupportedServicesPayload() {
 
 		// retrieve the bits that describe which services are supported by this device
 		final BACnetServicesSupportedBitString bacnetServicesSupportedBitString = retrieveLoytecRouterServicesSupported();
+//		final BACnetServicesSupportedBitString bacnetServicesSupportedBitString = retrieveIO420ServicesSupported();
 		final BitSet bitSet = bacnetServicesSupportedBitString.getBitSet();
 		final byte[] bitSetByteArray = bitSet.toByteArray();
 
@@ -509,50 +521,150 @@ public class DefaultMessageController implements MessageController {
 		return result;
 	}
 
+	/**
+	 * <pre>
+	 * Loytex:
+	 * protocol-services-supported: (Bit String) (FTFFFFTTTTFFTFTTTTFFTFFFFFTFTFFFTTTTTFTF)
+	 * 
+	 * IO-420:
+	 * protocol-services-supported: (Bit String) (TFFT TTTT TTFF TFTT TTTF TFFF FFTT FFTF TTTF TFFT)
+	 * </pre>
+	 * 
+	 * @return
+	 */
+	@SuppressWarnings("unused")
 	private BACnetServicesSupportedBitString retrieveLoytecRouterServicesSupported() {
+
 		final BACnetServicesSupportedBitString bacnetServicesSupportedBitString = new BACnetServicesSupportedBitString();
 
 		bacnetServicesSupportedBitString.setAcknowledgeAlarm(false);
+
 		bacnetServicesSupportedBitString.setConfirmedCOVNotification(true);
 		bacnetServicesSupportedBitString.setConfirmedEventNotification(false);
+
 		bacnetServicesSupportedBitString.setGetAlarmSummary(false);
 		bacnetServicesSupportedBitString.setGetEnrollmentSummary(false);
+
 		bacnetServicesSupportedBitString.setSubscribeCOV(false);
+
 		bacnetServicesSupportedBitString.setAtomicReadFile(true);
 		bacnetServicesSupportedBitString.setAtomicWriteFile(true);
 
 		bacnetServicesSupportedBitString.setAddListElement(true);
 		bacnetServicesSupportedBitString.setRemoveListElement(true);
+
 		bacnetServicesSupportedBitString.setCreateObject(false);
 		bacnetServicesSupportedBitString.setDeleteObject(false);
-		bacnetServicesSupportedBitString.setReadProperty(true);
-		bacnetServicesSupportedBitString.setReadPropertyMultiple(true);
-		bacnetServicesSupportedBitString.setWriteProperty(true);
 
+		bacnetServicesSupportedBitString.setReadProperty(true);
+//		bacnetServicesSupportedBitString.setReadPropertyConditional(false);
+		bacnetServicesSupportedBitString.setReadPropertyMultiple(true);
+
+		bacnetServicesSupportedBitString.setWriteProperty(true);
 		bacnetServicesSupportedBitString.setWritePropertyMultiple(true);
+
 		bacnetServicesSupportedBitString.setDeviceCommunicationControl(true);
+
 		bacnetServicesSupportedBitString.setConfirmedPrivateTransfer(false);
 		bacnetServicesSupportedBitString.setConfirmedTextMessage(false);
+
 		bacnetServicesSupportedBitString.setReinitializeDevice(true);
+
 		bacnetServicesSupportedBitString.setVtOpen(false);
 		bacnetServicesSupportedBitString.setVtClose(false);
 		bacnetServicesSupportedBitString.setVtData(false);
 
+//		bacnetServicesSupportedBitString.setAuthenticate();
+//		bacnetServicesSupportedBitString.setRequestKey();
+
 		bacnetServicesSupportedBitString.setiAm(true);
 		bacnetServicesSupportedBitString.setiHave(false);
+
 		bacnetServicesSupportedBitString.setUnconfirmedCOVNotification(true);
 		bacnetServicesSupportedBitString.setUnconfirmedEventNotification(false);
 		bacnetServicesSupportedBitString.setUnconfirmedPrivateTransfer(false);
 		bacnetServicesSupportedBitString.setUnconfirmedTextMessage(false);
 
 		bacnetServicesSupportedBitString.setTimeSynchronization(true);
+
 		bacnetServicesSupportedBitString.setWhoHas(true);
 		bacnetServicesSupportedBitString.setWhoIs(true);
+
 		bacnetServicesSupportedBitString.setReadRange(true);
 		bacnetServicesSupportedBitString.setUtcTimeSynchronization(true);
 		bacnetServicesSupportedBitString.setLifeSafetyOperation(false);
 		bacnetServicesSupportedBitString.setSubscribeCOVProperty(true);
 		bacnetServicesSupportedBitString.setGetEventInformation(false);
+
+		return bacnetServicesSupportedBitString;
+	}
+
+	/**
+	 * <pre>
+	 * Loytex:
+	 * protocol-services-supported: (Bit String) (FTFFFFTTTTFFTFTTTTFFTFFFFFTFTFFFTTTTTFTF)
+	 * 
+	 * IO-420:
+	 * protocol-services-supported: (Bit String) (TFFT TTTT TTFF TFTT TTTF TFFF FFTT FFTF TTTF TFFT)
+	 * </pre>
+	 * 
+	 * @return
+	 */
+	private BACnetServicesSupportedBitString retrieveIO420ServicesSupported() {
+
+		final BACnetServicesSupportedBitString bacnetServicesSupportedBitString = new BACnetServicesSupportedBitString();
+
+		bacnetServicesSupportedBitString.setAcknowledgeAlarm(true);
+		bacnetServicesSupportedBitString.setConfirmedCOVNotification(false);
+		bacnetServicesSupportedBitString.setConfirmedEventNotification(false);
+
+		bacnetServicesSupportedBitString.setGetAlarmSummary(true);
+		bacnetServicesSupportedBitString.setGetEnrollmentSummary(true);
+
+		bacnetServicesSupportedBitString.setSubscribeCOV(true);
+
+		bacnetServicesSupportedBitString.setAtomicReadFile(true);
+		bacnetServicesSupportedBitString.setAtomicWriteFile(true);
+
+		bacnetServicesSupportedBitString.setAddListElement(true);
+		bacnetServicesSupportedBitString.setRemoveListElement(true);
+
+		bacnetServicesSupportedBitString.setCreateObject(false);
+		bacnetServicesSupportedBitString.setDeleteObject(false);
+
+		bacnetServicesSupportedBitString.setReadProperty(true);
+		bacnetServicesSupportedBitString.setReadPropertyMultiple(true);
+		bacnetServicesSupportedBitString.setWriteProperty(true);
+		bacnetServicesSupportedBitString.setWritePropertyMultiple(true);
+
+		bacnetServicesSupportedBitString.setDeviceCommunicationControl(true);
+		bacnetServicesSupportedBitString.setConfirmedPrivateTransfer(true);
+		bacnetServicesSupportedBitString.setConfirmedTextMessage(false);
+		bacnetServicesSupportedBitString.setReinitializeDevice(true);
+
+		bacnetServicesSupportedBitString.setVtOpen(false);
+		bacnetServicesSupportedBitString.setVtClose(false);
+		bacnetServicesSupportedBitString.setVtData(false);
+
+		bacnetServicesSupportedBitString.setiAm(true);
+		bacnetServicesSupportedBitString.setiHave(true);
+
+		bacnetServicesSupportedBitString.setUnconfirmedCOVNotification(false);
+		bacnetServicesSupportedBitString.setUnconfirmedEventNotification(false);
+		bacnetServicesSupportedBitString.setUnconfirmedPrivateTransfer(true);
+		bacnetServicesSupportedBitString.setUnconfirmedTextMessage(false);
+
+		bacnetServicesSupportedBitString.setTimeSynchronization(true);
+
+		bacnetServicesSupportedBitString.setWhoHas(true);
+		bacnetServicesSupportedBitString.setWhoIs(true);
+
+		bacnetServicesSupportedBitString.setReadRange(false);
+		bacnetServicesSupportedBitString.setUtcTimeSynchronization(true);
+		bacnetServicesSupportedBitString.setLifeSafetyOperation(false);
+		bacnetServicesSupportedBitString.setSubscribeCOVProperty(false);
+		bacnetServicesSupportedBitString.setGetEventInformation(true);
+
 		return bacnetServicesSupportedBitString;
 	}
 
