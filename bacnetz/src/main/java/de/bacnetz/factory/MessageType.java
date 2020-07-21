@@ -4,6 +4,8 @@ public enum MessageType {
 
 	WHO_IS,
 
-	INTEGER_PROPERTY;
+	INTEGER_PROPERTY,
+
+	ENUMERATED;
 
 }

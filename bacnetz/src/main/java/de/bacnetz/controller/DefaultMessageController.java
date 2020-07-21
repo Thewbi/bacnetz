@@ -26,8 +26,6 @@ import de.bacnetz.stack.VirtualLinkControl;
 
 public class DefaultMessageController implements MessageController {
 
-	private static final int DEVICE_INSTANCE_NUMBER = 10001;
-
 	private static final Logger LOG = LogManager.getLogger(DefaultMessageController.class);
 
 	private Map<Integer, String> vendorMap = new HashMap<>();
@@ -177,9 +175,10 @@ public class DefaultMessageController implements MessageController {
 					Utils.byteArrayToStringNoPrefix(upperBoundServiceParameter.getPayload()), upperBound);
 
 			// do not process message if it is bounded and the device's id is out of bounds!
-			if ((lowerBound > DEVICE_INSTANCE_NUMBER) || (DEVICE_INSTANCE_NUMBER > upperBound)) {
+			if ((lowerBound > Utils.DEVICE_INSTANCE_NUMBER) || (Utils.DEVICE_INSTANCE_NUMBER > upperBound)) {
 
-				LOG.trace("Ignoring Who-Is! DeviceID: {}, [{} - {}]", DEVICE_INSTANCE_NUMBER, lowerBound, upperBound);
+				LOG.trace("Ignoring Who-Is! DeviceID: {}, [{} - {}]", Utils.DEVICE_INSTANCE_NUMBER, lowerBound,
+						upperBound);
 				return null;
 			}
 		}
@@ -187,16 +186,26 @@ public class DefaultMessageController implements MessageController {
 		LOG.trace("WHO_IS received!");
 
 		// return Unconfirmed request i-Am device,10001
-		final int deviceInstanceNumber = DEVICE_INSTANCE_NUMBER;
+		final int deviceInstanceNumber = Utils.DEVICE_INSTANCE_NUMBER;
 
 		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
 		virtualLinkControl.setType(0x81);
 		virtualLinkControl.setFunction(0x0B);
 		virtualLinkControl.setLength(0x00);
 
+//		// simple NPDU
+//		final NPDU npdu = new NPDU();
+//		npdu.setVersion(0x01);
+//		npdu.setControl(0x00);
+
+		// NPDU including destination network information
 		final NPDU npdu = new NPDU();
 		npdu.setVersion(0x01);
-		npdu.setControl(0x00);
+		npdu.setControl(0x20);
+		npdu.setDestinationNetworkNumber(0xFFFF);
+		// indicates broadcast on destination network
+		npdu.setDestinationMACLayerAddressLength(0);
+		npdu.setDestinationHopCount(255);
 
 		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
 		objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
@@ -331,7 +340,7 @@ public class DefaultMessageController implements MessageController {
 
 	private Message processLastRestartReasonProperty(final int propertyKey, final Message requestMessage) {
 		// coldstart 1
-		return messageFactory.create(MessageType.INTEGER_PROPERTY, DEVICE_INSTANCE_NUMBER,
+		return messageFactory.create(MessageType.INTEGER_PROPERTY, Utils.DEVICE_INSTANCE_NUMBER,
 				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
 
 //		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
@@ -340,21 +349,21 @@ public class DefaultMessageController implements MessageController {
 	private Message processProtocolVersionProperty(final int propertyKey, final Message requestMessage) {
 		// protocol version 1
 //		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
-		return messageFactory.create(MessageType.INTEGER_PROPERTY, DEVICE_INSTANCE_NUMBER,
+		return messageFactory.create(MessageType.INTEGER_PROPERTY, Utils.DEVICE_INSTANCE_NUMBER,
 				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
 	}
 
 	private Message processProtocolRevisionProperty(final int propertyKey, final Message requestMessage) {
 		// database revision 12d = 0x0C
 //		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x0C });
-		return messageFactory.create(MessageType.INTEGER_PROPERTY, DEVICE_INSTANCE_NUMBER,
+		return messageFactory.create(MessageType.INTEGER_PROPERTY, Utils.DEVICE_INSTANCE_NUMBER,
 				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x0C });
 	}
 
 	private Message processDatabaseRevisionProperty(final int propertyKey, final Message requestMessage) {
 		// database revivion 3
 //		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x03 });
-		return messageFactory.create(MessageType.INTEGER_PROPERTY, DEVICE_INSTANCE_NUMBER,
+		return messageFactory.create(MessageType.INTEGER_PROPERTY, Utils.DEVICE_INSTANCE_NUMBER,
 				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x03 });
 	}
 
@@ -368,7 +377,7 @@ public class DefaultMessageController implements MessageController {
 		// 2000d == 0x07D0
 //		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey,
 //				new byte[] { (byte) 0x07, (byte) 0xD0 });
-		return messageFactory.create(MessageType.INTEGER_PROPERTY, DEVICE_INSTANCE_NUMBER,
+		return messageFactory.create(MessageType.INTEGER_PROPERTY, Utils.DEVICE_INSTANCE_NUMBER,
 				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x07, (byte) 0xD0 });
 	}
 
@@ -377,7 +386,7 @@ public class DefaultMessageController implements MessageController {
 		// APDU Max Segments Accepted:
 		// Legt fest, wie viele Segmente maximal akzeptiert werden.
 //		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
-		return messageFactory.create(MessageType.INTEGER_PROPERTY, DEVICE_INSTANCE_NUMBER,
+		return messageFactory.create(MessageType.INTEGER_PROPERTY, Utils.DEVICE_INSTANCE_NUMBER,
 				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
 	}
 
@@ -390,7 +399,7 @@ public class DefaultMessageController implements MessageController {
 		// 3000d == 0x0BB8
 //		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey,
 //				new byte[] { (byte) 0x0B, (byte) 0xB8 });
-		return messageFactory.create(MessageType.INTEGER_PROPERTY, DEVICE_INSTANCE_NUMBER,
+		return messageFactory.create(MessageType.INTEGER_PROPERTY, Utils.DEVICE_INSTANCE_NUMBER,
 				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x0B, (byte) 0xB8 });
 	}
 
@@ -403,7 +412,7 @@ public class DefaultMessageController implements MessageController {
 		// 1497d = 0x05D9
 		// 62d = 0x3E
 //		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x05D9 });
-		return messageFactory.create(MessageType.INTEGER_PROPERTY, DEVICE_INSTANCE_NUMBER,
+		return messageFactory.create(MessageType.INTEGER_PROPERTY, Utils.DEVICE_INSTANCE_NUMBER,
 				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x05, (byte) 0xD9 });
 	}
 
@@ -414,14 +423,13 @@ public class DefaultMessageController implements MessageController {
 		// segmented-receive (2)
 		// no-segmentation (3)
 //		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x00 });
-		return messageFactory.create(MessageType.INTEGER_PROPERTY, DEVICE_INSTANCE_NUMBER,
+		return messageFactory.create(MessageType.ENUMERATED, Utils.DEVICE_INSTANCE_NUMBER,
 				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x00 });
 	}
 
 	private DefaultMessage processSupportedServicesProperty(final int propertyKey, final Message requestMessage) {
 
-		// return Unconfirmed request i-Am device,10001
-		final int deviceInstanceNumber = DEVICE_INSTANCE_NUMBER;
+		final int deviceInstanceNumber = Utils.DEVICE_INSTANCE_NUMBER;
 
 		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
 		virtualLinkControl.setType(0x81);
@@ -430,11 +438,15 @@ public class DefaultMessageController implements MessageController {
 
 		final NPDU npdu = new NPDU();
 		npdu.setVersion(0x01);
-		npdu.setControl(0x00);
-//		npdu.setControl(0x20);
-//		npdu.setDestinationNetworkNumber(302);
-//		npdu.setDestinationMACLayerAddressLength(3);
-//		npdu.setDestinationMac(0x001268);
+
+		// no additional information
+//		npdu.setControl(0x00);
+
+		// destination network information
+		npdu.setControl(0x20);
+		npdu.setDestinationNetworkNumber(302);
+		npdu.setDestinationMACLayerAddressLength(3);
+		npdu.setDestinationMac(0x001268);
 
 		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
 		objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
@@ -769,7 +781,7 @@ public class DefaultMessageController implements MessageController {
 			vendorId = byteBuffer.getInt();
 		}
 
-		LOG.info(">>> InstanceNumber: {} VendorId: {} VendorName: {}",
+		LOG.info(">>> processIAMMessage: InstanceNumber: {} VendorId: {} VendorName: {}",
 				objectIdentifierServiceParameter.getInstanceNumber(), vendorId, vendorMap.get(vendorId));
 
 		return null;

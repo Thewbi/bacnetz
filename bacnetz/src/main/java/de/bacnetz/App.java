@@ -45,12 +45,6 @@ public class App {
 
 	private static final Logger LOG = LogManager.getLogger(App.class);
 
-//	private static final String ENCODING = "Cp1252";
-
-//	private static final String ENCODING = "ISO-8859-1";
-
-	private static final String ENCODING = "UTF-8";
-
 	public static void main(final String[] args) throws IOException {
 
 		final List<InetAddress> listAllBroadcastAddresses = listAllBroadcastAddresses();
@@ -174,11 +168,12 @@ public class App {
 		final File file = new File("C:\\Temp\\BACnetVerndors_fix.csv");
 		final FileOutputStream fileOutputStream = new FileOutputStream(file);
 
-		final BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream, ENCODING));
+		final BufferedWriter bufferedWriter = new BufferedWriter(
+				new OutputStreamWriter(fileOutputStream, Utils.ENCODING_UTF_8));
 
 		BufferedReader reader;
 		try {
-			reader = new BufferedReader(new FileReader("C:\\Temp\\BACnetVerndors.csv"));
+			reader = new BufferedReader(new FileReader("C:\\Temp\\BACnetVendors.csv"));
 			String line = reader.readLine();
 			line = StringUtils.trim(line);
 

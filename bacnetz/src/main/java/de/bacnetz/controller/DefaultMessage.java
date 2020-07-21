@@ -104,6 +104,11 @@ public class DefaultMessage implements Message {
 	}
 
 	@Override
+	public void recomputeLength() {
+		virtualLinkControl.setLength(this.getDataLength());
+	}
+
+	@Override
 	public VirtualLinkControl getVirtualLinkControl() {
 		return virtualLinkControl;
 	}

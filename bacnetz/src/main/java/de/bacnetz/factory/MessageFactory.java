@@ -29,6 +29,10 @@ public class MessageFactory implements Factory<Message> {
 	public Message create(final Object... args) {
 
 		int index = 0;
+		int deviceInstanceNumber = -1;
+		int invokeId = -1;
+		int propertyKey = -1;
+		byte[] payload = null;
 
 		final MessageType messageType = (MessageType) args[index++];
 
@@ -44,11 +48,18 @@ public class MessageFactory implements Factory<Message> {
 			}
 
 		case INTEGER_PROPERTY:
-			final int deviceInstanceNumber = (int) args[index++];
-			final int invokeId = (int) args[index++];
-			final int propertyKey = (int) args[index++];
-			final byte[] payload = (byte[]) args[index++];
+			deviceInstanceNumber = (int) args[index++];
+			invokeId = (int) args[index++];
+			propertyKey = (int) args[index++];
+			payload = (byte[]) args[index++];
 			return returnIntegerProperty(deviceInstanceNumber, invokeId, propertyKey, payload);
+
+		case ENUMERATED:
+			deviceInstanceNumber = (int) args[index++];
+			invokeId = (int) args[index++];
+			propertyKey = (int) args[index++];
+			payload = (byte[]) args[index++];
+			return returnEnumeratedProperty(deviceInstanceNumber, invokeId, propertyKey, payload);
 
 		default:
 			throw new RuntimeException("Unkown message type: " + messageType.name());
@@ -130,7 +141,7 @@ public class MessageFactory implements Factory<Message> {
 		return result;
 	}
 
-	private Message returnIntegerProperty(final int deviceInstanceNumber, final int invokeId, final int propertyId,
+	private Message returnEnumeratedProperty(final int deviceInstanceNumber, final int invokeId, final int propertyKey,
 			final byte[] payload) {
 
 		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
@@ -140,10 +151,21 @@ public class MessageFactory implements Factory<Message> {
 
 		final NPDU npdu = new NPDU();
 		npdu.setVersion(0x01);
-		npdu.setControl(0x00);
+//		npdu.setControl(0x00);
+
+//		npdu.setControl(0x20);
 //		npdu.setSourceNetworkAddress(requestMessage.getNpdu().getDestinationNetworkNumber());
 //		npdu.setDestinationMACLayerAddressLength(requestMessage.getNpdu().getDestinationMACLayerAddressLength());
 //		npdu.setDestinationMac(requestMessage.getNpdu().getDestinationMac());
+
+		// no additional information
+//		npdu.setControl(0x00);
+
+//		// destination network information
+		npdu.setControl(0x20);
+		npdu.setDestinationNetworkNumber(302);
+		npdu.setDestinationMACLayerAddressLength(3);
+		npdu.setDestinationMac(0x001268);
 
 		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
 		objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -160,7 +182,89 @@ public class MessageFactory implements Factory<Message> {
 //		protocolServicesSupportedServiceParameter.setTagNumber(ServiceParameter.UNKOWN_TAG_NUMBER);
 		propertyIdentifierServiceParameter.setTagNumber(0x01);
 		propertyIdentifierServiceParameter.setLengthValueType(1);
-		propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) propertyId });
+		propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) propertyKey });
+
+		final ServiceParameter openingTagServiceParameter = new ServiceParameter();
+		openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		openingTagServiceParameter.setTagNumber(0x03);
+		openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
+
+		final ServiceParameter valueServiceParameter = new ServiceParameter();
+		valueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		valueServiceParameter.setTagNumber(ServiceParameter.ENUMERATED_CODE);
+		valueServiceParameter.setLengthValueType(payload.length);
+		valueServiceParameter.setPayload(payload);
+
+		final ServiceParameter closingTagServiceParameter = new ServiceParameter();
+		closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		closingTagServiceParameter.setTagNumber(0x03);
+		closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
+
+		final APDU apdu = new APDU();
+		apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
+		apdu.setInvokeId(invokeId);
+		apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+		apdu.setVendorMap(vendorMap);
+//		apdu.setObjectIdentifierServiceParameter(objectIdentifierServiceParameter);
+		apdu.getServiceParameters().add(objectIdentifierServiceParameter);
+		apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
+		apdu.getServiceParameters().add(openingTagServiceParameter);
+		apdu.getServiceParameters().add(valueServiceParameter);
+		apdu.getServiceParameters().add(closingTagServiceParameter);
+
+		final DefaultMessage result = new DefaultMessage();
+		result.setVirtualLinkControl(virtualLinkControl);
+		result.setNpdu(npdu);
+		result.setApdu(apdu);
+
+		virtualLinkControl.setLength(result.getDataLength());
+
+		final byte[] bytes = result.getBytes();
+		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
+
+		return result;
+	}
+
+	private Message returnIntegerProperty(final int deviceInstanceNumber, final int invokeId, final int propertyKey,
+			final byte[] payload) {
+
+		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
+		virtualLinkControl.setType(0x81);
+		virtualLinkControl.setFunction(0x0A);
+		virtualLinkControl.setLength(0x00);
+
+		final NPDU npdu = new NPDU();
+		npdu.setVersion(0x01);
+//		npdu.setControl(0x00);
+//		npdu.setSourceNetworkAddress(requestMessage.getNpdu().getDestinationNetworkNumber());
+//		npdu.setDestinationMACLayerAddressLength(requestMessage.getNpdu().getDestinationMACLayerAddressLength());
+//		npdu.setDestinationMac(requestMessage.getNpdu().getDestinationMac());
+
+		// no additional information
+//		npdu.setControl(0x00);
+
+//		// destination network information
+		npdu.setControl(0x20);
+		npdu.setDestinationNetworkNumber(302);
+		npdu.setDestinationMACLayerAddressLength(3);
+		npdu.setDestinationMac(0x001268);
+
+		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+		objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		// who are context tag numbers determined???
+//		objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
+		objectIdentifierServiceParameter.setTagNumber(0x00);
+		objectIdentifierServiceParameter.setLengthValueType(4);
+		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+		objectIdentifierServiceParameter.setInstanceNumber(deviceInstanceNumber);
+
+		final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
+		propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		// who are context tag numbers determined???
+//		protocolServicesSupportedServiceParameter.setTagNumber(ServiceParameter.UNKOWN_TAG_NUMBER);
+		propertyIdentifierServiceParameter.setTagNumber(0x01);
+		propertyIdentifierServiceParameter.setLengthValueType(1);
+		propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) propertyKey });
 
 		final ServiceParameter openingTagServiceParameter = new ServiceParameter();
 		openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);

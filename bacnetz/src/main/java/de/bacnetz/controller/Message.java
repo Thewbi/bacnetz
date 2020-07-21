@@ -14,4 +14,6 @@ public interface Message {
 
 	byte[] getBytes();
 
+	void recomputeLength();
+
 }

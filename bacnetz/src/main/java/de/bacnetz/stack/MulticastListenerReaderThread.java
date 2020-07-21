@@ -62,13 +62,10 @@ public class MulticastListenerReaderThread implements Runnable {
 //		final Message whoIsMessage = messageFactory.create(MessageType.WHO_IS, 25, 25);
 //		sendViaMulticastSocket(whoIsMessage);
 
-		final InetAddress inetAddress = InetAddress.getByName("192.168.2.1");
-//		final InetAddress inetAddress = InetAddress.getByName("192.168.2.2");
-//		final InetAddress inetAddress = InetAddress.getByName("192.168.2.255");
+		final InetAddress inetAddress = InetAddress.getByName(NetworkUtils.LOCAL_BIND_IP);
 
-		broadcastDatagramSocket = new DatagramSocket(NetworkUtils.DEFAULT_PORT, inetAddress);
-
-//		broadcastDatagramSocket = new DatagramSocket(NetworkUtils.DEFAULT_PORT);
+//		broadcastDatagramSocket = new DatagramSocket(NetworkUtils.DEFAULT_PORT, inetAddress);
+		broadcastDatagramSocket = new DatagramSocket(NetworkUtils.DEFAULT_PORT);
 		broadcastDatagramSocket.setBroadcast(true);
 
 //		LOG.info(">>> Sending who is ...");
@@ -103,7 +100,7 @@ public class MulticastListenerReaderThread implements Runnable {
 			final SocketAddress datagramPacketSocketAddress = datagramPacket.getSocketAddress();
 
 			// do not process your own broadcast messages
-			if (datagramPacketAddress.equals(InetAddress.getByName("192.168.2.1"))) {
+			if (datagramPacketAddress.equals(InetAddress.getByName(NetworkUtils.LOCAL_BIND_IP))) {
 				continue;
 			}
 
@@ -113,18 +110,88 @@ public class MulticastListenerReaderThread implements Runnable {
 					+ Utils.byteArrayToStringNoPrefix(datagramPacket.getData()));
 
 			// parse and process the request message and return a response message
-			final Message message = parseBuffer(data, bytesReceived);
-			final Message response = sendMessageToController(message);
+			final Message request = parseBuffer(data, bytesReceived);
+			final Message response = sendMessageToController(request);
 
 			if (response != null) {
 				// send answer to the network
-				sendMessage(datagramPacketAddress, response);
+				sendMessage(datagramPacketAddress, response, request);
 			} else {
 				LOG.trace("Controller returned a null message!");
 			}
 
 			LOG.trace("done");
 		}
+	}
+
+	private void sendMessage(final InetAddress datagramPacketAddress, final Message responseMessage,
+			final Message requestMessage) throws IOException {
+
+		LOG.info(">>> ServiceChoice: {}", responseMessage.getApdu().getServiceChoice().name());
+
+		boolean broadcast = responseMessage.getApdu().getServiceChoice() == ServiceChoice.I_AM;
+		broadcast |= responseMessage.getApdu().getServiceChoice() == ServiceChoice.WHO_IS;
+
+		if (broadcast) {
+
+			LOG.info(">>> BroadCast");
+
+			// broadcast response to the bacnet default port
+			broadcastMessage(responseMessage);
+
+		} else {
+
+			LOG.info(">>> PointToPoint");
+
+			// point to point response
+			pointToPointMessage(responseMessage, requestMessage, datagramPacketAddress);
+
+		}
+	}
+
+	private void pointToPointMessage(final Message responseMessage, final Message requestMessage,
+			final InetAddress datagramPacketAddress) throws IOException {
+
+//		responseMessage.getNpdu().setSourceNetworkAddress(requestMessage.getNpdu().getDestinationNetworkNumber());
+//		responseMessage.getNpdu()
+//				.setDestinationMACLayerAddressLength(requestMessage.getNpdu().getDestinationMACLayerAddressLength());
+//		responseMessage.getNpdu().setDestinationMac(requestMessage.getNpdu().getDestinationMac());
+//		responseMessage.recomputeLength();
+
+		final byte[] bytes = responseMessage.getBytes();
+
+		if (responseMessage.getVirtualLinkControl().getLength() != bytes.length) {
+			throw new RuntimeException(
+					"Message is invalid! The length in the virtual link control does not match the real data length!");
+		}
+
+		final InetAddress destinationAddress = datagramPacketAddress;
+		final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, destinationAddress,
+				NetworkUtils.DEFAULT_PORT);
+
+//		final SocketAddress destinationAddress = new InetSocketAddress("192.168.2.2", NetworkUtils.DEFAULT_PORT);
+//		final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, destinationAddress);
+
+		broadcastDatagramSocket.send(responseDatagramPacket);
+	}
+
+	private void broadcastMessage(final Message message) throws IOException {
+
+		final byte[] bytes = message.getBytes();
+
+		if (message.getVirtualLinkControl().getLength() != bytes.length) {
+			throw new RuntimeException(
+					"Message is invalid! The length in the virtual link control does not match the real data length!");
+		}
+
+		LOG.info(">>> Broadcast Sending to " + NetworkUtils.BACNET_MULTICAST_IP + ":" + NetworkUtils.DEFAULT_PORT + ": "
+				+ Utils.byteArrayToStringNoPrefix(bytes));
+
+		final SocketAddress socketAddress = new InetSocketAddress(NetworkUtils.BACNET_MULTICAST_IP,
+				NetworkUtils.DEFAULT_PORT);
+		final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, socketAddress);
+
+		broadcastDatagramSocket.send(responseDatagramPacket);
 	}
 
 	/**
@@ -152,64 +219,6 @@ public class MulticastListenerReaderThread implements Runnable {
 
 		socket.leaveGroup(group);
 		socket.close();
-	}
-
-	private void sendMessage(final InetAddress datagramPacketAddress, final Message message) throws IOException {
-
-		LOG.info(">>> ServiceChoice: {}", message.getApdu().getServiceChoice().name());
-
-		boolean broadcast = message.getApdu().getServiceChoice() == ServiceChoice.I_AM;
-		broadcast |= message.getApdu().getServiceChoice() == ServiceChoice.WHO_IS;
-
-		if (broadcast) {
-
-			LOG.info(">>> BroadCast");
-
-			// broadcast response to the bacnet default port
-			broadcastMessage(message);
-
-		} else {
-
-			LOG.info(">>> PointToPoint");
-
-			// point to point response
-			pointToPointMessage(message, datagramPacketAddress);
-
-		}
-	}
-
-	private void pointToPointMessage(final Message message, final InetAddress datagramPacketAddress)
-			throws IOException {
-
-		final byte[] bytes = message.getBytes();
-
-		if (message.getVirtualLinkControl().getLength() != bytes.length) {
-			throw new RuntimeException(
-					"Message is invalid! The length in the virtual link control does not match the real data length!");
-		}
-
-		final InetAddress destinationAddress = datagramPacketAddress;
-		final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, destinationAddress,
-				NetworkUtils.DEFAULT_PORT);
-		broadcastDatagramSocket.send(responseDatagramPacket);
-	}
-
-	private void broadcastMessage(final Message message) throws IOException {
-
-		final byte[] bytes = message.getBytes();
-
-		if (message.getVirtualLinkControl().getLength() != bytes.length) {
-			throw new RuntimeException(
-					"Message is invalid! The length in the virtual link control does not match the real data length!");
-		}
-
-		LOG.info(">>> Broadcast Sending: " + Utils.byteArrayToStringNoPrefix(bytes));
-
-		final SocketAddress socketAddress = new InetSocketAddress(NetworkUtils.BACNET_MULTICAST_IP,
-				NetworkUtils.DEFAULT_PORT);
-		final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, socketAddress);
-
-		broadcastDatagramSocket.send(responseDatagramPacket);
 	}
 
 	/**

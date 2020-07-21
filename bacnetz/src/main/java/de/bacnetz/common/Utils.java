@@ -14,6 +14,15 @@ import org.apache.commons.lang3.StringUtils;
 
 public class Utils {
 
+//	public static final int DEVICE_INSTANCE_NUMBER = 26;
+	public static final int DEVICE_INSTANCE_NUMBER = 10001;
+
+	public static final String ENCODING_Cp1252 = "Cp1252";
+
+	public static final String ENCODING_ISO_8859_1 = "ISO-8859-1";
+
+	public static final String ENCODING_UTF_8 = "UTF-8";
+
 	public static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
 	public static String byteArrayToStringNoPrefix(final byte[] data) {
