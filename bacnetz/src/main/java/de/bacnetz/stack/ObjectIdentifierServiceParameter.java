@@ -9,7 +9,11 @@ public class ObjectIdentifierServiceParameter extends ServiceParameter {
 
 	private static final Logger LOG = LogManager.getLogger(ObjectIdentifierServiceParameter.class);
 
+	public static final int OBJECT_TYPE_BINARY_INPUT = 3;
+
 	public static final int OBJECT_TYPE_DEVICE = 8;
+
+	public static final int OBJECT_TYPE_MULTI_STATE_VALUE = 19;
 
 	private int objectType;
 
@@ -81,6 +85,7 @@ public class ObjectIdentifierServiceParameter extends ServiceParameter {
 		this.objectType = objectType;
 	}
 
+	@Override
 	public int getInstanceNumber() {
 		return instanceNumber;
 	}

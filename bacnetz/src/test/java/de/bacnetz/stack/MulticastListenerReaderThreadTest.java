@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import de.bacnetz.common.Utils;
 import de.bacnetz.controller.DefaultMessageController;
+import de.bacnetz.controller.Message;
 
 public class MulticastListenerReaderThreadTest {
 
@@ -17,7 +18,10 @@ public class MulticastListenerReaderThreadTest {
 		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810B00120120FFFF00FF10080A1F471A1F47");
 
 		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
-		multicastListenerReaderThread.parseBuffer(hexStringToByteArray, hexStringToByteArray.length);
+
+		final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
+				hexStringToByteArray.length);
+		final Message response = multicastListenerReaderThread.sendMessageToController(request);
 	}
 
 	/**
@@ -30,7 +34,10 @@ public class MulticastListenerReaderThreadTest {
 		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810B000801001008");
 
 		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
-		multicastListenerReaderThread.parseBuffer(hexStringToByteArray, hexStringToByteArray.length);
+
+		final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
+				hexStringToByteArray.length);
+		final Message response = multicastListenerReaderThread.sendMessageToController(request);
 	}
 
 	/**
@@ -43,7 +50,10 @@ public class MulticastListenerReaderThreadTest {
 		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810B001401001000C4020027102201E0910021B2");
 
 		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
-		multicastListenerReaderThread.parseBuffer(hexStringToByteArray, hexStringToByteArray.length);
+
+		final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
+				hexStringToByteArray.length);
+		final Message response = multicastListenerReaderThread.sendMessageToController(request);
 	}
 
 	@Test
@@ -52,7 +62,10 @@ public class MulticastListenerReaderThreadTest {
 		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810b001401001000c4020027102201e0910021b2");
 
 		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
-		multicastListenerReaderThread.parseBuffer(hexStringToByteArray, hexStringToByteArray.length);
+
+		final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
+				hexStringToByteArray.length);
+		final Message response = multicastListenerReaderThread.sendMessageToController(request);
 	}
 
 	@Test
@@ -65,7 +78,10 @@ public class MulticastListenerReaderThreadTest {
 
 		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
 		multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
-		multicastListenerReaderThread.parseBuffer(hexStringToByteArray, hexStringToByteArray.length);
+
+		final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
+				hexStringToByteArray.length);
+		final Message response = multicastListenerReaderThread.sendMessageToController(request);
 	}
 
 	@Test
@@ -77,7 +93,10 @@ public class MulticastListenerReaderThreadTest {
 
 		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
 		multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
-		multicastListenerReaderThread.parseBuffer(hexStringToByteArray, hexStringToByteArray.length);
+
+		final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
+				hexStringToByteArray.length);
+		final Message response = multicastListenerReaderThread.sendMessageToController(request);
 	}
 
 	@Test
@@ -90,7 +109,10 @@ public class MulticastListenerReaderThreadTest {
 
 		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
 		multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
-		multicastListenerReaderThread.parseBuffer(hexStringToByteArray, hexStringToByteArray.length);
+
+		final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
+				hexStringToByteArray.length);
+		final Message response = multicastListenerReaderThread.sendMessageToController(request);
 	}
 
 	@Test
@@ -103,7 +125,25 @@ public class MulticastListenerReaderThreadTest {
 
 		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
 		multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
-		multicastListenerReaderThread.parseBuffer(hexStringToByteArray, hexStringToByteArray.length);
+
+		final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
+				hexStringToByteArray.length);
+		final Message response = multicastListenerReaderThread.sendMessageToController(request);
+	}
+
+	@Test
+	public void testObjectList() {
+
+		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810a0016012403e70119ff0245780c0c02000019194c");
+
+		final DefaultMessageController defaultMessageController = new DefaultMessageController();
+
+		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
+		multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
+
+		final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
+				hexStringToByteArray.length);
+		final Message response = multicastListenerReaderThread.sendMessageToController(request);
 	}
 
 }

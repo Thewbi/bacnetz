@@ -13,13 +13,17 @@ public class NetworkUtils {
 
 	private static final Logger LOG = LogManager.getLogger(NetworkUtils.class);
 
-	public static final String LOCAL_BIND_IP = "192.168.2.1";
-//	final InetAddress inetAddress = InetAddress.getByName("172.18.60.118");
+	// Cockpit in local area network (test setup)
+//	public static final String LOCAL_BIND_IP = "192.168.2.1";
+//	public static final String BACNET_MULTICAST_IP = "192.168.2.255";
+
+	public static final String LOCAL_BIND_IP = "172.18.60.118";
+	public static final String BACNET_MULTICAST_IP = "172.18.63.255";
+
 //	final InetAddress inetAddress = InetAddress.getByName("192.168.2.1");
 //	final InetAddress inetAddress = InetAddress.getByName("192.168.2.2");
 //	final InetAddress inetAddress = InetAddress.getByName("192.168.2.255");
 
-	public static final String BACNET_MULTICAST_IP = "192.168.2.255";
 //	public static final String BACNET_MULTICAST_IP = "192.168.7.255";
 
 	/** 0xBAC0 == 47808d */

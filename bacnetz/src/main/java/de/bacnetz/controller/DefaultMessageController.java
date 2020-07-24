@@ -333,9 +333,126 @@ public class DefaultMessageController implements MessageController {
 	}
 
 	private Message processObjectListProperty(final int propertyKey, final Message requestMessage) {
-		throw new RuntimeException("Not implemented yet!");
-//		// 0x02 = ????
-//		return returnIntegerProperty(requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x02 });
+
+		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
+		virtualLinkControl.setType(0x81);
+		virtualLinkControl.setFunction(0x0A);
+		virtualLinkControl.setLength(0x00);
+
+//		// simple NPDU
+//		final NPDU npdu = new NPDU();
+//		npdu.setVersion(0x01);
+//		npdu.setControl(0x00);
+
+		// NPDU including destination network information
+		final NPDU npdu = new NPDU();
+		npdu.setVersion(0x01);
+		npdu.setControl(0x00);
+//		npdu.setControl(0x08);
+//		npdu.setDestinationNetworkNumber(0xFFFF);
+//		// indicates broadcast on destination network
+//		npdu.setDestinationMACLayerAddressLength(0);
+//		npdu.setDestinationHopCount(255);
+
+		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+		objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		// who are context tag numbers determined???
+//		objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
+		objectIdentifierServiceParameter.setTagNumber(0x00);
+		objectIdentifierServiceParameter.setLengthValueType(4);
+		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+		objectIdentifierServiceParameter.setInstanceNumber(Utils.DEVICE_INSTANCE_NUMBER);
+
+		final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
+		propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		propertyIdentifierServiceParameter.setTagNumber(0x01);
+		propertyIdentifierServiceParameter.setLengthValueType(0x01);
+		propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) propertyKey });
+
+//		final ServiceParameter protocolServicesSupportedServiceParameter = new ServiceParameter();
+//		protocolServicesSupportedServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+//		// who are context tag numbers determined???
+////		protocolServicesSupportedServiceParameter.setTagNumber(ServiceParameter.UNKOWN_TAG_NUMBER);
+//		protocolServicesSupportedServiceParameter.setTagNumber(0x01);
+//		protocolServicesSupportedServiceParameter.setLengthValueType(1);
+//		// 0x61 = 97d = Protocol Identifier: protocol-services-supported
+//		protocolServicesSupportedServiceParameter.setPayload(new byte[] { (byte) propertyKey });
+
+		final ServiceParameter objectIdentifierServiceParameterTwo = new ServiceParameter(
+				objectIdentifierServiceParameter);
+
+		final ServiceParameter openingTagServiceParameter = new ServiceParameter();
+		openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		openingTagServiceParameter.setTagNumber(0x03);
+		openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
+
+		final ServiceParameter protocolServicesSupportedBitStringServiceParameter = new ServiceParameter();
+		protocolServicesSupportedBitStringServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		protocolServicesSupportedBitStringServiceParameter
+				.setTagNumber(ServiceParameter.APPLICATION_TAG_NUMBER_BIT_STRING);
+		// 0x05 = extended value
+		protocolServicesSupportedBitStringServiceParameter.setLengthValueType(ServiceParameter.EXTENDED_VALUE);
+		protocolServicesSupportedBitStringServiceParameter.setPayload(getSupportedServicesPayload());
+
+		final ServiceParameter closingTagServiceParameter = new ServiceParameter();
+		closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		closingTagServiceParameter.setTagNumber(0x03);
+		closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
+
+		final APDU apdu = new APDU();
+		apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
+		apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
+		apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+		apdu.setVendorMap(vendorMap);
+//		apdu.setObjectIdentifierServiceParameter(objectIdentifierServiceParameter);
+		apdu.getServiceParameters().add(objectIdentifierServiceParameter);
+		apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
+//		apdu.getServiceParameters().add(protocolServicesSupportedServiceParameter);
+		apdu.getServiceParameters().add(openingTagServiceParameter);
+		apdu.getServiceParameters().add(objectIdentifierServiceParameterTwo);
+		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(1));
+		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(2));
+		apdu.getServiceParameters().add(binaryInputServiceParameter(1));
+		apdu.getServiceParameters().add(binaryInputServiceParameter(2));
+		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(3));
+		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(4));
+		apdu.getServiceParameters().add(closingTagServiceParameter);
+
+		final DefaultMessage result = new DefaultMessage();
+		result.setVirtualLinkControl(virtualLinkControl);
+		result.setNpdu(npdu);
+		result.setApdu(apdu);
+
+		virtualLinkControl.setLength(result.getDataLength());
+
+//		final byte[] bytes = result.getBytes();
+//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
+
+		return result;
+	}
+
+	private ServiceParameter binaryInputServiceParameter(final int objectId) {
+
+		final ObjectIdentifierServiceParameter binaryInputServiceParameter = new ObjectIdentifierServiceParameter();
+		binaryInputServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		binaryInputServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
+		binaryInputServiceParameter.setLengthValueType(0x04);
+		binaryInputServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_BINARY_INPUT);
+		binaryInputServiceParameter.setInstanceNumber(objectId);
+
+		return binaryInputServiceParameter;
+	}
+
+	private ServiceParameter createMultiStateValueServiceParameter(final int objectId) {
+
+		final ObjectIdentifierServiceParameter multiStateValue1ServiceParameter = new ObjectIdentifierServiceParameter();
+		multiStateValue1ServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		multiStateValue1ServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
+		multiStateValue1ServiceParameter.setLengthValueType(0x04);
+		multiStateValue1ServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		multiStateValue1ServiceParameter.setInstanceNumber(objectId);
+
+		return multiStateValue1ServiceParameter;
 	}
 
 	private Message processLastRestartReasonProperty(final int propertyKey, final Message requestMessage) {

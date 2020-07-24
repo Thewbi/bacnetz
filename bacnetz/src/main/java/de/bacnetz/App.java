@@ -58,7 +58,9 @@ public class App {
 //		runMainOld();
 	}
 
+	@SuppressWarnings("unused")
 	private static void runWhoIsThread() {
+
 		new Thread(new Runnable() {
 
 			@Override
@@ -82,6 +84,8 @@ public class App {
 
 	private static void runBroadcast() throws SocketException {
 
+		LOG.info("runBroadcast() ...");
+
 		final MessageFactory messageFactory = new MessageFactory();
 //		final Message whoIsMessage = messageFactory.create(MessageType.WHO_IS, 25, 25);
 		final Message whoIsMessage = messageFactory.create(MessageType.WHO_IS);
@@ -99,7 +103,7 @@ public class App {
 			}
 		});
 
-		LOG.info("done");
+		LOG.info("runBroadcast() done.");
 	}
 
 	public static void broadcast(final byte[] buffer, final InetAddress address) throws IOException {
@@ -161,6 +165,7 @@ public class App {
 		return broadcastList;
 	}
 
+	@SuppressWarnings("unused")
 	private static void runFixVendorCSV() throws IOException {
 
 		boolean firstLine = true;
@@ -440,7 +445,7 @@ public class App {
 //			datagramSocket.send(packet);
 		serverDatagramSocket.send(packet);
 
-		// datagramSocket.close();
+		serverDatagramSocket.close();
 //		}
 	}
 }
