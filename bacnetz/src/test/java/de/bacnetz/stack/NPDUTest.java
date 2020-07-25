@@ -6,11 +6,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 
 import de.bacnetz.common.Utils;
+import de.bacnetz.controller.DefaultMessageController;
 
 public class NPDUTest {
+	
+	private static final Logger LOG = LogManager.getLogger(NPDUTest.class);
 
 	/**
 	 * <pre>
@@ -94,6 +99,29 @@ public class NPDUTest {
 		assertEquals(2, npdu.getDataLength());
 		assertTrue(Arrays.equals(data,
 				new byte[] { 0x00, 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0x00, 0x00, 0x00, 0x00, 0x00 }));
+	}
+	
+	@Test
+	public void testObjectListSourceInformation() {
+		
+		final NPDU npdu = new NPDU();
+		npdu.setVersion(0x01);
+//		npdu.setControl(0x00);
+		
+		npdu.setControl(0x08);
+		npdu.setSourceNetworkAddress(999);
+		npdu.setSourceMacLayerAddressLength(2);
+		npdu.setSourceMac(Utils.DEVICE_INSTANCE_NUMBER);
+		
+		final byte[] data = new byte[10];
+
+		npdu.toBytes(data, 0);
+		
+		LOG.info(Utils.byteArrayToStringNoPrefix(data));
+		
+		assertTrue(Arrays.equals(data,
+				new byte[] { 0x01, 0x08, (byte) 0x03, (byte) 0xE7, (byte) 0x02, (byte) 0x27, 0x11, 0x00, 0x00, 0x00 }));
+		
 	}
 
 }

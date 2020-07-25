@@ -129,10 +129,18 @@ public class DefaultMessageController implements MessageController {
 			LOG.info(">>> READ_PROPERTY_MULTIPLE received!");
 			return processReadPropertyMultiple(message);
 
+		case DEVICE_COMMUNICATION_CONTROL:
+			LOG.info(">>> DEVICE_COMMUNICATION_CONTROL received!");
+			return processDeviceCommunicationControl(message);
+
 		default:
 			LOG.warn(">>> Unknown message: " + message.getApdu().getServiceChoice());
 			return null;
 		}
+	}
+
+	private Message processDeviceCommunicationControl(final Message requestMessage) {
+		throw new RuntimeException("Not implemented!");
 	}
 
 	/**
@@ -266,70 +274,245 @@ public class DefaultMessageController implements MessageController {
 		LOG.trace("processReadProperty()");
 
 		final int propertyIdentifier = requestMessage.getApdu().getPropertyIdentifier();
+
+		LOG.info("Property Identifier: {}", propertyIdentifier);
+
+//		final int propertyIdentifierCode = propertyIdentifier & 0xFF;
+		final int propertyIdentifierCode = propertyIdentifier;
+
 		switch (propertyIdentifier) {
 
 		// Supported Services Property
 		// 0x1961 = 6497d
-		case 0x1961:
-			LOG.info("<<< Supported Services Property");
-			return processSupportedServicesProperty(0x61, requestMessage);
+//		case 0x1961:
+		case 0x61:
+			LOG.info("<<< Supported Services Property ({})", propertyIdentifierCode);
+			return processSupportedServicesProperty(propertyIdentifierCode, requestMessage);
 
 		// Segmentation supported
 		// 0x196B = 6507d
-		case 0x196B:
-			LOG.info("<<< Segmentation supported");
-			return processSegmentationSupportedProperty(0x6B, requestMessage);
+//		case 0x196B:
+		case 0x6B:
+			LOG.info("<<< Segmentation supported ({})", propertyIdentifierCode);
+			return processSegmentationSupportedProperty(propertyIdentifierCode, requestMessage);
 
 		// max-apdu-length-accepted
 		// 0x193E = 6462d
-		case 0x193E:
-			LOG.info("<<< max-apdu-length-accepted");
-			return processMaxAPDULengthAcceptedProperty(0x3E, requestMessage);
+//		case 0x193E:
+		case 0x3E:
+			LOG.info("<<< max-apdu-length-accepted ({})", propertyIdentifierCode);
+			return processMaxAPDULengthAcceptedProperty(propertyIdentifierCode, requestMessage);
 
 		// max-segments-accepted
 		// 0x19A7 = 6567d
-		case 0x19A7:
-			LOG.info("<<< max-segments-accepted");
-			return processMaxSegmentsAcceptedProperty(0xA7, requestMessage);
+//		case 0x19A7:
+		case 0xA7:
+			LOG.info("<<< max-segments-accepted ({})", propertyIdentifierCode);
+			return processMaxSegmentsAcceptedProperty(propertyIdentifierCode, requestMessage);
 
 		// 0x190A = 6410d APDU-Segment-Timeout
-		case 0x190A:
-			LOG.info("<<< APDU-Segment-Timeout");
-			return processAPDUSegmentTimeoutProperty(0x0A, requestMessage);
+//		case 0x190A:
+		case 0x0A:
+			LOG.info("<<< APDU-Segment-Timeout ({})", propertyIdentifierCode);
+			return processAPDUSegmentTimeoutProperty(propertyIdentifierCode, requestMessage);
 
 		// 0x190B = 6411d APDU-Timeout
-		case 0x190B:
-			LOG.info("<<< APDU-Timeout");
-			return processAPDUTimeoutProperty(0x0B, requestMessage);
+//		case 0x190B:
+		case 0x0B:
+			LOG.info("<<< APDU-Timeout ({})", propertyIdentifierCode);
+			return processAPDUTimeoutProperty(propertyIdentifierCode, requestMessage);
 
 		// 0x199B = 6555d database-revision (155d = 0x9B) defined in ASHRAE on page 696
-		case 0x199B:
-			LOG.info("<<< database-revision");
-			return processDatabaseRevisionProperty(0x9B, requestMessage);
+//		case 0x199B:
+		case 0x9B:
+			LOG.info("<<< database-revision ({})", propertyIdentifierCode);
+			return processDatabaseRevisionProperty(propertyIdentifierCode, requestMessage);
 
-		// 0x198B = 6539d protocol-revision
-		case 0x198B:
-			LOG.info("<<< protocol-revision");
-			return processProtocolRevisionProperty(0x8B, requestMessage);
+		// 0x198B = 6539d protocol-revision (0x8B = 139d)
+//		case 0x198B:
+		case 0x8B:
+			LOG.info("<<< protocol-revision ({})", propertyIdentifierCode);
+			return processProtocolRevisionProperty(propertyIdentifierCode, requestMessage);
 
 		// 0x1962 = 6498d protocol-version
-		case 0x1962:
-			LOG.info("<<< protocol-version");
-			return processProtocolVersionProperty(0x62, requestMessage);
+//		case 0x1962:
+		case 0x62:
+			LOG.info("<<< protocol-version ({})", propertyIdentifierCode);
+			return processProtocolVersionProperty(propertyIdentifierCode, requestMessage);
 
 		// 0x19C4 = 6596 (0xC4 = 196d) last-restart-reason
-		case 0x19C4:
-			LOG.info("<<< last-restart-reason");
-			return processLastRestartReasonProperty(0xC4, requestMessage);
+//		case 0x19C4:
+		case 0xC4:
+			LOG.info("<<< last-restart-reason ({})", propertyIdentifierCode);
+			return processLastRestartReasonProperty(propertyIdentifierCode, requestMessage);
 
-		// 0x194c = 6476d (0x4c = 76) object list
-		case 0x194c:
-			LOG.info("<<< object list");
-			return processObjectListProperty(0x4c, requestMessage);
+		// 0x194c = 6476d (0x4c = 76d) object list
+//		case 0x194c:
+		case 0x4c:
+			LOG.info("<<< object list ({})", propertyIdentifierCode);
+			return processObjectListProperty(propertyIdentifierCode, requestMessage);
+
+		// 0x194d = 6477d (0x4d = 77d) object name
+//		case 0x194d:
+		case 0x4d:
+			LOG.info("<<< object name ({})", propertyIdentifierCode);
+			return processObjectNameProperty(propertyIdentifierCode, requestMessage);
+
+		// 0x19D1 = 6609 (0x09 = 9d) structured object list
+//		case 0x19D1:
+		case 0xD1:
+			LOG.info("<<< structured object list ({})", propertyIdentifierCode);
+			return processStructuredObjectListProperty(propertyIdentifierCode, requestMessage);
+
+		// 0x1A01 = 6657d
+		// 0x1A = ?? 0x0173 = 371d property list
+		case 0x0173:
+			LOG.info("<<< property list ({})", propertyIdentifierCode);
+			return processPropertyListProperty(propertyIdentifierCode, requestMessage);
 
 		default:
 			throw new NotImplementedException("Unknown property! PropertyIdentifier = " + propertyIdentifier);
 		}
+	}
+
+	private Message processPropertyListProperty(final int propertyIdentifierCode, final Message requestMessage) {
+
+//		throw new RuntimeException("Not implemented!");
+
+		LOG.info("done");
+		return null;
+	}
+
+	private Message processObjectNameProperty(final int propertyKey, final Message requestMessage) {
+
+		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
+		virtualLinkControl.setType(0x81);
+		virtualLinkControl.setFunction(0x0A);
+		virtualLinkControl.setLength(0x00);
+
+		final NPDU npdu = new NPDU();
+		npdu.setVersion(0x01);
+		npdu.setControl(0x00);
+
+		// this object identifier has to be context specific. I do not know why
+		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+//				objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		// who are context tag numbers determined???
+//				objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
+		objectIdentifierServiceParameter.setTagNumber(0x00);
+		objectIdentifierServiceParameter.setLengthValueType(4);
+		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+		objectIdentifierServiceParameter.setInstanceNumber(Utils.DEVICE_INSTANCE_NUMBER);
+
+		final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
+		propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		propertyIdentifierServiceParameter.setTagNumber(0x01);
+		propertyIdentifierServiceParameter.setLengthValueType(0x01);
+		propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) propertyKey });
+
+		final ServiceParameter openingTagServiceParameter = new ServiceParameter();
+		openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		openingTagServiceParameter.setTagNumber(0x03);
+		openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
+
+		final ServiceParameter objectNameServiceParameter = new ServiceParameter();
+		objectNameServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		objectNameServiceParameter.setTagNumber(ServiceParameter.APPLICATION_TAG_NUMBER_CHARACTER_STRING);
+		// 0x05 = extended value
+		objectNameServiceParameter.setLengthValueType(ServiceParameter.EXTENDED_VALUE);
+//		objectNameServiceParameter.setLengthValueType(13);
+		objectNameServiceParameter.setPayload(retrieveAsString(Utils.OBJECT_NAME));
+
+		final ServiceParameter closingTagServiceParameter = new ServiceParameter();
+		closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		closingTagServiceParameter.setTagNumber(0x03);
+		closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
+
+		final APDU apdu = new APDU();
+		apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
+		apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
+		apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+		apdu.setVendorMap(vendorMap);
+		apdu.getServiceParameters().add(objectIdentifierServiceParameter);
+		apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
+		apdu.getServiceParameters().add(openingTagServiceParameter);
+		apdu.getServiceParameters().add(objectNameServiceParameter);
+		apdu.getServiceParameters().add(closingTagServiceParameter);
+
+		final DefaultMessage result = new DefaultMessage();
+		result.setVirtualLinkControl(virtualLinkControl);
+		result.setNpdu(npdu);
+		result.setApdu(apdu);
+
+		virtualLinkControl.setLength(result.getDataLength());
+
+//		final byte[] bytes = result.getBytes();
+//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
+
+		return result;
+	}
+
+	public static byte[] retrieveAsString(final String data) {
+
+		final int dataLength = data.getBytes().length;
+
+		final byte[] result = new byte[dataLength + 1];
+
+		System.arraycopy(data.getBytes(), 0, result, 1, dataLength);
+		result[0] = 0;
+
+		return result;
+	}
+
+	private Message processStructuredObjectListProperty(final int propertyKey, final Message requestMessage) {
+
+		// return error
+
+		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
+		virtualLinkControl.setType(0x81);
+		virtualLinkControl.setFunction(0x0A);
+		virtualLinkControl.setLength(0x00);
+
+		final NPDU npdu = new NPDU();
+		npdu.setVersion(0x01);
+		npdu.setControl(0x00);
+//		npdu.setControl(0x08);
+//		npdu.setSourceNetworkAddress(999);
+//		npdu.setSourceMacLayerAddressLength(2);
+//		npdu.setSourceMac(Utils.DEVICE_INSTANCE_NUMBER);
+
+		final ServiceParameter errorClassServiceParameter = new ServiceParameter();
+		errorClassServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		errorClassServiceParameter.setTagNumber(ServiceParameter.ENUMERATED_CODE);
+		errorClassServiceParameter.setLengthValueType(0x01);
+		errorClassServiceParameter.setPayload(new byte[] { (byte) 0x02 });
+
+		final ServiceParameter errorCodeServiceParameter = new ServiceParameter();
+		errorCodeServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		errorCodeServiceParameter.setTagNumber(ServiceParameter.ENUMERATED_CODE);
+		errorCodeServiceParameter.setLengthValueType(0x01);
+		errorCodeServiceParameter.setPayload(new byte[] { (byte) 0x20 });
+
+		final APDU apdu = new APDU();
+		apdu.setPduType(PDUType.ERROR_PDU);
+		apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
+		apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+		apdu.setVendorMap(vendorMap);
+		apdu.getServiceParameters().add(errorClassServiceParameter);
+		apdu.getServiceParameters().add(errorCodeServiceParameter);
+
+		final DefaultMessage result = new DefaultMessage();
+		result.setVirtualLinkControl(virtualLinkControl);
+		result.setNpdu(npdu);
+		result.setApdu(apdu);
+
+		virtualLinkControl.setLength(result.getDataLength());
+
+//		final byte[] bytes = result.getBytes();
+//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
+
+		return result;
 	}
 
 	private Message processObjectListProperty(final int propertyKey, final Message requestMessage) {
@@ -348,14 +531,28 @@ public class DefaultMessageController implements MessageController {
 		final NPDU npdu = new NPDU();
 		npdu.setVersion(0x01);
 		npdu.setControl(0x00);
+
+//		npdu.setControl(0x08);
+//		npdu.setSourceNetworkAddress(999);
+//		npdu.setSourceMacLayerAddressLength(2);
+//		npdu.setSourceMac(Utils.DEVICE_INSTANCE_NUMBER);
+
 //		npdu.setControl(0x08);
 //		npdu.setDestinationNetworkNumber(0xFFFF);
 //		// indicates broadcast on destination network
 //		npdu.setDestinationMACLayerAddressLength(0);
 //		npdu.setDestinationHopCount(255);
 
+//		npdu.setControl(0x20);
+//		npdu.setDestinationNetworkNumber(0xFFFF);
+//		// indicates broadcast on destination network
+//		npdu.setDestinationMACLayerAddressLength(0);
+//		npdu.setDestinationHopCount(255);
+
+		// this object identifier has to be context specific. I do not know why
 		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-		objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+//		objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
 		// who are context tag numbers determined???
 //		objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
 		objectIdentifierServiceParameter.setTagNumber(0x00);
@@ -378,8 +575,12 @@ public class DefaultMessageController implements MessageController {
 //		// 0x61 = 97d = Protocol Identifier: protocol-services-supported
 //		protocolServicesSupportedServiceParameter.setPayload(new byte[] { (byte) propertyKey });
 
-		final ServiceParameter objectIdentifierServiceParameterTwo = new ServiceParameter(
-				objectIdentifierServiceParameter);
+		final ObjectIdentifierServiceParameter objectIdentifierServiceParameterTwo = new ObjectIdentifierServiceParameter();
+		objectIdentifierServiceParameterTwo.setTagClass(TagClass.APPLICATION_TAG);
+		objectIdentifierServiceParameterTwo.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
+		objectIdentifierServiceParameterTwo.setLengthValueType(0x04);
+		objectIdentifierServiceParameterTwo.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+		objectIdentifierServiceParameterTwo.setInstanceNumber(Utils.DEVICE_INSTANCE_NUMBER);
 
 		final ServiceParameter openingTagServiceParameter = new ServiceParameter();
 		openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -416,6 +617,15 @@ public class DefaultMessageController implements MessageController {
 		apdu.getServiceParameters().add(binaryInputServiceParameter(2));
 		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(3));
 		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(4));
+		apdu.getServiceParameters().add(createNotificationClassServiceParameter(50));
+		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(5));
+		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(6));
+		apdu.getServiceParameters().add(binaryInputServiceParameter(3));
+		apdu.getServiceParameters().add(binaryInputServiceParameter(4));
+		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(7));
+		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(8));
+		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(9));
+		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(10));
 		apdu.getServiceParameters().add(closingTagServiceParameter);
 
 		final DefaultMessage result = new DefaultMessage();
@@ -429,6 +639,18 @@ public class DefaultMessageController implements MessageController {
 //		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
 		return result;
+	}
+
+	private ServiceParameter createNotificationClassServiceParameter(final int id) {
+
+		final ObjectIdentifierServiceParameter notificationServiceParameter = new ObjectIdentifierServiceParameter();
+		notificationServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		notificationServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
+		notificationServiceParameter.setLengthValueType(0x04);
+		notificationServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_NOTIFICATION_CLASS);
+		notificationServiceParameter.setInstanceNumber(id);
+
+		return notificationServiceParameter;
 	}
 
 	private ServiceParameter binaryInputServiceParameter(final int objectId) {
@@ -445,14 +667,14 @@ public class DefaultMessageController implements MessageController {
 
 	private ServiceParameter createMultiStateValueServiceParameter(final int objectId) {
 
-		final ObjectIdentifierServiceParameter multiStateValue1ServiceParameter = new ObjectIdentifierServiceParameter();
-		multiStateValue1ServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-		multiStateValue1ServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
-		multiStateValue1ServiceParameter.setLengthValueType(0x04);
-		multiStateValue1ServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
-		multiStateValue1ServiceParameter.setInstanceNumber(objectId);
+		final ObjectIdentifierServiceParameter multiStateValueServiceParameter = new ObjectIdentifierServiceParameter();
+		multiStateValueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		multiStateValueServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
+		multiStateValueServiceParameter.setLengthValueType(0x04);
+		multiStateValueServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		multiStateValueServiceParameter.setInstanceNumber(objectId);
 
-		return multiStateValue1ServiceParameter;
+		return multiStateValueServiceParameter;
 	}
 
 	private Message processLastRestartReasonProperty(final int propertyKey, final Message requestMessage) {
@@ -629,8 +851,8 @@ public class DefaultMessageController implements MessageController {
 	private byte[] getSupportedServicesPayload() {
 
 		// retrieve the bits that describe which services are supported by this device
-		final BACnetServicesSupportedBitString bacnetServicesSupportedBitString = retrieveLoytecRouterServicesSupported();
-//		final BACnetServicesSupportedBitString bacnetServicesSupportedBitString = retrieveIO420ServicesSupported();
+//		final BACnetServicesSupportedBitString bacnetServicesSupportedBitString = retrieveLoytecRouterServicesSupported();
+		final BACnetServicesSupportedBitString bacnetServicesSupportedBitString = retrieveIO420ServicesSupported();
 		final BitSet bitSet = bacnetServicesSupportedBitString.getBitSet();
 		final byte[] bitSetByteArray = bitSet.toByteArray();
 
@@ -801,13 +1023,16 @@ public class DefaultMessageController implements MessageController {
 
 		LOG.info("processReadPropertyMultiple()");
 
-		final ServiceParameter serviceParameter = message.getApdu().getServiceParameters().get(1);
-		switch (serviceParameter.getPayload()[0]) {
-
-		case APDU.SYSTEM_STATUS:
-			LOG.info("System Status: 112");
-			return processSystemStatusMessage(message);
-		}
+//		final ServiceParameter serviceParameter = message.getApdu().getServiceParameters().get(1);
+//		switch (serviceParameter.getPayload()[0]) {
+//
+//		case APDU.SYSTEM_STATUS:
+//			LOG.info("System Status: 112");
+//			return processSystemStatusMessage(message);
+//
+//		default:
+//			throw new RuntimeException("Not implemented!");
+//		}
 
 		return null;
 	}

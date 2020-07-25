@@ -109,6 +109,8 @@ public class MulticastListenerReaderThread implements Runnable {
 					+ datagramPacketSocketAddress + " Data: "
 					+ Utils.byteArrayToStringNoPrefix(datagramPacket.getData()));
 
+			LOG.info(Utils.byteArrayToStringNoPrefix(data));
+
 			// parse and process the request message and return a response message
 			final Message request = parseBuffer(data, bytesReceived);
 			final Message response = sendMessageToController(request);

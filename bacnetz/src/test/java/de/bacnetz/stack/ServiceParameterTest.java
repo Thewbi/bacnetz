@@ -8,6 +8,7 @@ import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 import de.bacnetz.common.Utils;
+import de.bacnetz.controller.DefaultMessageController;
 
 public class ServiceParameterTest {
 
@@ -39,6 +40,22 @@ public class ServiceParameterTest {
 		assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
 		assertEquals(0x1F, serviceParameter.getPayload()[0]);
 		assertEquals(0x47, serviceParameter.getPayload()[1]);
+	}
+
+	@Test
+	public void testDeserializeServiceParameter() {
+
+		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("1a0173");
+
+		final ServiceParameter serviceParameter = new ServiceParameter();
+		final int bytesProcessed = serviceParameter.fromBytes(hexStringToByteArray, 0);
+
+		assertEquals(3, bytesProcessed);
+		assertEquals(1, serviceParameter.getTagNumber());
+		assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+		assertEquals(2, serviceParameter.getLengthValueType());
+		assertEquals(0x01, serviceParameter.getPayload()[0]);
+		assertEquals(0x73, serviceParameter.getPayload()[1]);
 	}
 
 	@Test
@@ -130,6 +147,28 @@ public class ServiceParameterTest {
 
 		// system status 112
 		assertEquals(0x70, serviceParameter.getPayload()[0]);
+	}
+
+	@Test
+	public void testObjectName() {
+
+		final byte[] expected = new byte[] { 0x75, 0x0d, 0x00, 0x44, 0x65, 0x76, 0x69, 0x63, 0x65, 0x5F, 0x49, 0x4F,
+				0x34, 0x32, 0x30, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+		final byte[] result = new byte[20];
+
+		final ServiceParameter objectNameServiceParameter = new ServiceParameter();
+		objectNameServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		objectNameServiceParameter.setTagNumber(ServiceParameter.APPLICATION_TAG_NUMBER_CHARACTER_STRING);
+		objectNameServiceParameter.setLengthValueType(ServiceParameter.EXTENDED_VALUE);
+		objectNameServiceParameter.setPayload(DefaultMessageController.retrieveAsString(Utils.OBJECT_NAME));
+
+		objectNameServiceParameter.toBytes(result, 0);
+
+		System.out.println("Result:   " + Utils.byteArrayToStringNoPrefix(result));
+		System.out.println("Expected: " + Utils.byteArrayToStringNoPrefix(expected));
+
+		assertTrue(Arrays.equals(result, expected));
 	}
 
 }

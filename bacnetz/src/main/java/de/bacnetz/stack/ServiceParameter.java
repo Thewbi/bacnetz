@@ -16,11 +16,13 @@ public class ServiceParameter {
 
 	public static final int UNSIGNED_INTEGER_CODE = 2;
 
-	public static final int APPLICATION_TAG_NUMBER_BIT_STRING = 8;
-
 	public static final int BACNET_OBJECT_IDENTIFIER = 12;
 
 	public static final int EXTENDED_VALUE = 0x05;
+
+	public static final int APPLICATION_TAG_NUMBER_CHARACTER_STRING = 7;
+
+	public static final int APPLICATION_TAG_NUMBER_BIT_STRING = 8;
 
 	private int tagNumber;
 
@@ -132,16 +134,21 @@ public class ServiceParameter {
 
 			if (ArrayUtils.isEmpty(payload)) {
 
+				// nop
+				break;
+
 			} else if (payload.length == 1) {
 
 				stringBuffer.append(Utils.byteArrayToStringNoPrefix(payload));
+				break;
 
 			} else if (payload.length == 2) {
 
 				final boolean bigEndian = true;
 				stringBuffer.append(Utils.bytesToUnsignedShort(payload[0], payload[1], bigEndian));
+				break;
 			}
-			break;
+			throw new RuntimeException("Cannot serialize!");
 		}
 
 		return stringBuffer.toString();
@@ -172,7 +179,7 @@ public class ServiceParameter {
 		} else if (tagClass == TagClass.APPLICATION_TAG) {
 
 			if (lengthValueType == ServiceParameter.EXTENDED_VALUE) {
-				return getPayload().length + 1;
+				return getPayload().length + 2;
 			}
 		}
 
@@ -189,7 +196,14 @@ public class ServiceParameter {
 		int index = 0;
 		data[offset + index++] = (byte) applicationTag;
 
+		// copy the payload in
 		if (ArrayUtils.isNotEmpty(payload)) {
+
+			if (lengthValueType == ServiceParameter.EXTENDED_VALUE) {
+				// payload length
+				data[offset + index++] = (byte) (payload.length);
+			}
+
 			System.arraycopy(payload, 0, data, offset + index, payload.length);
 			index += payload.length;
 		}

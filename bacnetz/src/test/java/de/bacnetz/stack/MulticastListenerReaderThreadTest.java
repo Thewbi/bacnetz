@@ -1,5 +1,10 @@
 package de.bacnetz.stack;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Arrays;
+
 import org.junit.jupiter.api.Test;
 
 import de.bacnetz.common.Utils;
@@ -144,6 +149,102 @@ public class MulticastListenerReaderThreadTest {
 		final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
 				hexStringToByteArray.length);
 		final Message response = multicastListenerReaderThread.sendMessageToController(request);
+	}
+
+	@Test
+	public void testDeserialize_PropertyList() {
+
+		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810a001201040275590c0c020027111a0173");
+
+		final DefaultMessageController defaultMessageController = new DefaultMessageController();
+
+		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
+		multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
+
+		final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
+				hexStringToByteArray.length);
+//		final Message response = multicastListenerReaderThread.sendMessageToController(request);
+
+		assertEquals(371, request.getApdu().getPropertyIdentifier());
+	}
+
+	@Test
+	public void testDeserialize_PropertyList_2() {
+
+		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810a001201040275540c0c00011a0173");
+
+		final DefaultMessageController defaultMessageController = new DefaultMessageController();
+
+		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
+		multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
+
+		final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
+				hexStringToByteArray.length);
+//		final Message response = multicastListenerReaderThread.sendMessageToController(request);
+
+		assertEquals(371, request.getApdu().getPropertyIdentifier());
+	}
+
+	@Test
+	public void testDeserialize_ReadPropertyMultiple() {
+
+		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810a001301040275530e0c00c000011e09081f");
+
+		final DefaultMessageController defaultMessageController = new DefaultMessageController();
+
+		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
+		multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
+
+		final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
+				hexStringToByteArray.length);
+//		final Message response = multicastListenerReaderThread.sendMessageToController(request);
+
+		assertEquals(0, request.getApdu().getPropertyIdentifier());
+		assertEquals(3, request.getApdu().getServiceParameters().size());
+
+		// opening tag
+		final ServiceParameter openingTagServiceParameter = request.getApdu().getServiceParameters().get(0);
+		assertEquals(6, openingTagServiceParameter.getLengthValueType());
+
+		// property identifier
+		final ServiceParameter propertyIdentifierServiceParameter = request.getApdu().getServiceParameters().get(1);
+		final byte[] expected = new byte[] { 0x08 };
+		assertTrue(Arrays.equals(propertyIdentifierServiceParameter.getPayload(), expected));
+
+		// closing tag
+		final ServiceParameter closeingTagServiceParameter = request.getApdu().getServiceParameters().get(2);
+		assertEquals(7, closeingTagServiceParameter.getLengthValueType());
+	}
+
+	@Test
+	public void testDeserialize_ReadPropertyMultiple2() {
+
+		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810A0012010402757A0C0C020027111A0173");
+
+		final DefaultMessageController defaultMessageController = new DefaultMessageController();
+
+		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
+		multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
+
+		final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
+				hexStringToByteArray.length);
+//		final Message response = multicastListenerReaderThread.sendMessageToController(request);
+
+		assertEquals(371, request.getApdu().getPropertyIdentifier());
+		assertEquals(0, request.getApdu().getServiceParameters().size());
+
+//		// opening tag
+//		final ServiceParameter openingTagServiceParameter = request.getApdu().getServiceParameters().get(0);
+//		assertEquals(6, openingTagServiceParameter.getLengthValueType());
+//
+//		// property identifier
+//		final ServiceParameter propertyIdentifierServiceParameter = request.getApdu().getServiceParameters().get(1);
+//		final byte[] expected = new byte[] { 0x08 };
+//		assertTrue(Arrays.equals(propertyIdentifierServiceParameter.getPayload(), expected));
+//
+//		// closing tag
+//		final ServiceParameter closeingTagServiceParameter = request.getApdu().getServiceParameters().get(2);
+//		assertEquals(7, closeingTagServiceParameter.getLengthValueType());
 	}
 
 }

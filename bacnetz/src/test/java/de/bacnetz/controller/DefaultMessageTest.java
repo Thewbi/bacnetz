@@ -87,4 +87,5 @@ public class DefaultMessageTest {
 
 		assertTrue(Arrays.equals(bytes, expected));
 	}
+
 }

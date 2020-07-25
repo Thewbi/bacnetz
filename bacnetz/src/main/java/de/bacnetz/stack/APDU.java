@@ -10,8 +10,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.bacnetz.common.Utils;
-
 /**
  * Application Layer Protocol Data Unit (APDU)
  * 
@@ -140,7 +138,11 @@ public class APDU {
 		}
 
 		// 1 Byte: service choice
+//		if (pduType == PDUType.ERROR_PDU) {
+//			data[offset + index++] = (byte) serviceChoice.getId();
+//		} else {
 		data[offset + index++] = (byte) serviceChoice.getId();
+//		}
 
 		// object identifier
 		if (objectIdentifierServiceParameter != null) {
@@ -272,9 +274,19 @@ public class APDU {
 		objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
 		index += objectIdentifierServiceParameter.fromBytes(data, offset + index);
 
-		final boolean bigEndian = true;
-		propertyIdentifier = Utils.bytesToUnsignedShort(data[offset + index], data[offset + index + 1], bigEndian);
-		index += 2;
+		final int context = data[offset + index++];
+		final int contextLength = context & 7;
+
+		// property identifier
+		propertyIdentifier = 0;
+		for (int i = 0; i < contextLength; i++) {
+			propertyIdentifier <<= 8;
+			propertyIdentifier += data[offset + index + i] & 0xFF;
+		}
+
+//		// property identifier
+//		final boolean bigEndian = true;
+//		propertyIdentifier = Utils.bytesToUnsignedShort(data[offset + index++], data[offset + index++], bigEndian);
 
 		return index;
 	}

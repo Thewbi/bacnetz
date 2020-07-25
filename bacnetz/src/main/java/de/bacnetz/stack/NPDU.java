@@ -181,6 +181,21 @@ public class NPDU {
 
 			// 1 byte: hopCount
 			dataLength += 1;
+		} 
+		
+		if (isSourceSpecifierPresent()) {
+
+			// 2 byte: source network address
+			dataLength += 2;
+
+			// 1 byte: mac layer address length
+			dataLength += 1;
+
+			// n bytes: for the mac itself
+			dataLength += destinationMACLayerAddressLength;
+
+			// 1 byte: hopCount
+//			dataLength += 1;
 		}
 
 		return dataLength;
@@ -195,11 +210,11 @@ public class NPDU {
 
 		if (isDestinationSpecifierPresent()) {
 
-			// 2 byte network number
+			// 2 byte destination network number
 			Utils.addShortToBuffer(data, offset + index, (short) destinationNetworkNumber);
 			index += 2;
+			
 			data[offset + index++] = (byte) destinationMACLayerAddressLength;
-
 			if (destinationMACLayerAddressLength > 0) {
 
 				for (int i = 0; i < destinationMACLayerAddressLength; i++) {
@@ -210,6 +225,27 @@ public class NPDU {
 			}
 
 			data[offset + index++] = (byte) destinationHopCount;
+			
+		} 
+		
+		if (isSourceSpecifierPresent()) {
+
+			// 2 byte source network number
+			Utils.addShortToBuffer(data, offset + index, (short) sourceNetworkAddress);
+			index += 2;
+			
+			data[offset + index++] = (byte) sourceMacLayerAddressLength;
+			if (sourceMacLayerAddressLength > 0) {
+
+				for (int i = 0; i < sourceMacLayerAddressLength; i++) {
+
+					data[offset + index++] = (byte) ((sourceMac >> (8 * (sourceMacLayerAddressLength - 1 - i))
+							& 0xFF));
+				}
+			}
+
+//			data[offset + index++] = (byte) destinationHopCount;
+			
 		}
 	}
 

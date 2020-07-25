@@ -12,6 +12,8 @@ public class ObjectIdentifierServiceParameter extends ServiceParameter {
 	public static final int OBJECT_TYPE_BINARY_INPUT = 3;
 
 	public static final int OBJECT_TYPE_DEVICE = 8;
+	
+	public static final int OBJECT_TYPE_NOTIFICATION_CLASS = 15;
 
 	public static final int OBJECT_TYPE_MULTI_STATE_VALUE = 19;
 
@@ -71,7 +73,8 @@ public class ObjectIdentifierServiceParameter extends ServiceParameter {
 		int index = 0;
 		data[offset + index++] = (byte) applicationTag;
 
-		final int payload = (OBJECT_TYPE_DEVICE << 22) | instanceNumber;
+//		final int payload = (OBJECT_TYPE_DEVICE << 22) | instanceNumber;
+		final int payload = (objectType << 22) | instanceNumber;
 
 		Utils.intToBuffer(payload, data, offset + index);
 		index += 4;

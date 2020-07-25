@@ -3,7 +3,7 @@
 
     <Properties>
         <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level (%F:%L) - %msg%n</Property>
-        <Property name="APP_LOG_ROOT">C:\\Temp\\logs\\bacnetz</Property>
+        <Property name="APP_LOG_ROOT">logs</Property>
     </Properties>
     
     <Appenders>
