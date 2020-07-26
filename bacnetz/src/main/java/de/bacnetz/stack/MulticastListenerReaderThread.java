@@ -109,7 +109,7 @@ public class MulticastListenerReaderThread implements Runnable {
 					+ datagramPacketSocketAddress + " Data: "
 					+ Utils.byteArrayToStringNoPrefix(datagramPacket.getData()));
 
-			LOG.info(Utils.byteArrayToStringNoPrefix(data));
+			LOG.info("<<< " + Utils.byteArrayToStringNoPrefix(data));
 
 			// parse and process the request message and return a response message
 			final Message request = parseBuffer(data, bytesReceived);
@@ -133,6 +133,9 @@ public class MulticastListenerReaderThread implements Runnable {
 
 		boolean broadcast = responseMessage.getApdu().getServiceChoice() == ServiceChoice.I_AM;
 		broadcast |= responseMessage.getApdu().getServiceChoice() == ServiceChoice.WHO_IS;
+
+		final byte[] bytes = responseMessage.getBytes();
+		LOG.info(">>> " + Utils.byteArrayToStringNoPrefix(bytes));
 
 		if (broadcast) {
 
@@ -166,6 +169,8 @@ public class MulticastListenerReaderThread implements Runnable {
 			throw new RuntimeException(
 					"Message is invalid! The length in the virtual link control does not match the real data length!");
 		}
+
+//		LOG.info(">>> " + Utils.byteArrayToStringNoPrefix(bytes));
 
 		final InetAddress destinationAddress = datagramPacketAddress;
 		final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, destinationAddress,
