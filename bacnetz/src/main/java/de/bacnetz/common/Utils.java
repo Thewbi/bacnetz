@@ -17,6 +17,8 @@ public class Utils {
 //	public static final int DEVICE_INSTANCE_NUMBER = 26;
 	public static final int DEVICE_INSTANCE_NUMBER = 10001;
 
+	public static final int DEVICE_MAC_ADDRESS = 0x001268;
+
 	public static final String OBJECT_NAME = "Device_IO420";
 
 	public static final String ENCODING_Cp1252 = "Cp1252";
@@ -93,6 +95,14 @@ public class Utils {
 		return (short) ((short) ((buffer[idx] & 0xff) << 8) + (buffer[idx + 1]));
 	}
 
+	/**
+	 * Converts four consecutive bytes starting at idx from within the buffer to a
+	 * single integer value.
+	 * 
+	 * @param buffer
+	 * @param idx
+	 * @return
+	 */
 	public static int bufferToInt(final byte[] buffer, final int idx) {
 		return ((buffer[idx] & 0xff) << 24) + ((buffer[idx + 1] & 0xff) << 16) + ((buffer[idx + 2] & 0xff) << 8)
 				+ (buffer[idx + 3] & 0xff);

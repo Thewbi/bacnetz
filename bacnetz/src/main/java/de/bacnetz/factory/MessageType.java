@@ -6,6 +6,8 @@ public enum MessageType {
 
 	INTEGER_PROPERTY,
 
+	BOOLEAN_PROPERTY,
+
 	ENUMERATED;
 
 }

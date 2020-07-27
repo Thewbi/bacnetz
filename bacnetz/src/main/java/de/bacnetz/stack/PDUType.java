@@ -6,10 +6,12 @@ public enum PDUType {
 
 	UNCONFIRMED_SERVICE_REQUEST_PDU(0x01),
 
-	COMPLEX_ACK_PDU(0x03), 
-	
+	SIMPLE_ACK_PDU(0x02),
+
+	COMPLEX_ACK_PDU(0x03),
+
 	ERROR_PDU(0x05),
-	
+
 	DEVICE_COMMUNICATION_CONTROL_PDU(0x04);
 
 	public static final int CONFIRMED_SERVICE_REQUEST_PDU_CODE = 0x00;
@@ -17,9 +19,9 @@ public enum PDUType {
 	public static final int UNCONFIRMED_SERVICE_REQUEST_PDU_CODE = 0x01;
 
 	public static final int COMPLEX_ACK_PDU_CODE = 0x03;
-	
+
 	public static final int ERROR_PDU_CODE = 0x05;
-	
+
 	public static final int DEVICE_COMMUNICATION_CONTROL_PDU_CODE = 0x04;
 
 	private final int id;
@@ -40,10 +42,10 @@ public enum PDUType {
 
 		case COMPLEX_ACK_PDU_CODE:
 			return COMPLEX_ACK_PDU;
-			
+
 		case ERROR_PDU_CODE:
 			return ERROR_PDU;
-			
+
 		case DEVICE_COMMUNICATION_CONTROL_PDU_CODE:
 			return DEVICE_COMMUNICATION_CONTROL_PDU;
 

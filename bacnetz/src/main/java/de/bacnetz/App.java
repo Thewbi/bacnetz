@@ -126,13 +126,19 @@ public class App {
 		final Map<NetworkInterface, List<InetAddress>> broadcastMap = new HashMap<>();
 
 		final Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+		int interfaceCount = 0;
+		int networkedInterfaceCount = 0;
 		while (interfaces.hasMoreElements()) {
+
+			interfaceCount++;
 
 			final NetworkInterface networkInterface = interfaces.nextElement();
 
 			if (networkInterface.isLoopback() || !networkInterface.isUp()) {
 				continue;
 			}
+
+			networkedInterfaceCount++;
 
 			final List<InetAddress> interfaceBroadcastList = new ArrayList<>();
 			broadcastMap.put(networkInterface, interfaceBroadcastList);
@@ -147,7 +153,10 @@ public class App {
 
 			networkInterface.getInterfaceAddresses().stream().map(a -> a.getBroadcast()).filter(Objects::nonNull)
 					.forEach(broadcastList::add);
+		}
 
+		if (interfaceCount == 0 || networkedInterfaceCount == 0) {
+			throw new RuntimeException("No interfaces found that are connected to a network!");
 		}
 
 		LOG.info("All");

@@ -16,9 +16,15 @@ public class ServiceParameter {
 
 	public static final int UNSIGNED_INTEGER_CODE = 2;
 
+	public static final int BOOLEAN_CODE = 3;
+
 	public static final int BACNET_OBJECT_IDENTIFIER = 12;
 
 	public static final int EXTENDED_VALUE = 0x05;
+
+	public static final int DATE = 0x0A;
+
+	public static final int TIME = 0x0B;
 
 	public static final int APPLICATION_TAG_NUMBER_CHARACTER_STRING = 7;
 

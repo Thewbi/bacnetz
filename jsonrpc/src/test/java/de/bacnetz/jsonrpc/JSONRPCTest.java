@@ -12,7 +12,8 @@ import org.junit.jupiter.api.Test;
 
 public class JSONRPCTest {
 
-	private static final String REMOTE_IP = "192.168.0.207";
+//	private static final String REMOTE_IP = "192.168.0.207";
+	private static final String REMOTE_IP = "192.168.0.248";
 
 	private static final int REMOTE_PORT = 1234;
 

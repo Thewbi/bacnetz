@@ -59,7 +59,9 @@ public enum ServiceChoice {
 	READ_PROPERTY(0x0C),
 
 	READ_PROPERTY_MULTIPLE(0x0E),
-	
+
+	WRITE_PROPERTY(0x0F),
+
 	DEVICE_COMMUNICATION_CONTROL(0x11),
 
 	UNNOWN_SERVICE_CHOICE(0xFFFFFFFF),
@@ -104,6 +106,8 @@ public enum ServiceChoice {
 	public static final int READ_PROPERTY_CODE = 0x0C;
 
 	public static final int READ_PROPERTY_MULTIPLE_CODE = 0x0E;
+
+	public static final int WRITE_PROPERTY_CODE = 0x0F;
 
 	public static final int UNNOWN_SERVICE_CHOICE_CODE = 0xFFFFFFFF; // 128
 
@@ -161,6 +165,9 @@ public enum ServiceChoice {
 
 		case READ_PROPERTY_MULTIPLE_CODE:
 			return READ_PROPERTY_MULTIPLE;
+
+		case WRITE_PROPERTY_CODE:
+			return WRITE_PROPERTY;
 
 		case UNNOWN_SERVICE_CHOICE_CODE:
 			return UNNOWN_SERVICE_CHOICE;

@@ -232,16 +232,111 @@ public class APDU {
 			break;
 
 		case READ_PROPERTY:
-			structureLength += processReadProperty(startIndex + offset, data);
+//			structureLength += processObjectAndPropertyIdentifier(startIndex + offset, data);
+			structureLength += readServiceParameters(startIndex + offset, data, payloadLength);
 			break;
 
 		case READ_PROPERTY_MULTIPLE:
 			structureLength += processReadPropertyMultiple(startIndex + offset, data);
 			break;
 
+		case WRITE_PROPERTY:
+			structureLength += processObjectAndPropertyIdentifier(startIndex + offset, data);
+			break;
+
 		default:
 			LOG.warn("Not implemented: " + serviceChoice.name());
 		}
+
+		// service parameters
+
+	}
+
+	private int readServiceParameters(final int offset, final byte[] data, final int payloadLength) {
+
+		int tempOffset = offset;
+
+//		final int index = 0;
+
+		// bacnet object identifier
+		objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+		tempOffset += objectIdentifierServiceParameter.fromBytes(data, tempOffset);
+		serviceParameters.add(objectIdentifierServiceParameter);
+
+		// property identifier service parameter
+		final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
+		tempOffset += propertyIdentifierServiceParameter.fromBytes(data, tempOffset);
+		serviceParameters.add(propertyIdentifierServiceParameter);
+
+		// property identifier
+		final int contextLength = propertyIdentifierServiceParameter.getLengthValueType();
+		propertyIdentifier = 0;
+		for (int i = 0; i < contextLength; i++) {
+			propertyIdentifier <<= 8;
+			propertyIdentifier += propertyIdentifierServiceParameter.getPayload()[i] & 0xFF;
+		}
+
+//		final int context = data[tempOffset + index++];
+//		final int contextLength = context & 7;
+//
+//		// property identifier
+//		propertyIdentifier = 0;
+//		for (int i = 0; i < contextLength; i++) {
+//			propertyIdentifier <<= 8;
+//			propertyIdentifier += data[tempOffset + index + i] & 0xFF;
+//		}
+//		
+//		tempOffset
+
+		// rest of the service parameters
+		while (tempOffset < payloadLength) {
+
+			final ServiceParameter serviceParameter = new ServiceParameter();
+			tempOffset += serviceParameter.fromBytes(data, tempOffset);
+
+			serviceParameters.add(serviceParameter);
+		}
+
+//		if (CollectionUtils.isNotEmpty(serviceParameters)) {
+//
+//			for (final ServiceParameter serviceParameter : serviceParameters) {
+//
+//				switch (serviceParameter.getTagNumber()) {
+//				case 0:
+//					// bacnet object identifier
+//					objectIdentifierServiceParameter = serviceParameter;
+//					break;
+//
+//				case 1:
+//					// property identifier
+//					propertyIdentifier = 0;
+//					for (int i = 0; i < serviceParameter.getPayload().length; i++) {
+//						propertyIdentifier <<= 8;
+//						propertyIdentifier += serviceParameter.getPayload()[i] & 0xFF;
+//					}
+//					break;
+//				}
+//
+//			}
+
+//			// bacnet object identifier
+//			objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+//			index += objectIdentifierServiceParameter.fromBytes(data, offset + index);
+//
+//			final int context = data[offset + index++];
+//			final int contextLength = context & 7;
+//
+//			// property identifier
+//			propertyIdentifier = 0;
+//			for (int i = 0; i < contextLength; i++) {
+//				propertyIdentifier <<= 8;
+//				propertyIdentifier += data[offset + index + i] & 0xFF;
+//			}
+//
+//		}
+
+		return tempOffset - offset;
+
 	}
 
 	public byte[] getBytes() {
@@ -258,7 +353,7 @@ public class APDU {
 	 * Read in data from the incoming byte array into the APDU. The APDU is later
 	 * put into a message object.
 	 * 
-	 * At this point the APDU structure has been parse up to the Service Choice.
+	 * At this point the APDU structure has been parsed up to the Service Choice.
 	 * 
 	 * TODO: this should be put into a converter.
 	 * 
@@ -266,7 +361,7 @@ public class APDU {
 	 * @param data
 	 * @return
 	 */
-	private int processReadProperty(final int offset, final byte[] data) {
+	private int processObjectAndPropertyIdentifier(final int offset, final byte[] data) {
 
 		int index = 0;
 
@@ -283,10 +378,6 @@ public class APDU {
 			propertyIdentifier <<= 8;
 			propertyIdentifier += data[offset + index + i] & 0xFF;
 		}
-
-//		// property identifier
-//		final boolean bigEndian = true;
-//		propertyIdentifier = Utils.bytesToUnsignedShort(data[offset + index++], data[offset + index++], bigEndian);
 
 		return index;
 	}
