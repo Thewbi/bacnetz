@@ -13,6 +13,25 @@ public class NetworkUtils {
 
 	private static final Logger LOG = LogManager.getLogger(NetworkUtils.class);
 
+//	public static final int DEVICE_INSTANCE_NUMBER = 26;
+	public static final int DEVICE_INSTANCE_NUMBER = 10001;
+
+	public static final int DEVICE_MAC_ADDRESS = 0x001268;
+//	public static final int DEVICE_MAC_ADDRESS = 0x001269;
+
+	public static final String OBJECT_NAME = "Device_IO420";
+
+	public static final String OBJECT_LOCATION = "Batcave";
+
+	public static final String VENDOR_NAME = "GEZE GmbH";
+
+	public static final String MODEL_NAME = "IO 420";
+
+	public static final String OBJECT_IDENTIFIER = "OBJECT_DEVICE:10001";
+
+//	public static final boolean ADD_ADDITIONAL_NETWORK_INFORMATION = true;
+	public static final boolean ADD_ADDITIONAL_NETWORK_INFORMATION = false;
+
 //	// Cockpit in local area network (test setup)
 	public static final String LOCAL_BIND_IP = "192.168.2.1";
 	public static final String BACNET_MULTICAST_IP = "192.168.2.255";
@@ -34,6 +53,10 @@ public class NetworkUtils {
 
 	/** 0xBAC0 == 47808d */
 	public static final int DEFAULT_PORT = 0xBAC0;
+
+	public static final String OBJECT_DESCRIPTION = "no entry";
+
+	public static final String PROFILE_NAME = "p1";
 
 	private static String hostAddress = null;
 

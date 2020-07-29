@@ -70,7 +70,9 @@ public enum ServiceChoice {
 
 	UNNOWN_SERVICE_CHOICE_129(0x81),
 
-	UNNOWN_SERVICE_CHOICE_130(0x82);
+	UNNOWN_SERVICE_CHOICE_130(0x82),
+
+	REINITIALIZE_DEVICE(0x14);
 
 	private static final Logger LOG = LogManager.getLogger(ServiceChoice.class);
 
@@ -102,6 +104,8 @@ public enum ServiceChoice {
 	public static final int UTC_TIME_SYNCHRONIZATION_CODE = 0x09;
 
 	public static final int WRITE_GROUP_CODE = 0x0A;
+
+	public static final int REINITIALIZE_DEVICE_CODE = 0x14;
 
 	public static final int READ_PROPERTY_CODE = 0x0C;
 
@@ -168,6 +172,9 @@ public enum ServiceChoice {
 
 		case WRITE_PROPERTY_CODE:
 			return WRITE_PROPERTY;
+
+		case REINITIALIZE_DEVICE_CODE:
+			return REINITIALIZE_DEVICE;
 
 		case UNNOWN_SERVICE_CHOICE_CODE:
 			return UNNOWN_SERVICE_CHOICE;

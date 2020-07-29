@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 
 import de.bacnetz.common.Utils;
+import de.bacnetz.common.utils.NetworkUtils;
 
 public class NPDUTest {
 
@@ -80,7 +81,7 @@ public class NPDUTest {
 		// source network information
 		assertEquals(0x012E, npdu.getSourceNetworkAddress());
 		assertEquals(0x03, npdu.getSourceMacLayerAddressLength());
-		assertEquals(Utils.DEVICE_MAC_ADDRESS, npdu.getSourceMac());
+		assertEquals(NetworkUtils.DEVICE_MAC_ADDRESS, npdu.getSourceMac());
 	}
 
 	@Test
@@ -110,7 +111,7 @@ public class NPDUTest {
 		npdu.setControl(0x08);
 		npdu.setSourceNetworkAddress(999);
 		npdu.setSourceMacLayerAddressLength(2);
-		npdu.setSourceMac(Utils.DEVICE_INSTANCE_NUMBER);
+		npdu.setSourceMac(NetworkUtils.DEVICE_INSTANCE_NUMBER);
 
 		final byte[] data = new byte[10];
 

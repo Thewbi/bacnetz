@@ -1,10 +1,6 @@
 package de.bacnetz.stack;
 
-import java.util.BitSet;
-
-public class BACnetServicesSupportedBitString {
-
-	private final BitSet bitSet = new BitSet();
+public class BACnetServicesSupportedBitString extends BaseBitString {
 
 	/** 0 */
 	private boolean acknowledgeAlarm;
@@ -553,21 +549,6 @@ public class BACnetServicesSupportedBitString {
 		this.writeGroup = writeGroup;
 		final int start = 40;
 		setBit(writeGroup, start);
-	}
-
-	public BitSet getBitSet() {
-		return bitSet;
-	}
-
-	private void setBit(final boolean data, final int start) {
-		final int byteIndex = start / 8;
-		final int bitIndex = 7 - (start % 8);
-		final int startIndex = byteIndex * 8 + bitIndex;
-		setBooleanValueAt(bitSet, startIndex, data);
-	}
-
-	private void setBooleanValueAt(final BitSet bitSet, final int start, final boolean data) {
-		bitSet.set(start, data);
 	}
 
 }

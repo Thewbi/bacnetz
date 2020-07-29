@@ -207,11 +207,13 @@ public class APDU {
 		if (segmentedResponseAccepted || pduType == PDUType.CONFIRMED_SERVICE_REQUEST_PDU) {
 			segmentationControl = data[startIndex + offset] & 0xFF;
 			offset++;
+			structureLength++;
 
 			// TODO: when is there a invokeID???
 			// invoke ID
 			invokeId = data[startIndex + offset] & 0xFF;
 			offset++;
+			structureLength++;
 		}
 
 		// service choice
@@ -244,12 +246,30 @@ public class APDU {
 			structureLength += processObjectAndPropertyIdentifier(startIndex + offset, data);
 			break;
 
+		case REINITIALIZE_DEVICE:
+			structureLength += processReinitialize(startIndex + offset, data);
+			break;
+
 		default:
 			LOG.warn("Not implemented: " + serviceChoice.name());
 		}
+	}
 
-		// service parameters
+	private int processReinitialize(final int offset, final byte[] data) {
 
+		int tempOffset = offset;
+
+		// payload contains type of requested initialization (1 = warmstart)
+		final ServiceParameter reinitializeStateOfDeviceServiceParameter = new ServiceParameter();
+		tempOffset += reinitializeStateOfDeviceServiceParameter.fromBytes(data, tempOffset);
+		serviceParameters.add(reinitializeStateOfDeviceServiceParameter);
+
+		// payload contains the password
+		final ServiceParameter passwordServiceParameter = new ServiceParameter();
+		tempOffset += passwordServiceParameter.fromBytes(data, tempOffset);
+		serviceParameters.add(passwordServiceParameter);
+
+		return tempOffset - offset;
 	}
 
 	private int readServiceParameters(final int offset, final byte[] data, final int payloadLength) {

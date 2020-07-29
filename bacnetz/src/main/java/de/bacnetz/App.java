@@ -25,12 +25,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.bacnet.factory.MessageType;
 import de.bacnetz.common.Utils;
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.controller.DefaultMessageController;
 import de.bacnetz.controller.Message;
 import de.bacnetz.factory.MessageFactory;
-import de.bacnetz.factory.MessageType;
 import de.bacnetz.stack.IPv4Packet;
 import de.bacnetz.stack.MulticastListenerReaderThread;
 import de.bacnetz.stack.UDPPacket;

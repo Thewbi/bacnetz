@@ -10,13 +10,15 @@ public class ServiceParameter {
 
 	public static final int OPENING_TAG_CODE = 6;
 
+	public static final int EXTENDED_TAG_CODE = 5;
+
 	public static final int ENUMERATED_CODE = 9;
 
 	public static final int UNKOWN_TAG_NUMBER = 1;
 
 	public static final int UNSIGNED_INTEGER_CODE = 2;
 
-	public static final int BOOLEAN_CODE = 3;
+	public static final int BOOLEAN_CODE = 1;
 
 	public static final int BACNET_OBJECT_IDENTIFIER = 12;
 
@@ -29,6 +31,8 @@ public class ServiceParameter {
 	public static final int APPLICATION_TAG_NUMBER_CHARACTER_STRING = 7;
 
 	public static final int APPLICATION_TAG_NUMBER_BIT_STRING = 8;
+
+	public static final int SIGNED_INTEGER_TWOS_COMMPLEMENT_NOTATION = 3;
 
 	private int tagNumber;
 
@@ -70,6 +74,8 @@ public class ServiceParameter {
 		// lower three bits are either a length value or a type value
 		lengthValueType = (data[offset + 0] & 0x07) >> 0;
 
+		length++;
+
 		if (tagNumber == 0 && tagClass == null && lengthValueType == 0) {
 			return 0;
 		}
@@ -82,16 +88,28 @@ public class ServiceParameter {
 
 			// tag number 7 is closing bracket without any payload
 
+		} else if (lengthValueType == EXTENDED_TAG_CODE) {
+
+			final int payloadLength = data[offset + 1];
+			length++;
+
+			payload = new byte[payloadLength];
+			System.arraycopy(data, offset + 2, payload, 0, payloadLength);
+
+			length += payloadLength;
+
 		} else {
 
 			payload = new byte[lengthValueType];
 			System.arraycopy(data, offset + 1, payload, 0, lengthValueType);
+//			System.arraycopy(data, offset + 1, payload, 0, lengthValueType + 1);
+//			System.arraycopy(data, offset + 2, payload, 0, lengthValueType);
 
-			length = lengthValueType;
+			length += lengthValueType;
 
 		}
 
-		return length + 1;
+		return length;
 	}
 
 	@Override
@@ -132,32 +150,48 @@ public class ServiceParameter {
 				break;
 
 			default:
-				throw new RuntimeException("Unknown Application Tag: " + tagNumber);
+				stringBuffer.append("Unknown Application Tag: " + tagNumber);
 			}
 			break;
 
 		case CONTEXT_SPECIFIC_TAG:
 
-			if (ArrayUtils.isEmpty(payload)) {
+//			outputPayload(stringBuffer);
 
-				// nop
+			switch (lengthValueType) {
+
+			case ServiceParameter.OPENING_TAG_CODE:
+				stringBuffer.append("{[").append(tagNumber).append("]");
 				break;
 
-			} else if (payload.length == 1) {
-
-				stringBuffer.append(Utils.byteArrayToStringNoPrefix(payload));
+			case ServiceParameter.CLOSING_TAG_CODE:
+				stringBuffer.append("}[").append(tagNumber).append("]");
 				break;
 
-			} else if (payload.length == 2) {
-
-				final boolean bigEndian = true;
-				stringBuffer.append(Utils.bytesToUnsignedShort(payload[0], payload[1], bigEndian));
-				break;
+			default:
+				stringBuffer.append("Unknown Context Specific Tag: " + lengthValueType);
 			}
-			throw new RuntimeException("Cannot serialize!");
+
+			break;
 		}
 
 		return stringBuffer.toString();
+	}
+
+	private void outputPayload(final StringBuffer stringBuffer) {
+		if (ArrayUtils.isEmpty(payload)) {
+
+			// nop
+
+		} else if (payload.length == 1) {
+
+			stringBuffer.append(Utils.byteArrayToStringNoPrefix(payload));
+
+		} else if (payload.length == 2) {
+
+			final boolean bigEndian = true;
+			stringBuffer.append(Utils.bytesToUnsignedShort(payload[0], payload[1], bigEndian));
+		}
 	}
 
 	public int getInstanceNumber() {
