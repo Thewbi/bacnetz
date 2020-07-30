@@ -16,6 +16,13 @@
 	
 	<dependencies>
 	
+		<!-- bacnetz -->
+		<dependency>
+			<groupId>de.bacnetz</groupId>
+			<artifactId>common</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+	
 		<!-- Without this, JUnit tests won't run on macos! 
 		https://github.com/iluwatar/java-design-patterns/issues/1007-->
 		<dependency>
@@ -23,6 +30,7 @@
             <artifactId>junit-platform-commons</artifactId>
             <version>1.5.2</version>
  		</dependency>
+ 		
 	</dependencies>
 	
 </project>

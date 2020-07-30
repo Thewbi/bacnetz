@@ -77,4 +77,10 @@ public interface DeviceProperty {
 
 	void setPropertyName(String propertyName);
 
+	boolean isBooleanValue();
+
+	void setBooleanValue(boolean booleanValue);
+
+	int getLengthTagValue();
+
 }

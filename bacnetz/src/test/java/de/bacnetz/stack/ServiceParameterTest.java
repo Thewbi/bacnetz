@@ -7,6 +7,7 @@ import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 
+import de.bacnet.factory.MessageType;
 import de.bacnetz.common.Utils;
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.controller.DefaultMessageController;
@@ -165,6 +166,50 @@ public class ServiceParameterTest {
 		objectNameServiceParameter.setPayload(DefaultMessageController.retrieveAsString(NetworkUtils.OBJECT_NAME));
 
 		objectNameServiceParameter.toBytes(result, 0);
+
+		System.out.println("Result:   " + Utils.byteArrayToStringNoPrefix(result));
+		System.out.println("Expected: " + Utils.byteArrayToStringNoPrefix(expected));
+
+		assertTrue(Arrays.equals(result, expected));
+	}
+
+	@Test
+	public void testSerializeBooleanTrue() {
+
+		final byte[] expected = new byte[] { 0x11, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+		final byte[] result = new byte[20];
+
+		final ServiceParameter valueServiceParameter = new ServiceParameter();
+		valueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		valueServiceParameter.setTagNumber(MessageType.BOOLEAN_PROPERTY.getValue());
+		valueServiceParameter.setLengthValueType(0x01);
+//		valueServiceParameter.setPayload(new byte[] { 0x01 });
+
+		valueServiceParameter.toBytes(result, 0);
+
+		System.out.println("Result:   " + Utils.byteArrayToStringNoPrefix(result));
+		System.out.println("Expected: " + Utils.byteArrayToStringNoPrefix(expected));
+
+		assertTrue(Arrays.equals(result, expected));
+	}
+
+	@Test
+	public void testSerializeBooleanFalse() {
+
+		final byte[] expected = new byte[] { 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+		final byte[] result = new byte[20];
+
+		final ServiceParameter valueServiceParameter = new ServiceParameter();
+		valueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		valueServiceParameter.setTagNumber(MessageType.BOOLEAN_PROPERTY.getValue());
+		valueServiceParameter.setLengthValueType(0x00);
+//		valueServiceParameter.setPayload(new byte[] { 0x01 });
+
+		valueServiceParameter.toBytes(result, 0);
 
 		System.out.println("Result:   " + Utils.byteArrayToStringNoPrefix(result));
 		System.out.println("Expected: " + Utils.byteArrayToStringNoPrefix(expected));

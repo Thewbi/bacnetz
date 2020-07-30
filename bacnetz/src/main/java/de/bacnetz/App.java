@@ -30,9 +30,12 @@ import de.bacnetz.common.Utils;
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.controller.DefaultMessageController;
 import de.bacnetz.controller.Message;
+import de.bacnetz.devices.DefaultDevice;
+import de.bacnetz.devices.Device;
 import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.stack.IPv4Packet;
 import de.bacnetz.stack.MulticastListenerReaderThread;
+import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.UDPPacket;
 
 /**
@@ -230,7 +233,135 @@ public class App {
 
 		final Map<Integer, String> vendorMap = readVendorMap("src/main/resources/BACnetVendors.csv");
 
+		final Device device = new DefaultDevice();
+		device.setId(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+		device.setName(NetworkUtils.OBJECT_NAME);
+		device.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+
+		Device childDevice = null;
+
+		// 1
+		// apdu.getServiceParameters().add(createMultiStateValueServiceParameter(1));
+		childDevice = new DefaultDevice();
+		childDevice.setId(1);
+		childDevice.setName("module_type");
+		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		device.getChildDevices().add(childDevice);
+
+		// 2
+//		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(2));
+		childDevice = new DefaultDevice();
+		childDevice.setId(2);
+		childDevice.setName("alarm_type");
+		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		device.getChildDevices().add(childDevice);
+
+		// 3
+//		apdu.getServiceParameters().add(binaryInputServiceParameter(1));
+		childDevice = new DefaultDevice();
+		childDevice.setId(1);
+		childDevice.setName("door1_close_state");
+		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_BINARY_INPUT);
+		device.getChildDevices().add(childDevice);
+
+		// 4
+//		apdu.getServiceParameters().add(binaryInputServiceParameter(2));
+		childDevice = new DefaultDevice();
+		childDevice.setId(2);
+		childDevice.setName("door2_close_state");
+		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_BINARY_INPUT);
+		device.getChildDevices().add(childDevice);
+
+		// 5
+//		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(3));
+		childDevice = new DefaultDevice();
+		childDevice.setId(3);
+		childDevice.setName("door1_state");
+		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		device.getChildDevices().add(childDevice);
+
+		// 6
+//		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(4));
+		childDevice = new DefaultDevice();
+		childDevice.setId(4);
+		childDevice.setName("door1_command");
+		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		device.getChildDevices().add(childDevice);
+
+		// 7
+//		apdu.getServiceParameters().add(createNotificationClassServiceParameter(50));
+		childDevice = new DefaultDevice();
+		childDevice.setId(50);
+		childDevice.setName("notificaton_class_object");
+		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_NOTIFICATION_CLASS);
+		device.getChildDevices().add(childDevice);
+
+		// 8
+//		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(5));
+		childDevice = new DefaultDevice();
+		childDevice.setId(5);
+		childDevice.setName("door2_state");
+		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		device.getChildDevices().add(childDevice);
+
+		// 9
+//		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(6));
+		childDevice = new DefaultDevice();
+		childDevice.setId(6);
+		childDevice.setName("door2_command");
+		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		device.getChildDevices().add(childDevice);
+
+		// 10
+//		apdu.getServiceParameters().add(binaryInputServiceParameter(3));
+		childDevice = new DefaultDevice();
+		childDevice.setId(3);
+		childDevice.setName("door3_close_state");
+		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_BINARY_INPUT);
+		device.getChildDevices().add(childDevice);
+
+		// 11
+//		apdu.getServiceParameters().add(binaryInputServiceParameter(4));
+		childDevice = new DefaultDevice();
+		childDevice.setId(4);
+		childDevice.setName("door4_close_state");
+		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_BINARY_INPUT);
+		device.getChildDevices().add(childDevice);
+
+		// 12
+//		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(7));
+		childDevice = new DefaultDevice();
+		childDevice.setId(7);
+		childDevice.setName("door3_state");
+		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		device.getChildDevices().add(childDevice);
+
+		// 13
+//		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(8));
+		childDevice = new DefaultDevice();
+		childDevice.setId(8);
+		childDevice.setName("door3_command");
+		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		device.getChildDevices().add(childDevice);
+
+		// 14
+//		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(9));
+		childDevice = new DefaultDevice();
+		childDevice.setId(9);
+		childDevice.setName("door4_state");
+		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		device.getChildDevices().add(childDevice);
+
+		// 15
+//		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(10));
+		childDevice = new DefaultDevice();
+		childDevice.setId(10);
+		childDevice.setName("door4_command");
+		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		device.getChildDevices().add(childDevice);
+
 		final DefaultMessageController defaultMessageController = new DefaultMessageController();
+		defaultMessageController.setDevice(device);
 		defaultMessageController.setVendorMap(vendorMap);
 
 		final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();

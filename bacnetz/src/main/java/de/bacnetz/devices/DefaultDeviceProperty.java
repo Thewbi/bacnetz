@@ -10,6 +10,8 @@ public class DefaultDeviceProperty implements DeviceProperty {
 
 	private byte[] value;
 
+	private boolean booleanValue;
+
 	private MessageType messageType;
 
 	/**
@@ -26,6 +28,24 @@ public class DefaultDeviceProperty implements DeviceProperty {
 		this.propertyKey = propertyKey;
 		this.value = value;
 		this.messageType = messageType;
+	}
+
+	public DefaultDeviceProperty(final String propertyName, final int propertyKey, final boolean booleanValue,
+			final MessageType messageType) {
+		super();
+		this.propertyName = propertyName;
+		this.propertyKey = propertyKey;
+		this.booleanValue = booleanValue;
+		this.messageType = messageType;
+	}
+
+	@Override
+	public int getLengthTagValue() {
+		if (messageType == MessageType.BOOLEAN_PROPERTY) {
+			return isBooleanValue() ? 0x01 : 0x00;
+		} else {
+			return getValue().length;
+		}
 	}
 
 	@Override
@@ -66,6 +86,16 @@ public class DefaultDeviceProperty implements DeviceProperty {
 	@Override
 	public void setPropertyName(final String propertyName) {
 		this.propertyName = propertyName;
+	}
+
+	@Override
+	public boolean isBooleanValue() {
+		return booleanValue;
+	}
+
+	@Override
+	public void setBooleanValue(final boolean booleanValue) {
+		this.booleanValue = booleanValue;
 	}
 
 }

@@ -1,16 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-
 	<groupId>de.bacnetz</groupId>
-	<artifactId>bacnetz</artifactId>
+	<artifactId>common</artifactId>
 	<version>1.0.0</version>
-
-	<name>bacnetz</name>
-	<url>https://github.com/Thewbi/bacnetz</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -32,18 +27,6 @@
 	</build>
 
 	<dependencies>
-
-		<!-- bacnetz -->
-		<dependency>
-			<groupId>de.bacnetz</groupId>
-			<artifactId>api</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>de.bacnetz</groupId>
-			<artifactId>common</artifactId>
-			<version>1.0.0</version>
-		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
 		<dependency>
@@ -72,13 +55,12 @@
 			<version>5.4.2</version>
 			<scope>test</scope>
 		</dependency>
-		<!-- Without this, JUnit tests won't run on macos! 
-		https://github.com/iluwatar/java-design-patterns/issues/1007-->
+		<!-- Without this, JUnit tests won't run on macos! https://github.com/iluwatar/java-design-patterns/issues/1007 -->
 		<dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-commons</artifactId>
-            <version>1.5.2</version>
- 		</dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-commons</artifactId>
+			<version>1.5.2</version>
+		</dependency>
 
 		<!-- logging -->
 		<dependency>
