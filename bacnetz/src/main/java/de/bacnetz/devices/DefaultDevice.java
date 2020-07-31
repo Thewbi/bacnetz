@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -501,7 +502,14 @@ public class DefaultDevice implements Device {
 	}
 
 	protected Message processPresentValueProperty(final int propertyIdentifierCode, final Message requestMessage) {
-		throw new RuntimeException("processPresentValueProperty");
+
+		if (StringUtils.equalsIgnoreCase(name, "module_type")) {
+			return getMessageFactory().create(MessageType.ENUMERATED, NetworkUtils.DEVICE_INSTANCE_NUMBER,
+					requestMessage.getApdu().getInvokeId(), propertyIdentifierCode, new byte[] { (byte) 0x04 });
+		}
+
+		return getMessageFactory().create(MessageType.ENUMERATED, NetworkUtils.DEVICE_INSTANCE_NUMBER,
+				requestMessage.getApdu().getInvokeId(), propertyIdentifierCode, new byte[] { (byte) 0x01 });
 	}
 
 	private Message processStatusFlagsProperty(final int propertyIdentifierCode, final Message requestMessage) {
