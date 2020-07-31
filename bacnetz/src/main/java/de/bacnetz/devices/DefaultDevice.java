@@ -174,16 +174,22 @@ public class DefaultDevice implements Device {
                 new byte[] { (byte) 0x00 }, MessageType.BOOLEAN_PROPERTY);
         properties.put(deviceProperty.getPropertyKey(), deviceProperty);
 
+        // 0x77 = 119d utc-offset
+        deviceProperty = new DefaultDeviceProperty("utc-offset", DeviceProperty.UTC_OFFSET, new byte[] { (byte) 0xC4 },
+                MessageType.SINGED_INTEGER_TWOS_COMPLEMENT_NOTATION_PROPERTY);
+        properties.put(deviceProperty.getPropertyKey(), deviceProperty);
+
         // 0x78 = 120d vendor-identifier
         // 0x021A = 538 = GEZE GmbH
         deviceProperty = new DefaultDeviceProperty("vendor-identifier", DeviceProperty.VENDOR_IDENTIFIER,
                 new byte[] { (byte) 0x02, (byte) 0x1A }, MessageType.INTEGER_PROPERTY);
         properties.put(deviceProperty.getPropertyKey(), deviceProperty);
 
-        // 0x77 = 119d utc-offset
-        deviceProperty = new DefaultDeviceProperty("utc-offset", DeviceProperty.UTC_OFFSET, new byte[] { (byte) 0xC4 },
-                MessageType.SINGED_INTEGER_TWOS_COMPLEMENT_NOTATION_PROPERTY);
-        properties.put(deviceProperty.getPropertyKey(), deviceProperty);
+//        // 0x79 = 121d vendor-name
+//        // 0x021A = 538 = GEZE GmbH
+//        deviceProperty = new DefaultDeviceProperty("vendor-name", DeviceProperty.VENDOR_NAME,
+//                new byte[] { (byte) 0x02, (byte) 0x1A }, MessageType.INTEGER_PROPERTY);
+//        properties.put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0xC1 = 193d
         deviceProperty = new DefaultDeviceProperty("align-intervals", DeviceProperty.ALIGN_INTERVALS, true,

@@ -617,7 +617,7 @@ public class DefaultMessageController implements MessageController {
 
                 for (final DeviceProperty deviceProperty : device.getProperties().values()) {
 
-                    LOG.info("Adding ServiceParameter for DeviceProperty: " + deviceProperty + " ...");
+                    LOG.trace("Adding ServiceParameter for DeviceProperty: " + deviceProperty + " ...");
 
                     // add the property identifier
                     final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
@@ -685,7 +685,7 @@ public class DefaultMessageController implements MessageController {
         openingTagServiceParameter.setTagNumber(0x04);
         openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
         apdu.getServiceParameters().add(openingTagServiceParameter);
-        LOG.info(openingTagServiceParameter);
+        LOG.trace(openingTagServiceParameter);
 
         final ServiceParameter valueServiceParameter = new ServiceParameter();
         valueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
@@ -693,7 +693,7 @@ public class DefaultMessageController implements MessageController {
         valueServiceParameter.setLengthValueType(deviceProperty.getLengthTagValue());
         valueServiceParameter.setPayload(deviceProperty.getValue());
         apdu.getServiceParameters().add(valueServiceParameter);
-        LOG.info(valueServiceParameter);
+        LOG.trace(valueServiceParameter);
 
         // closing tag }[4]
         final ServiceParameter closingTagServiceParameter = new ServiceParameter();
@@ -701,7 +701,7 @@ public class DefaultMessageController implements MessageController {
         closingTagServiceParameter.setTagNumber(0x04);
         closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
         apdu.getServiceParameters().add(closingTagServiceParameter);
-        LOG.info(closingTagServiceParameter);
+        LOG.trace(closingTagServiceParameter);
     }
 
     private Message processSystemStatusMessage(final Message message) {

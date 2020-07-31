@@ -69,6 +69,8 @@ public interface DeviceProperty {
 
     public static final int STATE_TEXT = 0x6E;
 
+    public static final int VENDOR_NAME = 0x79;
+
     int getPropertyKey();
 
     void setPropertyKey(int propertyKey);
