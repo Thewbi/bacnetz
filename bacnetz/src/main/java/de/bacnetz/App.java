@@ -30,6 +30,7 @@ import de.bacnetz.common.Utils;
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.controller.DefaultMessageController;
 import de.bacnetz.controller.Message;
+import de.bacnetz.devices.BinaryInputDevice;
 import de.bacnetz.devices.DefaultDevice;
 import de.bacnetz.devices.Device;
 import de.bacnetz.factory.MessageFactory;
@@ -261,7 +262,7 @@ public class App {
 
 		// 3
 //		apdu.getServiceParameters().add(binaryInputServiceParameter(1));
-		childDevice = new DefaultDevice();
+		childDevice = new BinaryInputDevice();
 		childDevice.setId(1);
 		childDevice.setName("door1_close_state");
 		childDevice.setVendorMap(vendorMap);
@@ -270,7 +271,7 @@ public class App {
 
 		// 4
 //		apdu.getServiceParameters().add(binaryInputServiceParameter(2));
-		childDevice = new DefaultDevice();
+		childDevice = new BinaryInputDevice();
 		childDevice.setId(2);
 		childDevice.setName("door2_close_state");
 		childDevice.setVendorMap(vendorMap);
@@ -323,7 +324,7 @@ public class App {
 
 		// 10
 //		apdu.getServiceParameters().add(binaryInputServiceParameter(3));
-		childDevice = new DefaultDevice();
+		childDevice = new BinaryInputDevice();
 		childDevice.setId(3);
 		childDevice.setName("door3_close_state");
 		childDevice.setVendorMap(vendorMap);
@@ -332,7 +333,7 @@ public class App {
 
 		// 11
 //		apdu.getServiceParameters().add(binaryInputServiceParameter(4));
-		childDevice = new DefaultDevice();
+		childDevice = new BinaryInputDevice();
 		childDevice.setId(4);
 		childDevice.setName("door4_close_state");
 		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_BINARY_INPUT);

@@ -254,12 +254,6 @@ public class MessageFactory implements Factory<Message> {
 
 		final NPDU npdu = new NPDU();
 		npdu.setVersion(0x01);
-//		npdu.setControl(0x00);
-
-//		npdu.setControl(0x20);
-//		npdu.setSourceNetworkAddress(requestMessage.getNpdu().getDestinationNetworkNumber());
-//		npdu.setDestinationMACLayerAddressLength(requestMessage.getNpdu().getDestinationMACLayerAddressLength());
-//		npdu.setDestinationMac(requestMessage.getNpdu().getDestinationMac());
 
 		// no additional information
 		npdu.setControl(0x00);
@@ -277,8 +271,6 @@ public class MessageFactory implements Factory<Message> {
 
 		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
 		objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-		// who are context tag numbers determined???
-//		objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
 		objectIdentifierServiceParameter.setTagNumber(0x00);
 		objectIdentifierServiceParameter.setLengthValueType(4);
 		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
@@ -286,8 +278,6 @@ public class MessageFactory implements Factory<Message> {
 
 		final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
 		propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-		// who are context tag numbers determined???
-//		protocolServicesSupportedServiceParameter.setTagNumber(ServiceParameter.UNKOWN_TAG_NUMBER);
 		propertyIdentifierServiceParameter.setTagNumber(0x01);
 		propertyIdentifierServiceParameter.setLengthValueType(1);
 		propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) propertyKey });
@@ -313,7 +303,6 @@ public class MessageFactory implements Factory<Message> {
 		apdu.setInvokeId(invokeId);
 		apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
 		apdu.setVendorMap(vendorMap);
-//		apdu.setObjectIdentifierServiceParameter(objectIdentifierServiceParameter);
 		apdu.getServiceParameters().add(objectIdentifierServiceParameter);
 		apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
 		apdu.getServiceParameters().add(openingTagServiceParameter);
@@ -364,8 +353,6 @@ public class MessageFactory implements Factory<Message> {
 
 		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
 		objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-		// who are context tag numbers determined???
-//		objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
 		objectIdentifierServiceParameter.setTagNumber(0x00);
 		objectIdentifierServiceParameter.setLengthValueType(4);
 		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
@@ -373,8 +360,6 @@ public class MessageFactory implements Factory<Message> {
 
 		final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
 		propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-		// who are context tag numbers determined???
-//		protocolServicesSupportedServiceParameter.setTagNumber(ServiceParameter.UNKOWN_TAG_NUMBER);
 		propertyIdentifierServiceParameter.setTagNumber(0x01);
 		propertyIdentifierServiceParameter.setLengthValueType(1);
 		propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) propertyKey });
@@ -387,9 +372,7 @@ public class MessageFactory implements Factory<Message> {
 		final ServiceParameter valueServiceParameter = new ServiceParameter();
 		valueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
 		valueServiceParameter.setTagNumber(ServiceParameter.BOOLEAN_CODE);
-//		valueServiceParameter.setLengthValueType(payload.length);
 		valueServiceParameter.setLengthValueType(payload ? 1 : 0);
-//		valueServiceParameter.setPayload(payload);
 
 		final ServiceParameter closingTagServiceParameter = new ServiceParameter();
 		closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -401,7 +384,6 @@ public class MessageFactory implements Factory<Message> {
 		apdu.setInvokeId(invokeId);
 		apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
 		apdu.setVendorMap(vendorMap);
-//		apdu.setObjectIdentifierServiceParameter(objectIdentifierServiceParameter);
 		apdu.getServiceParameters().add(objectIdentifierServiceParameter);
 		apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
 		apdu.getServiceParameters().add(openingTagServiceParameter);

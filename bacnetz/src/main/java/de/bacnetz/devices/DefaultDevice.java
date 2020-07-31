@@ -21,11 +21,13 @@ import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.BACnetProtocolObjectTypesSupportedBitString;
 import de.bacnetz.stack.BACnetServicesSupportedBitString;
+import de.bacnetz.stack.BaseBitString;
 import de.bacnetz.stack.NPDU;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.PDUType;
 import de.bacnetz.stack.ServiceChoice;
 import de.bacnetz.stack.ServiceParameter;
+import de.bacnetz.stack.StatusFlagsBitString;
 import de.bacnetz.stack.TagClass;
 import de.bacnetz.stack.VirtualLinkControl;
 
@@ -398,15 +400,15 @@ public class DefaultDevice implements Device {
 				LOG.info("<<< READ_PROP: object-list ({})", propertyIdentifierCode);
 				return processObjectListRequest(propertyIdentifierCode, requestMessage);
 
-			// 0x4d = 77d (0x4d = 77d) object name
+			// 0x4d = 77d (0x4d = 77d) object-name
 			case 0x4d:
 				LOG.info("<<< READ_PROP: object-name ({})", propertyIdentifierCode);
 				return processObjectNameProperty(propertyIdentifierCode, requestMessage);
 
-			// 0x74 = 116d
-			case 0x74:
-				LOG.info("<<< READ_PROP: time-synchronization-recipients ({})", propertyIdentifierCode);
-				return processTimeSynchronizationRecipientsProperty(propertyIdentifierCode, requestMessage);
+			// 0x55 = 85d, present-value
+			case 0x55:
+				LOG.info("<<< READ_PROP: present-value ({})", propertyIdentifierCode);
+				return processPresentValueProperty(propertyIdentifierCode, requestMessage);
 
 			// 0x60 = 96d protocol-services-supported
 			//
@@ -429,7 +431,13 @@ public class DefaultDevice implements Device {
 			// = 111d, status-flags
 			// see bacnet_device25_object_list.pcapng - message 11702
 			case 0x6F:
-				throw new RuntimeException("Not implemented!");
+				LOG.info("<<< READ_PROP: status-flags ({})", propertyIdentifierCode);
+				return processStatusFlagsProperty(propertyIdentifierCode, requestMessage);
+
+			// 0x74 = 116d
+			case 0x74:
+				LOG.info("<<< READ_PROP: time-synchronization-recipients ({})", propertyIdentifierCode);
+				return processTimeSynchronizationRecipientsProperty(propertyIdentifierCode, requestMessage);
 
 			// 0x79 = 121d
 			case 0x79:
@@ -490,6 +498,122 @@ public class DefaultDevice implements Device {
 				return error(requestMessage.getApdu().getInvokeId());
 			}
 		}
+	}
+
+	protected Message processPresentValueProperty(final int propertyIdentifierCode, final Message requestMessage) {
+		throw new RuntimeException("processPresentValueProperty");
+	}
+
+	private Message processStatusFlagsProperty(final int propertyIdentifierCode, final Message requestMessage) {
+
+		final int deviceInstanceNumber = NetworkUtils.DEVICE_INSTANCE_NUMBER;
+
+		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
+		virtualLinkControl.setType(0x81);
+		virtualLinkControl.setFunction(0x0A);
+		virtualLinkControl.setLength(0x00);
+
+		final NPDU npdu = new NPDU();
+		npdu.setVersion(0x01);
+
+		// no additional information
+		// this works, if the cp is connected to the device directly via 192.168.2.1
+		npdu.setControl(0x00);
+
+		if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+
+			// destination network information
+			npdu.setControl(0x20);
+			npdu.setDestinationNetworkNumber(302);
+			npdu.setDestinationMACLayerAddressLength(3);
+			npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+
+			npdu.setDestinationHopCount(255);
+		}
+
+		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+		objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		objectIdentifierServiceParameter.setTagNumber(0x00);
+		objectIdentifierServiceParameter.setLengthValueType(4);
+		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+		objectIdentifierServiceParameter.setInstanceNumber(deviceInstanceNumber);
+
+		final ServiceParameter protocolServicesSupportedServiceParameter = new ServiceParameter();
+		protocolServicesSupportedServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		protocolServicesSupportedServiceParameter.setTagNumber(0x01);
+		protocolServicesSupportedServiceParameter.setLengthValueType(1);
+		protocolServicesSupportedServiceParameter.setPayload(new byte[] { (byte) propertyIdentifierCode });
+
+		final ServiceParameter openingTagServiceParameter = new ServiceParameter();
+		openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		openingTagServiceParameter.setTagNumber(0x03);
+		openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
+
+		final ServiceParameter protocolServicesSupportedBitStringServiceParameter = new ServiceParameter();
+		protocolServicesSupportedBitStringServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		protocolServicesSupportedBitStringServiceParameter
+				.setTagNumber(ServiceParameter.APPLICATION_TAG_NUMBER_BIT_STRING);
+		protocolServicesSupportedBitStringServiceParameter.setLengthValueType(0x02);
+		protocolServicesSupportedBitStringServiceParameter.setPayload(getStatusFlagsPayload());
+
+		final ServiceParameter closingTagServiceParameter = new ServiceParameter();
+		closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		closingTagServiceParameter.setTagNumber(0x03);
+		closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
+
+		final APDU apdu = new APDU();
+		apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
+		apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
+		apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+		apdu.setVendorMap(vendorMap);
+		apdu.getServiceParameters().add(objectIdentifierServiceParameter);
+		apdu.getServiceParameters().add(protocolServicesSupportedServiceParameter);
+		apdu.getServiceParameters().add(openingTagServiceParameter);
+		apdu.getServiceParameters().add(protocolServicesSupportedBitStringServiceParameter);
+		apdu.getServiceParameters().add(closingTagServiceParameter);
+
+		final DefaultMessage result = new DefaultMessage();
+		result.setVirtualLinkControl(virtualLinkControl);
+		result.setNpdu(npdu);
+		result.setApdu(apdu);
+
+		virtualLinkControl.setLength(result.getDataLength());
+
+//		final byte[] bytes = result.getBytes();
+//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
+
+		return result;
+	}
+
+	private byte[] getStatusFlagsPayload() {
+
+		final BaseBitString bitString = retrieveStatusFlags();
+		final BitSet bitSet = bitString.getBitSet();
+		final byte[] bitSetByteArray = bitSet.toByteArray();
+
+		// this is the result payload
+		final byte[] result = new byte[2];
+
+		// unused bits
+		result[0] = (byte) 0x04;
+
+		// payload
+		System.arraycopy(bitSetByteArray, 0, result, 1, bitSetByteArray.length);
+
+//		LOG.trace(Utils.byteArrayToStringNoPrefix(result));
+
+		return result;
+	}
+
+	private StatusFlagsBitString retrieveStatusFlags() {
+
+		final StatusFlagsBitString bitString = new StatusFlagsBitString();
+		bitString.setInAlarm(false);
+		bitString.setFault(false);
+		bitString.setOverridden(false);
+		bitString.setOutOfService(false);
+
+		return bitString;
 	}
 
 	private Message processAddressBindingProperty(final int propertyIdentifierCode, final Message requestMessage) {
@@ -1345,8 +1469,6 @@ public class DefaultDevice implements Device {
 
 		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
 		objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-		// who are context tag numbers determined???
-//		objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
 		objectIdentifierServiceParameter.setTagNumber(0x00);
 		objectIdentifierServiceParameter.setLengthValueType(4);
 		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
@@ -1354,11 +1476,8 @@ public class DefaultDevice implements Device {
 
 		final ServiceParameter protocolServicesSupportedServiceParameter = new ServiceParameter();
 		protocolServicesSupportedServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-		// who are context tag numbers determined???
-//		protocolServicesSupportedServiceParameter.setTagNumber(ServiceParameter.UNKOWN_TAG_NUMBER);
 		protocolServicesSupportedServiceParameter.setTagNumber(0x01);
 		protocolServicesSupportedServiceParameter.setLengthValueType(1);
-		// 0x61 = 97d = Protocol Identifier: protocol-services-supported
 		protocolServicesSupportedServiceParameter.setPayload(new byte[] { (byte) propertyKey });
 
 		final ServiceParameter openingTagServiceParameter = new ServiceParameter();
@@ -1370,7 +1489,6 @@ public class DefaultDevice implements Device {
 		protocolServicesSupportedBitStringServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
 		protocolServicesSupportedBitStringServiceParameter
 				.setTagNumber(ServiceParameter.APPLICATION_TAG_NUMBER_BIT_STRING);
-		// 0x05 = extended value
 		protocolServicesSupportedBitStringServiceParameter.setLengthValueType(ServiceParameter.EXTENDED_VALUE);
 		protocolServicesSupportedBitStringServiceParameter.setPayload(getSupportedServicesPayload());
 
@@ -1384,7 +1502,6 @@ public class DefaultDevice implements Device {
 		apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
 		apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
 		apdu.setVendorMap(vendorMap);
-//		apdu.setObjectIdentifierServiceParameter(objectIdentifierServiceParameter);
 		apdu.getServiceParameters().add(objectIdentifierServiceParameter);
 		apdu.getServiceParameters().add(protocolServicesSupportedServiceParameter);
 		apdu.getServiceParameters().add(openingTagServiceParameter);
@@ -1523,7 +1640,6 @@ public class DefaultDevice implements Device {
 	}
 
 	private Message processFirmwareRevisionProperty(final int propertyKey, final Message requestMessage) {
-		// protocol revision 0x0C = 12d
 		return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
 				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
 	}
@@ -2122,6 +2238,10 @@ public class DefaultDevice implements Device {
 	@Override
 	public void setName(final String name) {
 		this.name = name;
+	}
+
+	public MessageFactory getMessageFactory() {
+		return messageFactory;
 	}
 
 }
