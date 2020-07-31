@@ -42,7 +42,7 @@ public class DefaultDeviceProperty implements DeviceProperty {
 	@Override
 	public int getLengthTagValue() {
 		if (messageType == MessageType.BOOLEAN_PROPERTY) {
-			return isBooleanValue() ? 0x01 : 0x00;
+			return getBooleanValue() ? 0x01 : 0x00;
 		} else {
 			return getValue().length;
 		}
@@ -89,7 +89,7 @@ public class DefaultDeviceProperty implements DeviceProperty {
 	}
 
 	@Override
-	public boolean isBooleanValue() {
+	public boolean getBooleanValue() {
 		return booleanValue;
 	}
 

@@ -8,7 +8,6 @@ import org.apache.logging.log4j.Logger;
 
 import de.bacnet.factory.Factory;
 import de.bacnet.factory.MessageType;
-import de.bacnetz.common.Utils;
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.controller.DefaultMessage;
 import de.bacnetz.controller.Message;
@@ -60,8 +59,8 @@ public class MessageFactory implements Factory<Message> {
 			deviceInstanceNumber = (int) args[index++];
 			invokeId = (int) args[index++];
 			propertyKey = (int) args[index++];
-			payload = (byte[]) args[index++];
-			return returnBooleanProperty(deviceInstanceNumber, invokeId, propertyKey, payload);
+			final boolean value = (boolean) args[index++];
+			return returnBooleanProperty(deviceInstanceNumber, invokeId, propertyKey, value);
 
 		case ENUMERATED:
 			deviceInstanceNumber = (int) args[index++];
@@ -164,8 +163,8 @@ public class MessageFactory implements Factory<Message> {
 
 		virtualLinkControl.setLength(result.getDataLength());
 
-		final byte[] bytes = result.getBytes();
-		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
+//		final byte[] bytes = result.getBytes();
+//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
 		return result;
 	}
@@ -328,14 +327,14 @@ public class MessageFactory implements Factory<Message> {
 
 		virtualLinkControl.setLength(result.getDataLength());
 
-		final byte[] bytes = result.getBytes();
-		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
+//		final byte[] bytes = result.getBytes();
+//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
 		return result;
 	}
 
 	private Message returnBooleanProperty(final int deviceInstanceNumber, final int invokeId, final int propertyKey,
-			final byte[] payload) {
+			final boolean payload) {
 
 		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
 		virtualLinkControl.setType(0x81);
@@ -388,8 +387,9 @@ public class MessageFactory implements Factory<Message> {
 		final ServiceParameter valueServiceParameter = new ServiceParameter();
 		valueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
 		valueServiceParameter.setTagNumber(ServiceParameter.BOOLEAN_CODE);
-		valueServiceParameter.setLengthValueType(payload.length);
-		valueServiceParameter.setPayload(payload);
+//		valueServiceParameter.setLengthValueType(payload.length);
+		valueServiceParameter.setLengthValueType(payload ? 1 : 0);
+//		valueServiceParameter.setPayload(payload);
 
 		final ServiceParameter closingTagServiceParameter = new ServiceParameter();
 		closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -415,8 +415,8 @@ public class MessageFactory implements Factory<Message> {
 
 		virtualLinkControl.setLength(result.getDataLength());
 
-		final byte[] bytes = result.getBytes();
-		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
+//		final byte[] bytes = result.getBytes();
+//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
 		return result;
 	}
@@ -502,8 +502,8 @@ public class MessageFactory implements Factory<Message> {
 
 		virtualLinkControl.setLength(result.getDataLength());
 
-		final byte[] bytes = result.getBytes();
-		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
+//		final byte[] bytes = result.getBytes();
+//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
 		return result;
 	}

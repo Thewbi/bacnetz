@@ -33,14 +33,14 @@ public class NetworkUtils {
 	public static final boolean ADD_ADDITIONAL_NETWORK_INFORMATION = false;
 
 //	// Cockpit in local area network (test setup)
-//	public static final String LOCAL_BIND_IP = "192.168.2.1";
-//	public static final String BACNET_MULTICAST_IP = "192.168.2.255";
+	public static final String LOCAL_BIND_IP = "192.168.2.1";
+	public static final String BACNET_MULTICAST_IP = "192.168.2.255";
 
 //	public static final String LOCAL_BIND_IP = "172.18.60.118";
 //	public static final String BACNET_MULTICAST_IP = "172.18.63.255";
 
-	public static final String LOCAL_BIND_IP = "192.168.0.234";
-	public static final String BACNET_MULTICAST_IP = "192.168.0.255";
+//	public static final String LOCAL_BIND_IP = "192.168.0.234";
+//	public static final String BACNET_MULTICAST_IP = "192.168.0.255";
 
 //	public static final String LOCAL_BIND_IP = "192.168.0.108";
 //	public static final String BACNET_MULTICAST_IP = "192.168.0.255";

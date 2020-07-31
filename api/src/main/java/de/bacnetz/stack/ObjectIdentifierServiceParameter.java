@@ -12,7 +12,7 @@ public class ObjectIdentifierServiceParameter extends ServiceParameter {
 	public static final int OBJECT_TYPE_BINARY_INPUT = 3;
 
 	public static final int OBJECT_TYPE_DEVICE = 8;
-	
+
 	public static final int OBJECT_TYPE_NOTIFICATION_CLASS = 15;
 
 	public static final int OBJECT_TYPE_MULTI_STATE_VALUE = 19;
@@ -78,6 +78,15 @@ public class ObjectIdentifierServiceParameter extends ServiceParameter {
 
 		Utils.intToBuffer(payload, data, offset + index);
 		index += 4;
+	}
+
+	@Override
+	public String toString() {
+
+		final StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append("Object Type: ").append(objectType).append(" Instance Number: ").append(instanceNumber);
+
+		return stringBuilder.toString();
 	}
 
 	public int getObjectType() {

@@ -105,11 +105,10 @@ public class MulticastListenerReaderThread implements Runnable {
 			}
 
 			// Debug
-			LOG.info("<<< Received from inetAddress: " + datagramPacketAddress + " From socketAddress "
+			LOG.trace("<<< Received from inetAddress: " + datagramPacketAddress + " From socketAddress "
 					+ datagramPacketSocketAddress + " Data: "
 					+ Utils.byteArrayToStringNoPrefix(datagramPacket.getData()));
-
-			LOG.info("<<< " + Utils.byteArrayToStringNoPrefix(data));
+			LOG.trace("<<< " + Utils.byteArrayToStringNoPrefix(data));
 
 			// parse and process the request message and return a response message
 			final Message request = parseBuffer(data, bytesReceived);
@@ -134,19 +133,19 @@ public class MulticastListenerReaderThread implements Runnable {
 		boolean broadcast = responseMessage.getApdu().getServiceChoice() == ServiceChoice.I_AM;
 		broadcast |= responseMessage.getApdu().getServiceChoice() == ServiceChoice.WHO_IS;
 
-		final byte[] bytes = responseMessage.getBytes();
-		LOG.info(">>> " + Utils.byteArrayToStringNoPrefix(bytes));
+//		final byte[] bytes = responseMessage.getBytes();
+//		LOG.trace(">>> " + Utils.byteArrayToStringNoPrefix(bytes));
 
 		if (broadcast) {
 
-			LOG.info(">>> BroadCast");
+			LOG.trace(">>> BroadCast");
 
 			// broadcast response to the bacnet default port
 			broadcastMessage(responseMessage);
 
 		} else {
 
-			LOG.info(">>> PointToPoint");
+			LOG.trace(">>> PointToPoint");
 
 			// point to point response
 			pointToPointMessage(responseMessage, requestMessage, datagramPacketAddress);
@@ -191,8 +190,8 @@ public class MulticastListenerReaderThread implements Runnable {
 					"Message is invalid! The length in the virtual link control does not match the real data length!");
 		}
 
-		LOG.info(">>> Broadcast Sending to " + NetworkUtils.BACNET_MULTICAST_IP + ":" + NetworkUtils.DEFAULT_PORT + ": "
-				+ Utils.byteArrayToStringNoPrefix(bytes));
+		LOG.trace(">>> Broadcast Sending to " + NetworkUtils.BACNET_MULTICAST_IP + ":" + NetworkUtils.DEFAULT_PORT
+				+ ": " + Utils.byteArrayToStringNoPrefix(bytes));
 
 		final SocketAddress socketAddress = new InetSocketAddress(NetworkUtils.BACNET_MULTICAST_IP,
 				NetworkUtils.DEFAULT_PORT);

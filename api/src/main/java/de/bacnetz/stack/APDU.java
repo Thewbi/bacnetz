@@ -44,7 +44,7 @@ public class APDU {
 
 	private int propertyIdentifier;
 
-	private ObjectIdentifierServiceParameter objectIdentifierServiceParameter;
+//	private ObjectIdentifierServiceParameter objectIdentifierServiceParameter;
 
 	/**
 	 * "Serial number" used by the requester to associate the response with the
@@ -78,10 +78,10 @@ public class APDU {
 		this.segmentationControl = other.segmentationControl;
 		this.invokeId = other.invokeId;
 		this.vendorMap = other.vendorMap;
-		if (other.getObjectIdentifierServiceParameter() != null) {
-			objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter(
-					other.getObjectIdentifierServiceParameter());
-		}
+//		if (other.getObjectIdentifierServiceParameter() != null) {
+//			objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter(
+//					other.getObjectIdentifierServiceParameter());
+//		}
 	}
 
 	public int getDataLength() {
@@ -101,10 +101,10 @@ public class APDU {
 			dataLength++;
 		}
 
-		// object identifier
-		if (objectIdentifierServiceParameter != null) {
-			dataLength += objectIdentifierServiceParameter.getDataLength();
-		}
+//		// object identifier
+//		if (objectIdentifierServiceParameter != null) {
+//			dataLength += objectIdentifierServiceParameter.getDataLength();
+//		}
 
 		// service parameters
 		if (CollectionUtils.isNotEmpty(serviceParameters)) {
@@ -138,18 +138,14 @@ public class APDU {
 		}
 
 		// 1 Byte: service choice
-//		if (pduType == PDUType.ERROR_PDU) {
-//			data[offset + index++] = (byte) serviceChoice.getId();
-//		} else {
 		data[offset + index++] = (byte) serviceChoice.getId();
+
+//		// object identifier
+//		if (objectIdentifierServiceParameter != null) {
+//
+//			objectIdentifierServiceParameter.toBytes(data, offset + index);
+//			index += objectIdentifierServiceParameter.getDataLength();
 //		}
-
-		// object identifier
-		if (objectIdentifierServiceParameter != null) {
-
-			objectIdentifierServiceParameter.toBytes(data, offset + index);
-			index += objectIdentifierServiceParameter.getDataLength();
-		}
 
 		// service parameters (such as ObjectIdentifierServiceParameter)
 		if (CollectionUtils.isNotEmpty(serviceParameters)) {
@@ -279,7 +275,7 @@ public class APDU {
 //		final int index = 0;
 
 		// bacnet object identifier
-		objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
 		tempOffset += objectIdentifierServiceParameter.fromBytes(data, tempOffset);
 		serviceParameters.add(objectIdentifierServiceParameter);
 
@@ -288,7 +284,7 @@ public class APDU {
 		tempOffset += propertyIdentifierServiceParameter.fromBytes(data, tempOffset);
 		serviceParameters.add(propertyIdentifierServiceParameter);
 
-		// property identifier
+		// extract property identifier and store it into the dedicated member variable
 		final int contextLength = propertyIdentifierServiceParameter.getLengthValueType();
 		propertyIdentifier = 0;
 		for (int i = 0; i < contextLength; i++) {
@@ -386,8 +382,9 @@ public class APDU {
 		int index = 0;
 
 		// bacnet object identifier
-		objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
 		index += objectIdentifierServiceParameter.fromBytes(data, offset + index);
+		serviceParameters.add(objectIdentifierServiceParameter);
 
 		final int context = data[offset + index++];
 		final int contextLength = context & 7;
@@ -439,8 +436,9 @@ public class APDU {
 		int index = 0;
 
 		// bacnet object identifier
-		objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
 		index += objectIdentifierServiceParameter.fromBytes(data, offset + index);
+		serviceParameters.add(objectIdentifierServiceParameter);
 
 		// bracket open
 		final ServiceParameter bracketOpenServiceParameter = new ServiceParameter();
@@ -649,13 +647,13 @@ public class APDU {
 	}
 
 	public ObjectIdentifierServiceParameter getObjectIdentifierServiceParameter() {
-		return objectIdentifierServiceParameter;
+		return (ObjectIdentifierServiceParameter) serviceParameters.get(0);
 	}
 
-	public void setObjectIdentifierServiceParameter(
-			final ObjectIdentifierServiceParameter objectIdentifierServiceParameter) {
-		this.objectIdentifierServiceParameter = objectIdentifierServiceParameter;
-	}
+//	public void setObjectIdentifierServiceParameter(
+//			final ObjectIdentifierServiceParameter objectIdentifierServiceParameter) {
+//		this.objectIdentifierServiceParameter = objectIdentifierServiceParameter;
+//	}
 
 	public int getInvokeId() {
 		return invokeId;

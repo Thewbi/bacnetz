@@ -77,7 +77,7 @@ public interface DeviceProperty {
 
 	void setPropertyName(String propertyName);
 
-	boolean isBooleanValue();
+	boolean getBooleanValue();
 
 	void setBooleanValue(boolean booleanValue);
 

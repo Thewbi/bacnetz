@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import de.bacnet.factory.MessageType;
 import de.bacnetz.common.Utils;
 import de.bacnetz.common.utils.NetworkUtils;
-import de.bacnetz.controller.DefaultMessageController;
+import de.bacnetz.devices.DefaultDevice;
 
 public class ServiceParameterTest {
 
@@ -163,7 +163,7 @@ public class ServiceParameterTest {
 		objectNameServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
 		objectNameServiceParameter.setTagNumber(ServiceParameter.APPLICATION_TAG_NUMBER_CHARACTER_STRING);
 		objectNameServiceParameter.setLengthValueType(ServiceParameter.EXTENDED_VALUE);
-		objectNameServiceParameter.setPayload(DefaultMessageController.retrieveAsString(NetworkUtils.OBJECT_NAME));
+		objectNameServiceParameter.setPayload(DefaultDevice.retrieveAsString(NetworkUtils.OBJECT_NAME));
 
 		objectNameServiceParameter.toBytes(result, 0);
 

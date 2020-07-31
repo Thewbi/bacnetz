@@ -3,6 +3,7 @@ package de.bacnetz.devices;
 import java.util.Collection;
 import java.util.Map;
 
+import de.bacnetz.controller.Message;
 import de.bacnetz.stack.ServiceParameter;
 
 public interface Device {
@@ -24,5 +25,13 @@ public interface Device {
 	String getName();
 
 	void setName(String name);
+
+	Device findDevice(ServiceParameter objectIdentifierServiceParameter);
+
+	Message getPropertyValue(Message requestMessage, int propertyIdentifierCode);
+
+	Map<Integer, String> getVendorMap();
+
+	void setVendorMap(Map<Integer, String> vendorMap);
 
 }
