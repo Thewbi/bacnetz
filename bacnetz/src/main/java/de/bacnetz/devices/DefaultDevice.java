@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -15,6 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.bacnet.factory.MessageType;
+import de.bacnetz.common.utils.BACnetUtils;
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.controller.DefaultMessage;
 import de.bacnetz.controller.Message;
@@ -26,10 +28,10 @@ import de.bacnetz.stack.BaseBitString;
 import de.bacnetz.stack.NPDU;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.PDUType;
-import de.bacnetz.stack.ServiceChoice;
 import de.bacnetz.stack.ServiceParameter;
 import de.bacnetz.stack.StatusFlagsBitString;
 import de.bacnetz.stack.TagClass;
+import de.bacnetz.stack.UnconfirmedServiceChoice;
 import de.bacnetz.stack.VirtualLinkControl;
 
 public class DefaultDevice implements Device {
@@ -49,6 +51,8 @@ public class DefaultDevice implements Device {
     private final MessageFactory messageFactory = new MessageFactory();
 
     private Map<Integer, String> vendorMap = new HashMap<>();
+
+    private final AtomicInteger invokeId = new AtomicInteger(0);
 
     /**
      * ctor
@@ -191,10 +195,10 @@ public class DefaultDevice implements Device {
 //                new byte[] { (byte) 0x02, (byte) 0x1A }, MessageType.INTEGER_PROPERTY);
 //        properties.put(deviceProperty.getPropertyKey(), deviceProperty);
 
-        // 0xC1 = 193d
-        deviceProperty = new DefaultDeviceProperty("align-intervals", DeviceProperty.ALIGN_INTERVALS, true,
-                MessageType.BOOLEAN_PROPERTY);
-        properties.put(deviceProperty.getPropertyKey(), deviceProperty);
+//        // 0xC1 = 193d
+//        deviceProperty = new DefaultDeviceProperty("align-intervals", DeviceProperty.ALIGN_INTERVALS, true,
+//                MessageType.BOOLEAN_PROPERTY);
+//        properties.put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0xA9 = 169d
         deviceProperty = new DefaultDeviceProperty("auto-slave-discovery", DeviceProperty.AUTO_SLAVE_DISCOVERY, false,
@@ -305,7 +309,8 @@ public class DefaultDevice implements Device {
         objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
         objectIdentifierServiceParameter.setLengthValueType(0x04);
-        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+//        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+        objectIdentifierServiceParameter.setObjectType(objectType);
         objectIdentifierServiceParameter.setInstanceNumber(id);
 
         return objectIdentifierServiceParameter;
@@ -353,17 +358,17 @@ public class DefaultDevice implements Device {
         final DeviceProperty deviceProperty = getProperties().get(propertyIdentifierCode);
         if (deviceProperty != null) {
 
-            LOG.info("<<< READ_PROP: {} ({})", deviceProperty.getPropertyName(), propertyIdentifierCode);
+            LOG.trace("<<< READ_PROP: {} ({})", deviceProperty.getPropertyName(), propertyIdentifierCode);
 
             if (deviceProperty.getMessageType() == MessageType.BOOLEAN_PROPERTY) {
 
-                return messageFactory.create(deviceProperty.getMessageType(), NetworkUtils.DEVICE_INSTANCE_NUMBER,
+                return messageFactory.create(deviceProperty.getMessageType(), this,
                         requestMessage.getApdu().getInvokeId(), deviceProperty.getPropertyKey(),
                         deviceProperty.getBooleanValue());
 
             } else {
 
-                return messageFactory.create(deviceProperty.getMessageType(), NetworkUtils.DEVICE_INSTANCE_NUMBER,
+                return messageFactory.create(deviceProperty.getMessageType(), this,
                         requestMessage.getApdu().getInvokeId(), deviceProperty.getPropertyKey(),
                         deviceProperty.getValue());
 
@@ -377,59 +382,60 @@ public class DefaultDevice implements Device {
 
             // 0x1C = 28d
             case 0x1C:
-                LOG.info("<<< READ_PROP: description ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: description ({})", propertyIdentifierCode);
                 return processStringProperty(propertyIdentifierCode, requestMessage, NetworkUtils.OBJECT_DESCRIPTION);
 
             // 0x1E = 30d
             case 0x1E:
-                LOG.info("<<< READ_PROP: device-address-binding ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: device-address-binding ({})", propertyIdentifierCode);
                 return processAddressBindingProperty(propertyIdentifierCode, requestMessage);
 
             // 0x2C = 44d
             case 0x2C:
-                LOG.info("<<< READ_PROP: firmware-revision ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: firmware-revision ({})", propertyIdentifierCode);
                 return processFirmwareRevisionProperty(propertyIdentifierCode, requestMessage);
 
             // 0x38 = 56d
             case 0x38:
-                LOG.info("<<< READ_PROP: local-date ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: local-date ({})", propertyIdentifierCode);
                 return processTimeOfDeviceRestartProperty(propertyIdentifierCode, requestMessage, true, false,
                         new Date());
 
             // 0x39 = 57d
             case 0x39:
-                LOG.info("<<< READ_PROP: local-time ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: local-time ({})", propertyIdentifierCode);
                 return processTimeOfDeviceRestartProperty(propertyIdentifierCode, requestMessage, false, true,
                         new Date());
 
             // 0x3A = 58d
             case 0x3A:
-                LOG.info("<<< READ_PROP: location ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: location ({})", propertyIdentifierCode);
                 return processStringProperty(propertyIdentifierCode, requestMessage, NetworkUtils.OBJECT_LOCATION);
 
             // 0x46 = 70d
             case 0x46:
-                LOG.info("<<< READ_PROP: model-name ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: model-name ({})", propertyIdentifierCode);
                 return processStringProperty(propertyIdentifierCode, requestMessage, NetworkUtils.MODEL_NAME);
 
             // 0x4B = 75d
             case 0x4B:
-                LOG.info("<<< READ_PROP: object-identifier ({})", propertyIdentifierCode);
-                return processStringProperty(propertyIdentifierCode, requestMessage, NetworkUtils.OBJECT_IDENTIFIER);
+                LOG.trace("<<< READ_PROP: object-identifier ({})", propertyIdentifierCode);
+//                return processStringProperty(propertyIdentifierCode, requestMessage, NetworkUtils.OBJECT_IDENTIFIER);
+                return processStringProperty(propertyIdentifierCode, requestMessage, objectType + ":" + id);
 
             // 0x4c = 76d (0x4c = 76d) object list
             case 0x4c:
-                LOG.info("<<< READ_PROP: object-list ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: object-list ({})", propertyIdentifierCode);
                 return processObjectListRequest(propertyIdentifierCode, requestMessage);
 
             // 0x4d = 77d (0x4d = 77d) object-name
             case 0x4d:
-                LOG.info("<<< READ_PROP: object-name ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: object-name ({})", propertyIdentifierCode);
                 return processObjectNameProperty(propertyIdentifierCode, requestMessage);
 
             // 0x55 = 85d, present-value
             case 0x55:
-                LOG.info("<<< READ_PROP: present-value ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: present-value ({})", propertyIdentifierCode);
                 return processPresentValueProperty(propertyIdentifierCode, requestMessage);
 
             // 0x60 = 96d protocol-services-supported
@@ -441,81 +447,81 @@ public class DefaultDevice implements Device {
             // Binary Input, Binary Output, and Binary
             // Value.
             case 0x60:
-                LOG.info("<<< READ_PROP: protocol-object-types-supported Property ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: protocol-object-types-supported Property ({})", propertyIdentifierCode);
                 return processProtocolObjectTypesSupportedServicesProperty(propertyIdentifierCode, requestMessage);
 
             // Supported Services Property
             // 0x61 = 97d
             case 0x61:
-                LOG.info("<<< READ_PROP: supported-services-property ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: supported-services-property ({})", propertyIdentifierCode);
                 return processSupportedServicesProperty(propertyIdentifierCode, requestMessage);
 
             // 0x6E = 110d state-text
             case 0x6E:
-                LOG.info("<<< READ_PROP: state-text ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: state-text ({})", propertyIdentifierCode);
                 return processStateTextProperty(propertyIdentifierCode, requestMessage);
 
             // = 111d, status-flags
             // see bacnet_device25_object_list.pcapng - message 11702
             case 0x6F:
-                LOG.info("<<< READ_PROP: status-flags ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: status-flags ({})", propertyIdentifierCode);
                 return processStatusFlagsProperty(propertyIdentifierCode, requestMessage);
 
             // 0x74 = 116d
             case 0x74:
-                LOG.info("<<< READ_PROP: time-synchronization-recipients ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: time-synchronization-recipients ({})", propertyIdentifierCode);
                 return processTimeSynchronizationRecipientsProperty(propertyIdentifierCode, requestMessage);
 
             // 0x79 = 121d
             case 0x79:
-                LOG.info("<<< READ_PROP: vendor-name ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: vendor-name ({})", propertyIdentifierCode);
                 return processStringProperty(propertyIdentifierCode, requestMessage, NetworkUtils.VENDOR_NAME);
 
             // 0x98 = 152d
             case 0x98:
-                LOG.info("<<< READ_PROP: active-cov-subscriptions ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: active-cov-subscriptions ({})", propertyIdentifierCode);
                 return processActiveCovSubscriptionsProperty(propertyIdentifierCode, requestMessage);
 
             // 0x9D = 157d
             case 0x9D:
-                LOG.info("<<< READ_PROP: last-restore-time ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: last-restore-time ({})", propertyIdentifierCode);
                 return processTimeOfDeviceRestartProperty(propertyIdentifierCode, requestMessage, false, true,
                         new Date());
 
             // 0xAA = 170d
             case 0xAA:
-                LOG.info("<<< READ_PROP: manual-slave-address-binding ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: manual-slave-address-binding ({})", propertyIdentifierCode);
                 return processAddressBindingProperty(propertyIdentifierCode, requestMessage);
 
             // 0xAB = 171d
             case 0xAB:
-                LOG.info("<<< READ_PROP: slave-address-binding ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: slave-address-binding ({})", propertyIdentifierCode);
                 return processAddressBindingProperty(propertyIdentifierCode, requestMessage);
 
             // 0xCA = 202d
             case 0xCA:
-                LOG.info("<<< READ_PROP: restart notification recipients ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: restart notification recipients ({})", propertyIdentifierCode);
                 return processRestartNotificationRecipientsProperty(propertyIdentifierCode, requestMessage);
 
             // 0xCB = 203d
             case 0xCB:
-                LOG.info("<<< READ_PROP: time-of-device-restart ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: time-of-device-restart ({})", propertyIdentifierCode);
                 return processTimeOfDeviceRestartProperty(propertyIdentifierCode, requestMessage, true, true,
                         new Date());
 
             // 0xCE = 206d
             case 0xCE:
-                LOG.info("<<< READ_PROP: UTC-time-synchronization-recipients ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: UTC-time-synchronization-recipients ({})", propertyIdentifierCode);
                 return processUTCTimeSynchronizationRecipientsProperty(propertyIdentifierCode, requestMessage);
 
             // 0xD1 = 209 (0xD1 = 209d) structured object list
             case 0xD1:
-                LOG.info("<<< READ_PROP: structured object list ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: structured object list ({})", propertyIdentifierCode);
                 return processStructuredObjectListProperty(propertyIdentifierCode, requestMessage);
 
             // 0x0173 = 371d property list
             case 0x0173:
-                LOG.info("<<< READ_PROP: property list ({})", propertyIdentifierCode);
+                LOG.trace("<<< READ_PROP: property list ({})", propertyIdentifierCode);
                 return processPropertyListProperty(propertyIdentifierCode, requestMessage);
 
             default:
@@ -556,8 +562,10 @@ public class DefaultDevice implements Device {
         outwardObjectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         outwardObjectIdentifierServiceParameter.setTagNumber(0x00);
         outwardObjectIdentifierServiceParameter.setLengthValueType(4);
-        outwardObjectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-        outwardObjectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+//        outwardObjectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+//        outwardObjectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+        outwardObjectIdentifierServiceParameter.setObjectType(objectType);
+        outwardObjectIdentifierServiceParameter.setInstanceNumber(id);
 
         final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
         propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -578,7 +586,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(outwardObjectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -588,14 +596,14 @@ public class DefaultDevice implements Device {
         stringServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         stringServiceParameter.setTagNumber(ServiceParameter.APPLICATION_TAG_NUMBER_CHARACTER_STRING);
         stringServiceParameter.setLengthValueType(ServiceParameter.EXTENDED_VALUE);
-        stringServiceParameter.setPayload(retrieveAsString("watchdog"));
+        stringServiceParameter.setPayload(BACnetUtils.retrieveAsString("watchdog"));
         apdu.getServiceParameters().add(stringServiceParameter);
 
         stringServiceParameter = new ServiceParameter();
         stringServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         stringServiceParameter.setTagNumber(ServiceParameter.APPLICATION_TAG_NUMBER_CHARACTER_STRING);
         stringServiceParameter.setLengthValueType(ServiceParameter.EXTENDED_VALUE);
-        stringServiceParameter.setPayload(retrieveAsString("1_door"));
+        stringServiceParameter.setPayload(BACnetUtils.retrieveAsString("1_door"));
         apdu.getServiceParameters().add(stringServiceParameter);
 
         apdu.getServiceParameters().add(closingTagServiceParameter);
@@ -616,12 +624,18 @@ public class DefaultDevice implements Device {
     protected Message processPresentValueProperty(final int propertyIdentifierCode, final Message requestMessage) {
 
         if (StringUtils.equalsIgnoreCase(name, "module_type")) {
-            return getMessageFactory().create(MessageType.ENUMERATED, NetworkUtils.DEVICE_INSTANCE_NUMBER,
+
+            // TODO: add a complex Value Type that stores a value and datatype meta
+            // information
+            // so that devices can actually store the property values internally and the
+            // values do not
+            // have to be hardcoded
+            return getMessageFactory().create(MessageType.INTEGER_PROPERTY, this,
                     requestMessage.getApdu().getInvokeId(), propertyIdentifierCode, new byte[] { (byte) 0x04 });
         }
 
-        return getMessageFactory().create(MessageType.ENUMERATED, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-                requestMessage.getApdu().getInvokeId(), propertyIdentifierCode, new byte[] { (byte) 0x01 });
+        return getMessageFactory().create(MessageType.ENUMERATED, this, requestMessage.getApdu().getInvokeId(),
+                propertyIdentifierCode, new byte[] { (byte) 0x01 });
     }
 
     private Message processStatusFlagsProperty(final int propertyIdentifierCode, final Message requestMessage) {
@@ -655,8 +669,10 @@ public class DefaultDevice implements Device {
         objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-        objectIdentifierServiceParameter.setInstanceNumber(deviceInstanceNumber);
+//        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+//        objectIdentifierServiceParameter.setInstanceNumber(deviceInstanceNumber);
+        objectIdentifierServiceParameter.setObjectType(objectType);
+        objectIdentifierServiceParameter.setInstanceNumber(id);
 
         final ServiceParameter protocolServicesSupportedServiceParameter = new ServiceParameter();
         protocolServicesSupportedServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -669,12 +685,7 @@ public class DefaultDevice implements Device {
         openingTagServiceParameter.setTagNumber(0x03);
         openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
 
-        final ServiceParameter protocolServicesSupportedBitStringServiceParameter = new ServiceParameter();
-        protocolServicesSupportedBitStringServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-        protocolServicesSupportedBitStringServiceParameter
-                .setTagNumber(ServiceParameter.APPLICATION_TAG_NUMBER_BIT_STRING);
-        protocolServicesSupportedBitStringServiceParameter.setLengthValueType(0x02);
-        protocolServicesSupportedBitStringServiceParameter.setPayload(getStatusFlagsPayload());
+        final ServiceParameter protocolServicesSupportedBitStringServiceParameter = getStatusFlagsServiceParameter();
 
         final ServiceParameter closingTagServiceParameter = new ServiceParameter();
         closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -684,7 +695,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(protocolServicesSupportedServiceParameter);
@@ -703,6 +714,19 @@ public class DefaultDevice implements Device {
 //		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
         return result;
+    }
+
+    @Override
+    public ServiceParameter getStatusFlagsServiceParameter() {
+
+        final ServiceParameter protocolServicesSupportedBitStringServiceParameter = new ServiceParameter();
+        protocolServicesSupportedBitStringServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+        protocolServicesSupportedBitStringServiceParameter
+                .setTagNumber(ServiceParameter.APPLICATION_TAG_NUMBER_BIT_STRING);
+        protocolServicesSupportedBitStringServiceParameter.setLengthValueType(0x02);
+        protocolServicesSupportedBitStringServiceParameter.setPayload(getStatusFlagsPayload());
+
+        return protocolServicesSupportedBitStringServiceParameter;
     }
 
     private byte[] getStatusFlagsPayload() {
@@ -766,8 +790,10 @@ public class DefaultDevice implements Device {
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+//        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+//        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+        objectIdentifierServiceParameter.setObjectType(objectType);
+        objectIdentifierServiceParameter.setInstanceNumber(id);
 
         final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
         propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -788,7 +814,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -840,8 +866,8 @@ public class DefaultDevice implements Device {
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+        objectIdentifierServiceParameter.setObjectType(objectType);
+        objectIdentifierServiceParameter.setInstanceNumber(id);
 
         final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
         propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -864,7 +890,7 @@ public class DefaultDevice implements Device {
         descriptionServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         descriptionServiceParameter.setTagNumber(ServiceParameter.APPLICATION_TAG_NUMBER_CHARACTER_STRING);
         descriptionServiceParameter.setLengthValueType(ServiceParameter.EXTENDED_TAG_CODE);
-        descriptionServiceParameter.setPayload(retrieveAsString(data));
+        descriptionServiceParameter.setPayload(BACnetUtils.retrieveAsString(data));
 
         final ServiceParameter closingTagServiceParameter3 = new ServiceParameter();
         closingTagServiceParameter3.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -874,7 +900,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -897,26 +923,26 @@ public class DefaultDevice implements Device {
         return result;
     }
 
-    private Message processDaylightSavingsStatusProperty(final int propertyIdentifierCode,
-            final Message requestMessage) {
-        return messageFactory.create(MessageType.BOOLEAN_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-                requestMessage.getApdu().getInvokeId(), propertyIdentifierCode, new byte[] { (byte) 0x01 });
-    }
-
-    private Message processApplicationSoftwareVersionProperty(final int propertyIdentifierCode,
-            final Message requestMessage) {
-        return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-                requestMessage.getApdu().getInvokeId(), propertyIdentifierCode, new byte[] { (byte) 0x01 });
-    }
-
-    private Message processSystemStatusProperty(final int propertyIdentifierCode, final Message requestMessage) {
-
-        // 0x00 == operational
-        final int systemStatus = 0x00;
-
-        return messageFactory.create(MessageType.ENUMERATED, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-                requestMessage.getApdu().getInvokeId(), propertyIdentifierCode, new byte[] { (byte) systemStatus });
-    }
+//    private Message processDaylightSavingsStatusProperty(final int propertyIdentifierCode,
+//            final Message requestMessage) {
+//        return messageFactory.create(MessageType.BOOLEAN_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
+//                requestMessage.getApdu().getInvokeId(), propertyIdentifierCode, new byte[] { (byte) 0x01 });
+//    }
+//
+//    private Message processApplicationSoftwareVersionProperty(final int propertyIdentifierCode,
+//            final Message requestMessage) {
+//        return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
+//                requestMessage.getApdu().getInvokeId(), propertyIdentifierCode, new byte[] { (byte) 0x01 });
+//    }
+//
+//    private Message processSystemStatusProperty(final int propertyIdentifierCode, final Message requestMessage) {
+//
+//        // 0x00 == operational
+//        final int systemStatus = 0x00;
+//
+//        return messageFactory.create(MessageType.ENUMERATED, NetworkUtils.DEVICE_INSTANCE_NUMBER,
+//                requestMessage.getApdu().getInvokeId(), propertyIdentifierCode, new byte[] { (byte) systemStatus });
+//    }
 
     /**
      * The bacnet partner can issue two different requests for the object list. See
@@ -991,8 +1017,10 @@ public class DefaultDevice implements Device {
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+//        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+//        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+        objectIdentifierServiceParameter.setObjectType(objectType);
+        objectIdentifierServiceParameter.setInstanceNumber(id);
 
         final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
         propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -1013,7 +1041,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -1069,8 +1097,10 @@ public class DefaultDevice implements Device {
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+//        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+//        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+        objectIdentifierServiceParameter.setObjectType(objectType);
+        objectIdentifierServiceParameter.setInstanceNumber(id);
 
         final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
         propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -1091,7 +1121,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -1147,8 +1177,10 @@ public class DefaultDevice implements Device {
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+//        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+//        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+        objectIdentifierServiceParameter.setObjectType(objectType);
+        objectIdentifierServiceParameter.setInstanceNumber(id);
 
         final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
         propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -1169,7 +1201,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -1225,8 +1257,10 @@ public class DefaultDevice implements Device {
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+//        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+//        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+        objectIdentifierServiceParameter.setObjectType(objectType);
+        objectIdentifierServiceParameter.setInstanceNumber(id);
 
         final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
         propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -1247,7 +1281,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -1306,8 +1340,10 @@ public class DefaultDevice implements Device {
 //				objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+//        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+//        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+        objectIdentifierServiceParameter.setObjectType(objectType);
+        objectIdentifierServiceParameter.setInstanceNumber(id);
 
         final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
         propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -1350,7 +1386,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -1426,7 +1462,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.ERROR_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(errorClassServiceParameter);
         apdu.getServiceParameters().add(errorCodeServiceParameter);
@@ -1511,8 +1547,10 @@ public class DefaultDevice implements Device {
         outwardObjectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         outwardObjectIdentifierServiceParameter.setTagNumber(0x00);
         outwardObjectIdentifierServiceParameter.setLengthValueType(4);
-        outwardObjectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-        outwardObjectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+//        outwardObjectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+//        outwardObjectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+        objectIdentifierServiceParameter.setObjectType(objectType);
+        objectIdentifierServiceParameter.setInstanceNumber(id);
 
         final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
         propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -1529,7 +1567,7 @@ public class DefaultDevice implements Device {
         objectNameServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         objectNameServiceParameter.setTagNumber(ServiceParameter.APPLICATION_TAG_NUMBER_CHARACTER_STRING);
         objectNameServiceParameter.setLengthValueType(ServiceParameter.EXTENDED_VALUE);
-        objectNameServiceParameter.setPayload(retrieveAsString(targetDevice.getName()));
+        objectNameServiceParameter.setPayload(BACnetUtils.retrieveAsString(targetDevice.getName()));
 
         final ServiceParameter closingTagServiceParameter = new ServiceParameter();
         closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -1539,7 +1577,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(outwardObjectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -1562,8 +1600,6 @@ public class DefaultDevice implements Device {
 
     private DefaultMessage processSupportedServicesProperty(final int propertyIdentifierCode,
             final Message requestMessage) {
-
-        final int deviceInstanceNumber = NetworkUtils.DEVICE_INSTANCE_NUMBER;
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
         virtualLinkControl.setType(0x81);
@@ -1592,8 +1628,10 @@ public class DefaultDevice implements Device {
         objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-        objectIdentifierServiceParameter.setInstanceNumber(deviceInstanceNumber);
+//        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+//        objectIdentifierServiceParameter.setInstanceNumber(deviceInstanceNumber);
+        objectIdentifierServiceParameter.setObjectType(objectType);
+        objectIdentifierServiceParameter.setInstanceNumber(id);
 
         final ServiceParameter protocolServicesSupportedServiceParameter = new ServiceParameter();
         protocolServicesSupportedServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -1621,7 +1659,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(protocolServicesSupportedServiceParameter);
@@ -1644,8 +1682,6 @@ public class DefaultDevice implements Device {
 
     private Message processProtocolObjectTypesSupportedServicesProperty(final int propertyIdentifierCode,
             final Message requestMessage) {
-
-        final int deviceInstanceNumber = NetworkUtils.DEVICE_INSTANCE_NUMBER;
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
         virtualLinkControl.setType(0x81);
@@ -1676,8 +1712,10 @@ public class DefaultDevice implements Device {
 //		objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-        objectIdentifierServiceParameter.setInstanceNumber(deviceInstanceNumber);
+//        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+//        objectIdentifierServiceParameter.setInstanceNumber(deviceInstanceNumber);
+        objectIdentifierServiceParameter.setObjectType(objectType);
+        objectIdentifierServiceParameter.setInstanceNumber(id);
 
         final ServiceParameter protocolObjectTypesSupportedServiceParameter = new ServiceParameter();
         protocolObjectTypesSupportedServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -1709,7 +1747,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
 //		apdu.setObjectIdentifierServiceParameter(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
@@ -1762,8 +1800,8 @@ public class DefaultDevice implements Device {
     }
 
     private Message processFirmwareRevisionProperty(final int propertyIdentifierCode, final Message requestMessage) {
-        return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-                requestMessage.getApdu().getInvokeId(), propertyIdentifierCode, new byte[] { (byte) 0x01 });
+        return messageFactory.create(MessageType.INTEGER_PROPERTY, this, requestMessage.getApdu().getInvokeId(),
+                propertyIdentifierCode, new byte[] { (byte) 0x01 });
     }
 
     private Message error(final int invokeId) {
@@ -1792,11 +1830,6 @@ public class DefaultDevice implements Device {
             npdu.setDestinationHopCount(255);
         }
 
-//		npdu.setControl(0x08);
-//		npdu.setSourceNetworkAddress(999);
-//		npdu.setSourceMacLayerAddressLength(2);
-//		npdu.setSourceMac(NetworkUtils.DEVICE_INSTANCE_NUMBER);
-
         final ServiceParameter errorClassServiceParameter = new ServiceParameter();
         errorClassServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         errorClassServiceParameter.setTagNumber(ServiceParameter.ENUMERATED_CODE);
@@ -1812,7 +1845,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.ERROR_PDU);
         apdu.setInvokeId(invokeId);
-        apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(errorClassServiceParameter);
         apdu.getServiceParameters().add(errorCodeServiceParameter);
@@ -1870,8 +1903,10 @@ public class DefaultDevice implements Device {
 //		objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+//        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+//        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+        objectIdentifierServiceParameter.setObjectType(objectType);
+        objectIdentifierServiceParameter.setInstanceNumber(id);
 
         final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
         propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -1900,7 +1935,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
 //		apdu.setObjectIdentifierServiceParameter(objectIdentifierServiceParameter);
 
@@ -2010,8 +2045,10 @@ public class DefaultDevice implements Device {
 //		objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+//        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+//        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+        objectIdentifierServiceParameter.setObjectType(objectType);
+        objectIdentifierServiceParameter.setInstanceNumber(id);
 
         final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
         propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -2044,7 +2081,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setServiceChoice(ServiceChoice.READ_PROPERTY);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
 //		apdu.setObjectIdentifierServiceParameter(objectIdentifierServiceParameter);
 
@@ -2067,22 +2104,6 @@ public class DefaultDevice implements Device {
 
 //		final byte[] bytes = result.getBytes();
 //		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
-
-        return result;
-    }
-
-    public static byte[] retrieveAsString(final String data) {
-
-        final int dataLength = data.getBytes().length;
-
-        // +1 for the leading zero (maybe this is the encoding code 0x00 for the
-        // encoding ANSI X3.4 / UTF-8 (since 2010))
-        final byte[] result = new byte[dataLength + 1];
-
-        System.arraycopy(data.getBytes(), 0, result, 1, dataLength);
-
-        // add a leading zero
-        result[0] = 0;
 
         return result;
     }
@@ -2310,6 +2331,11 @@ public class DefaultDevice implements Device {
         bacnetProtocolObjectTypesSupportedBitString.setCredentialDataInput(false);
 
         return bacnetProtocolObjectTypesSupportedBitString;
+    }
+
+    @Override
+    public int retrieveNextInvokeId() {
+        return invokeId.incrementAndGet();
     }
 
     @Override

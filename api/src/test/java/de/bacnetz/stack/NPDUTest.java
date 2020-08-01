@@ -10,8 +10,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 
-import de.bacnetz.common.Utils;
 import de.bacnetz.common.utils.NetworkUtils;
+import de.bacnetz.common.utils.Utils;
 
 public class NPDUTest {
 

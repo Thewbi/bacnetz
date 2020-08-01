@@ -1,6 +1,6 @@
 package de.bacnetz.stack;
 
-import de.bacnetz.common.Utils;
+import de.bacnetz.common.utils.Utils;
 
 public class IPv4Packet {
 

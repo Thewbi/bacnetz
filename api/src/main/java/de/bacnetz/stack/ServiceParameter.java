@@ -2,7 +2,7 @@ package de.bacnetz.stack;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import de.bacnetz.common.Utils;
+import de.bacnetz.common.utils.Utils;
 
 public class ServiceParameter {
 
@@ -260,6 +260,9 @@ public class ServiceParameter {
     }
 
     public void setTagClass(final TagClass tagClass) {
+        if (tagClass == null) {
+            throw new RuntimeException("Invalid");
+        }
         this.tagClass = tagClass;
     }
 

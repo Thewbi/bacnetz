@@ -1,4 +1,4 @@
-package de.bacnetz.common;
+package de.bacnetz.common.utils;
 
 import java.net.InetAddress;
 import java.net.InterfaceAddress;

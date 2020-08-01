@@ -8,30 +8,34 @@ import de.bacnetz.stack.ServiceParameter;
 
 public interface Device {
 
-	ServiceParameter getObjectIdentifierServiceParameter();
+    ServiceParameter getObjectIdentifierServiceParameter();
 
-	Map<Integer, DeviceProperty> getProperties();
+    Map<Integer, DeviceProperty> getProperties();
 
-	Collection<Device> getChildDevices();
+    Collection<Device> getChildDevices();
 
-	int getId();
+    int getId();
 
-	void setId(int id);
+    void setId(int id);
 
-	int getObjectType();
+    int getObjectType();
 
-	void setObjectType(int objectType);
+    void setObjectType(int objectType);
 
-	String getName();
+    String getName();
 
-	void setName(String name);
+    void setName(String name);
 
-	Device findDevice(ServiceParameter objectIdentifierServiceParameter);
+    Device findDevice(ServiceParameter objectIdentifierServiceParameter);
 
-	Message getPropertyValue(Message requestMessage, int propertyIdentifierCode);
+    Message getPropertyValue(Message requestMessage, int propertyIdentifierCode);
 
-	Map<Integer, String> getVendorMap();
+    Map<Integer, String> getVendorMap();
 
-	void setVendorMap(Map<Integer, String> vendorMap);
+    void setVendorMap(Map<Integer, String> vendorMap);
+
+    int retrieveNextInvokeId();
+
+    ServiceParameter getStatusFlagsServiceParameter();
 
 }

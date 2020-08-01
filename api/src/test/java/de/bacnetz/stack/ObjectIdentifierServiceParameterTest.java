@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 
-import de.bacnetz.common.Utils;
+import de.bacnetz.common.utils.Utils;
 
 public class ObjectIdentifierServiceParameterTest {
 

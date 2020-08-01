@@ -6,29 +6,29 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.bacnetz.common.Utils;
 import de.bacnetz.common.utils.NetworkUtils;
+import de.bacnetz.common.utils.Utils;
 import de.bacnetz.devices.DefaultDevice;
 import de.bacnetz.devices.Device;
 import de.bacnetz.devices.DeviceProperty;
 import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.stack.APDU;
+import de.bacnetz.stack.ConfirmedServiceChoice;
 import de.bacnetz.stack.NPDU;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.PDUType;
-import de.bacnetz.stack.ServiceChoice;
 import de.bacnetz.stack.ServiceParameter;
 import de.bacnetz.stack.TagClass;
+import de.bacnetz.stack.UnconfirmedServiceChoice;
 import de.bacnetz.stack.VirtualLinkControl;
 
 public class DefaultMessageController implements MessageController {
 
-    private static final int AMOUNT_OF_OBJECTS = 15;
+//    private static final int AMOUNT_OF_OBJECTS = 15;
 
     private static final Logger LOG = LogManager.getLogger(DefaultMessageController.class);
 
@@ -82,75 +82,117 @@ public class DefaultMessageController implements MessageController {
 
     private Message processAPDUMessage(final Message message) {
 
-        switch (message.getApdu().getServiceChoice()) {
+        final ConfirmedServiceChoice confirmedServiceChoice = message.getApdu().getConfirmedServiceChoice();
+        if (confirmedServiceChoice != null) {
+            switch (confirmedServiceChoice) {
+            default:
+                LOG.warn("Not implemented: {} ", confirmedServiceChoice);
+            }
 
-        case I_AM:
-            LOG.trace(">>> I_AM received!");
-            return processIAMMessage(message);
-
-        /** 20.1.3 BACnet-Unconfirmed-Request-PDU */
-        case I_HAVE:
-            throw new RuntimeException(">>> Not implemented yet! Message: " + message.getApdu().getServiceChoice());
-
-        /** 20.1.4 BACnet-SimpleACK-PDU */
-        case UNCONFIRMED_COV_NOTIFICATION:
-            throw new RuntimeException(">>> Not implemented yet! Message: " + message.getApdu().getServiceChoice());
-
-        /** 20.1.5 BACnet-ComplexACK-PDU */
-        case UNCONFIRMED_EVENT_NOTIFICATION:
-            throw new RuntimeException(">>> Not implemented yet! Message: " + message.getApdu().getServiceChoice());
-
-        /** 20.1.6 BACnet-SegmentACK-PDU */
-        case UNCONFIRMED_PRIVATE_TRANSFER:
-            throw new RuntimeException(">>> Not implemented yet! Message: " + message.getApdu().getServiceChoice());
-
-        /** 20.1.7 BACnet-Error-PDU */
-        case UNCONFIRMED_TEXT_MESSAGE:
-            throw new RuntimeException(">>> Not implemented yet! Message: " + message.getApdu().getServiceChoice());
-
-        /** 20.1.8 BACnet-Reject-PDU */
-        case TIME_SYNCHRONIZATION:
-            throw new RuntimeException(">>> Not implemented yet! Message: " + message.getApdu().getServiceChoice());
-
-        /** 20.1.9 BACnet-Abort-PDU */
-        case WHO_HAS:
-            throw new RuntimeException(">>> Not implemented yet! Message: " + message.getApdu().getServiceChoice());
-
-        /** 20.1.2 BACnet-Confirmed-Request-PDU */
-        case WHO_IS:
-            LOG.trace(">>> WHO_IS received!");
-            return processWhoIsMessage(message);
-
-        case UTC_TIME_SYNCHRONIZATION:
-            throw new RuntimeException(">>> Not implemented yet! Message: " + message.getApdu().getServiceChoice());
-
-        case WRITE_GROUP:
-            throw new RuntimeException(">>> Not implemented yet! Message: " + message.getApdu().getServiceChoice());
-
-        case READ_PROPERTY:
-            LOG.trace(">>> READ_PROPERTY received!");
-            return processReadProperty(message);
-
-        case READ_PROPERTY_MULTIPLE:
-            LOG.trace(">>> READ_PROPERTY_MULTIPLE received!");
-            return processReadPropertyMultiple(message);
-
-        case WRITE_PROPERTY:
-            LOG.trace(">>> WRITE_PROPERTY received!");
-            return processWriteProperty(message);
-
-        case DEVICE_COMMUNICATION_CONTROL:
-            LOG.trace(">>> DEVICE_COMMUNICATION_CONTROL received!");
-            return processDeviceCommunicationControl(message);
-
-        case REINITIALIZE_DEVICE:
-            LOG.trace(">>> REINITIALIZE_DEVICE received!");
-            return processReinitializeDevice(message);
-
-        default:
-            LOG.warn(">>> Unknown message: " + message.getApdu().getServiceChoice());
             return null;
         }
+
+        final UnconfirmedServiceChoice unconfirmedServiceChoice = message.getApdu().getUnconfirmedServiceChoice();
+        if (unconfirmedServiceChoice != null) {
+            switch (unconfirmedServiceChoice) {
+
+            case I_AM:
+                LOG.info(">>> I_AM received!");
+                return processIAMMessage(message);
+
+            /** 20.1.3 BACnet-Unconfirmed-Request-PDU */
+            case I_HAVE:
+                LOG.info(">>> I_HAVE received!");
+                // throw new RuntimeException(">>> Not implemented yet! Message: " +
+                // message.getApdu().getServiceChoice());
+                return null;
+
+            /** 20.1.4 BACnet-SimpleACK-PDU */
+            case UNCONFIRMED_COV_NOTIFICATION:
+                LOG.info(">>> UNCONFIRMED_COV_NOTIFICATION received!");
+                // throw new RuntimeException(">>> Not implemented yet! Message: " +
+                // message.getApdu().getServiceChoice());
+                return null;
+
+            /** 20.1.5 BACnet-ComplexACK-PDU */
+            case UNCONFIRMED_EVENT_NOTIFICATION:
+                LOG.info(">>> UNCONFIRMED_EVENT_NOTIFICATION received!");
+                // throw new RuntimeException(">>> Not implemented yet! Message: " +
+                // message.getApdu().getServiceChoice());
+                return null;
+
+            /** 20.1.6 BACnet-SegmentACK-PDU */
+            case UNCONFIRMED_PRIVATE_TRANSFER:
+                LOG.info(">>> UNCONFIRMED_PRIVATE_TRANSFER received!");
+                // throw new RuntimeException(">>> Not implemented yet! Message: " +
+                // message.getApdu().getServiceChoice());
+                return null;
+
+            /** 20.1.7 BACnet-Error-PDU */
+            case UNCONFIRMED_TEXT_MESSAGE:
+                LOG.info(">>> UNCONFIRMED_TEXT_MESSAGE received!");
+                // throw new RuntimeException(">>> Not implemented yet! Message: " +
+                // message.getApdu().getServiceChoice());
+                return null;
+
+            /** 20.1.8 BACnet-Reject-PDU */
+            case TIME_SYNCHRONIZATION:
+                LOG.info(">>> TIME_SYNCHRONIZATION received!");
+                // throw new RuntimeException(">>> Not implemented yet! Message: " +
+                // message.getApdu().getServiceChoice());
+                return null;
+
+            /** 20.1.9 BACnet-Abort-PDU */
+            case WHO_HAS:
+                LOG.info(">>> WHO_HAS received!");
+                // throw new RuntimeException(">>> Not implemented yet! Message: " +
+                // message.getApdu().getServiceChoice());
+                return null;
+
+            /** 20.1.2 BACnet-Confirmed-Request-PDU */
+            case WHO_IS:
+                LOG.trace(">>> WHO_IS received!");
+                return processWhoIsMessage(message);
+
+            case UTC_TIME_SYNCHRONIZATION:
+                LOG.info(">>> UTC_TIME_SYNCHRONIZATION received!");
+                // throw new RuntimeException(">>> Not implemented yet! Message: " +
+                // message.getApdu().getServiceChoice());
+                return null;
+
+            case WRITE_GROUP:
+                LOG.info(">>> WRITE_GROUP received!");
+                // throw new RuntimeException(">>> Not implemented yet! Message: " +
+                // message.getApdu().getServiceChoice());
+                return null;
+
+            case READ_PROPERTY:
+                LOG.trace(">>> READ_PROPERTY received!");
+                return processReadProperty(message);
+
+            case READ_PROPERTY_MULTIPLE:
+                LOG.trace(">>> READ_PROPERTY_MULTIPLE received!");
+                return processReadPropertyMultiple(message);
+
+            case WRITE_PROPERTY:
+                LOG.trace(">>> WRITE_PROPERTY received!");
+                return processWriteProperty(message);
+
+            case DEVICE_COMMUNICATION_CONTROL:
+                LOG.trace(">>> DEVICE_COMMUNICATION_CONTROL received!");
+                return processDeviceCommunicationControl(message);
+
+            case REINITIALIZE_DEVICE:
+                LOG.trace(">>> REINITIALIZE_DEVICE received!");
+                return processReinitializeDevice(message);
+
+            default:
+                LOG.warn(">>> Unknown message: " + message.getApdu().getUnconfirmedServiceChoice());
+                return null;
+            }
+        }
+
+        return null;
     }
 
     private Message processReinitializeDevice(final Message requestMessage) {
@@ -187,25 +229,11 @@ public class DefaultMessageController implements MessageController {
         objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
         objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
 
-//		final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
-//		propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-//		propertyIdentifierServiceParameter.setTagNumber(0x01);
-//		propertyIdentifierServiceParameter.setLengthValueType(0x01);
-//		propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) propertyIdentifierCode });
-
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.SIMPLE_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setServiceChoice(ServiceChoice.REINITIALIZE_DEVICE);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.REINITIALIZE_DEVICE);
         apdu.setVendorMap(vendorMap);
-//		apdu.getServiceParameters().add(objectIdentifierServiceParameter);
-//		apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
-//		apdu.getServiceParameters().add(openingTagServiceParameter3);
-//		apdu.getServiceParameters().add(openingTagServiceParameter2);
-//		apdu.getServiceParameters().add(dateServiceParameter);
-//		apdu.getServiceParameters().add(timeServiceParameter);
-//		apdu.getServiceParameters().add(closingTagServiceParameter2);
-//		apdu.getServiceParameters().add(closingTagServiceParameter3);
 
         final DefaultMessage result = new DefaultMessage();
         result.setVirtualLinkControl(virtualLinkControl);
@@ -233,7 +261,7 @@ public class DefaultMessageController implements MessageController {
     private Message processWhoIsMessage(final Message message) {
 
         final List<ServiceParameter> serviceParameters = message.getApdu().getServiceParameters();
-        if (CollectionUtils.isNotEmpty(serviceParameters)) {
+        if (CollectionUtils.isNotEmpty(serviceParameters) && serviceParameters.size() == 2) {
 
             final ServiceParameter lowerBoundServiceParameter = serviceParameters.get(0);
             final ServiceParameter upperBoundServiceParameter = serviceParameters.get(1);
@@ -283,11 +311,6 @@ public class DefaultMessageController implements MessageController {
         virtualLinkControl.setFunction(0x0B);
         virtualLinkControl.setLength(0x00);
 
-//		// simple NPDU
-//		final NPDU npdu = new NPDU();
-//		npdu.setVersion(0x01);
-//		npdu.setControl(0x00);
-
         // NPDU including destination network information
         final NPDU npdu = new NPDU();
         npdu.setVersion(0x01);
@@ -330,11 +353,8 @@ public class DefaultMessageController implements MessageController {
         vendorIdServiceParameter.setPayload(vendorIdBuffer);
 
         final APDU apdu = new APDU();
-//		apdu.setMoreSegmentsFollow(moreSegmentsFollow);
         apdu.setPduType(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU);
-//		apdu.setSegmentation(segmentation);
-//		apdu.setSegmentedResponseAccepted(segmentedResponseAccepted);
-        apdu.setServiceChoice(ServiceChoice.I_AM);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.I_AM);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(maximumAPDUServiceParameter);
@@ -353,13 +373,16 @@ public class DefaultMessageController implements MessageController {
 
     private Message processWriteProperty(final Message requestMessage) {
 
-        LOG.info("processWriteProperty()");
-
+        LOG.trace("processWriteProperty()");
         final int propertyIdentifier = requestMessage.getApdu().getPropertyIdentifier();
-
-        LOG.info("Property Identifier: {}", propertyIdentifier);
-
+        LOG.trace("Property Identifier: {}", propertyIdentifier);
         final int propertyIdentifierCode = propertyIdentifier;
+
+        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()
+                .getObjectIdentifierServiceParameter();
+        LOG.info(">>> Write Identifier: {} ({}) Object Identifier: {}", propertyIdentifierCode,
+                DevicePropertyType.getByCode(propertyIdentifierCode).getName(),
+                objectIdentifierServiceParameter.toString());
 
         switch (propertyIdentifier) {
 
@@ -369,7 +392,7 @@ public class DefaultMessageController implements MessageController {
             return processWriteRestartNotificationRecipientsProperty(propertyIdentifierCode, requestMessage);
 
         default:
-            throw new NotImplementedException("Unknown property! PropertyIdentifier = " + propertyIdentifier);
+            return processWriteRestartNotificationRecipientsProperty(propertyIdentifierCode, requestMessage);
         }
     }
 
@@ -415,16 +438,8 @@ public class DefaultMessageController implements MessageController {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.SIMPLE_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setServiceChoice(ServiceChoice.WRITE_PROPERTY);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.WRITE_PROPERTY);
         apdu.setVendorMap(vendorMap);
-//		apdu.getServiceParameters().add(objectIdentifierServiceParameter);
-//		apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
-//		apdu.getServiceParameters().add(openingTagServiceParameter3);
-//		apdu.getServiceParameters().add(openingTagServiceParameter2);
-//		apdu.getServiceParameters().add(dateServiceParameter);
-//		apdu.getServiceParameters().add(timeServiceParameter);
-//		apdu.getServiceParameters().add(closingTagServiceParameter2);
-//		apdu.getServiceParameters().add(closingTagServiceParameter3);
 
         final DefaultMessage result = new DefaultMessage();
         result.setVirtualLinkControl(virtualLinkControl);
@@ -448,7 +463,7 @@ public class DefaultMessageController implements MessageController {
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()
                 .getObjectIdentifierServiceParameter();
-        LOG.info(">>> Property Identifier: {} ({}) Object Identifier: {}", propertyIdentifierCode,
+        LOG.trace(">>> Property Identifier: {} ({}) Object Identifier: {}", propertyIdentifierCode,
                 DevicePropertyType.getByCode(propertyIdentifierCode).getName(),
                 objectIdentifierServiceParameter.toString());
 
@@ -457,83 +472,6 @@ public class DefaultMessageController implements MessageController {
 
         return targetDevice.getPropertyValue(requestMessage, propertyIdentifierCode);
     }
-
-//	private Message processLastRestartReasonProperty(final int propertyKey, final Message requestMessage) {
-//		// coldstart 1
-//		return messageFactory.create(MessageType.ENUMERATED, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
-//	}
-//
-//	private Message processProtocolVersionProperty(final int propertyKey, final Message requestMessage) {
-//		// protocol version 1
-//		return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
-//	}
-//
-//	private Message processProtocolRevisionProperty(final int propertyKey, final Message requestMessage) {
-//		// protocol revision 0x0C = 12d
-//		return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x0C });
-//	}
-
-//	private Message processDatabaseRevisionProperty(final int propertyKey, final Message requestMessage) {
-//		// database revivion 3
-//		return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x03 });
-//	}
-//
-//	private Message processAPDUSegmentTimeoutProperty(final int propertyKey, final Message requestMessage) {
-//
-//		// APDU Segment-Timeout:
-//		// Dieser Wert in Millisekunden legt fest, nach welcher Zeitspanne ein
-//		// quittierpflichtiges, segmentiertes Telegramm als fehlgeschlagen gewertet
-//		// wird, wenn die Segmentbestätigung ausbleibt. Der Standardwert beträgt
-//		// 2000 Millisekunden.
-//		// 2000d == 0x07D0
-//		return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x07, (byte) 0xD0 });
-//	}
-//
-//	private Message processMaxSegmentsAcceptedProperty(final int propertyKey, final Message requestMessage) {
-//
-//		// APDU Max Segments Accepted:
-//		// Legt fest, wie viele Segmente maximal akzeptiert werden.
-//		return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
-//	}
-//
-//	private Message processAPDUTimeoutProperty(final int propertyKey, final Message requestMessage) {
-//
-//		// ADPU Timeout:
-//		// Dieser Wert in Millisekunden legt fest, nach welcher Zeitspanne ein
-//		// quittierpflichtiges Telegramm als fehlgeschlagen gewertet wird, wenn die
-//		// Bestätigung ausbleibt. Der Standardwert beträgt 3000 ms.
-//		// 3000d == 0x0BB8
-//		return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x0B, (byte) 0xB8 });
-//	}
-//
-//	private Message processMaxAPDULengthAcceptedProperty(final int propertyKey, final Message requestMessage) {
-//
-//		// Maximum APDU Length is dependent on the physical layer used, for example the
-//		// maximum APDU size for BACnet/IP is 1497 octets, but for BACnet MS/TP
-//		// segments, the maximum APDU size is only 480 octets.
-//		//
-//		// 1497d = 0x05D9
-//		// 62d = 0x3E
-//		return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x05, (byte) 0xD9 });
-//	}
-//
-//	private Message processSegmentationSupportedProperty(final int propertyKey, final Message requestMessage) {
-//
-//		// segmented-both (0)
-//		// segmented-transmit (1)
-//		// segmented-receive (2)
-//		// no-segmentation (3)
-//		return messageFactory.create(MessageType.ENUMERATED, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//				requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x00 });
-//	}
 
     private Message processReadPropertyMultiple(final Message requestMessage) {
 
@@ -562,8 +500,6 @@ public class DefaultMessageController implements MessageController {
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-        // who are context tag numbers determined???
-//		objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
         objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
@@ -572,9 +508,8 @@ public class DefaultMessageController implements MessageController {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setServiceChoice(ServiceChoice.READ_PROPERTY_MULTIPLE);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY_MULTIPLE);
         apdu.setVendorMap(vendorMap);
-//		apdu.setObjectIdentifierServiceParameter(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
 
         // opening {[1]
@@ -584,7 +519,7 @@ public class DefaultMessageController implements MessageController {
         openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
         apdu.getServiceParameters().add(openingTagServiceParameter);
 
-        LOG.info(openingTagServiceParameter);
+        LOG.trace(openingTagServiceParameter);
 
         final List<ServiceParameter> serviceParameters = requestMessage.getApdu().getServiceParameters();
         if (CollectionUtils.isEmpty(serviceParameters)) {
@@ -654,7 +589,7 @@ public class DefaultMessageController implements MessageController {
         closingTagServiceParameter.setTagNumber(0x01);
         closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
         apdu.getServiceParameters().add(closingTagServiceParameter);
-        LOG.info(closingTagServiceParameter);
+        LOG.trace(closingTagServiceParameter);
 
         final DefaultMessage result = new DefaultMessage();
         result.setVirtualLinkControl(virtualLinkControl);
@@ -733,12 +668,6 @@ public class DefaultMessageController implements MessageController {
         openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
         defaultMessage.getApdu().getServiceParameters().add(2, openingTagServiceParameter);
 
-//		final ServiceParameter systemStatusTagServiceParameter = new ServiceParameter();
-//		systemStatusTagServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-//		systemStatusTagServiceParameter.setTagNumber(0x04);
-//		systemStatusTagServiceParameter.setLengthValueType(ServiceParameter.ENUMERATED_CODE);
-//		defaultMessage.getApdu().getServiceParameters().add(3, systemStatusTagServiceParameter);
-
         final ServiceParameter segmentationSupportedServiceParameter = new ServiceParameter();
         segmentationSupportedServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         segmentationSupportedServiceParameter.setTagNumber(ServiceParameter.ENUMERATED_CODE);
@@ -814,3 +743,80 @@ public class DefaultMessageController implements MessageController {
     }
 
 }
+
+//private Message processLastRestartReasonProperty(final int propertyKey, final Message requestMessage) {
+//// coldstart 1
+//return messageFactory.create(MessageType.ENUMERATED, NetworkUtils.DEVICE_INSTANCE_NUMBER,
+//      requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
+//}
+//
+//private Message processProtocolVersionProperty(final int propertyKey, final Message requestMessage) {
+//// protocol version 1
+//return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
+//      requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
+//}
+//
+//private Message processProtocolRevisionProperty(final int propertyKey, final Message requestMessage) {
+//// protocol revision 0x0C = 12d
+//return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
+//      requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x0C });
+//}
+
+//private Message processDatabaseRevisionProperty(final int propertyKey, final Message requestMessage) {
+//// database revivion 3
+//return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
+//      requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x03 });
+//}
+//
+//private Message processAPDUSegmentTimeoutProperty(final int propertyKey, final Message requestMessage) {
+//
+//// APDU Segment-Timeout:
+//// Dieser Wert in Millisekunden legt fest, nach welcher Zeitspanne ein
+//// quittierpflichtiges, segmentiertes Telegramm als fehlgeschlagen gewertet
+//// wird, wenn die Segmentbestätigung ausbleibt. Der Standardwert beträgt
+//// 2000 Millisekunden.
+//// 2000d == 0x07D0
+//return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
+//      requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x07, (byte) 0xD0 });
+//}
+//
+//private Message processMaxSegmentsAcceptedProperty(final int propertyKey, final Message requestMessage) {
+//
+//// APDU Max Segments Accepted:
+//// Legt fest, wie viele Segmente maximal akzeptiert werden.
+//return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
+//      requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
+//}
+//
+//private Message processAPDUTimeoutProperty(final int propertyKey, final Message requestMessage) {
+//
+//// ADPU Timeout:
+//// Dieser Wert in Millisekunden legt fest, nach welcher Zeitspanne ein
+//// quittierpflichtiges Telegramm als fehlgeschlagen gewertet wird, wenn die
+//// Bestätigung ausbleibt. Der Standardwert beträgt 3000 ms.
+//// 3000d == 0x0BB8
+//return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
+//      requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x0B, (byte) 0xB8 });
+//}
+//
+//private Message processMaxAPDULengthAcceptedProperty(final int propertyKey, final Message requestMessage) {
+//
+//// Maximum APDU Length is dependent on the physical layer used, for example the
+//// maximum APDU size for BACnet/IP is 1497 octets, but for BACnet MS/TP
+//// segments, the maximum APDU size is only 480 octets.
+////
+//// 1497d = 0x05D9
+//// 62d = 0x3E
+//return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
+//      requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x05, (byte) 0xD9 });
+//}
+//
+//private Message processSegmentationSupportedProperty(final int propertyKey, final Message requestMessage) {
+//
+//// segmented-both (0)
+//// segmented-transmit (1)
+//// segmented-receive (2)
+//// no-segmentation (3)
+//return messageFactory.create(MessageType.ENUMERATED, NetworkUtils.DEVICE_INSTANCE_NUMBER,
+//      requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x00 });
+//}
