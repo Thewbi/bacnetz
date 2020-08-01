@@ -133,7 +133,7 @@ public class DefaultDevice implements Device {
         properties.put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x8B = 139d protocol-revision (0x8B = 139d)
-        // protocol revision 12d = 0x0C
+        // the value of the protocol-revision property is set to 0x0C = 12d
         deviceProperty = new DefaultDeviceProperty("protocol-revision", DeviceProperty.PROTOCOL_REVISION,
                 new byte[] { (byte) 0x0C }, MessageType.INTEGER_PROPERTY);
         properties.put(deviceProperty.getPropertyKey(), deviceProperty);
@@ -525,7 +525,8 @@ public class DefaultDevice implements Device {
                 return processPropertyListProperty(propertyIdentifierCode, requestMessage);
 
             default:
-                msg = "Unknown property! PropertyIdentifier = " + propertyIdentifierCode;
+                msg = "Unknown property! PropertyIdentifier = " + propertyIdentifierCode + " property: "
+                        + DevicePropertyType.getByCode(propertyIdentifierCode).getName();
                 LOG.error(msg);
 
                 return error(requestMessage.getApdu().getInvokeId());
@@ -551,7 +552,7 @@ public class DefaultDevice implements Device {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
@@ -658,7 +659,7 @@ public class DefaultDevice implements Device {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
@@ -778,7 +779,7 @@ public class DefaultDevice implements Device {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
@@ -854,7 +855,7 @@ public class DefaultDevice implements Device {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
@@ -1005,7 +1006,7 @@ public class DefaultDevice implements Device {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
@@ -1085,7 +1086,7 @@ public class DefaultDevice implements Device {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
@@ -1165,7 +1166,7 @@ public class DefaultDevice implements Device {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
@@ -1245,7 +1246,7 @@ public class DefaultDevice implements Device {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
@@ -1325,7 +1326,7 @@ public class DefaultDevice implements Device {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
@@ -1434,7 +1435,7 @@ public class DefaultDevice implements Device {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
@@ -1536,7 +1537,7 @@ public class DefaultDevice implements Device {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
@@ -1617,7 +1618,7 @@ public class DefaultDevice implements Device {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
@@ -1699,7 +1700,7 @@ public class DefaultDevice implements Device {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
@@ -1823,7 +1824,7 @@ public class DefaultDevice implements Device {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
@@ -1888,7 +1889,7 @@ public class DefaultDevice implements Device {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
@@ -2030,7 +2031,7 @@ public class DefaultDevice implements Device {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 

@@ -45,6 +45,19 @@ import de.bacnetz.threads.ToogleDoorOpenStateThread;
  * bacnet and ((ip.dst == 192.168.2.1) or (ip.src == 192.168.2.1))
  * bacnet and ((ip.dst == 192.168.2.255) or (ip.dst == 192.168.2.1) or (ip.src == 192.168.2.1))
  * </pre>
+ * 
+ * TODO
+ * <ol>
+ * <li />Model a DevicePropertyType with value and meta information about the
+ * value's data type. when a device property is queried, retrieve that
+ * DevicePropertyType and have a converter that converts it to a response
+ * message or a service parameter. Model a map from property name to
+ * DevicePropertyType in DefaultDevice. Assign correct DevicePropertyTypeS to
+ * the parent device IO 420 and it's children.
+ * <li />Add ui.
+ * <li />Add scripting language with debugging functionality via the UI.
+ * <li />Only send value changes (COV) when COV subscription is there.
+ * </ol>
  */
 public class App {
 
@@ -235,6 +248,29 @@ public class App {
 
         final Map<Integer, String> vendorMap = readVendorMap("src/main/resources/BACnetVendors.csv");
 
+        final Device device = createDevice(vendorMap);
+
+        final DefaultMessageController defaultMessageController = new DefaultMessageController();
+        defaultMessageController.setDevice(device);
+        defaultMessageController.setVendorMap(vendorMap);
+
+        final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
+        multicastListenerReaderThread.setVendorMap(vendorMap);
+        multicastListenerReaderThread.setBindPort(NetworkUtils.DEFAULT_PORT);
+        multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
+
+        final ToogleDoorOpenStateThread toggleDoorOpenStateThread = new ToogleDoorOpenStateThread();
+        toggleDoorOpenStateThread.setDevice(device);
+        toggleDoorOpenStateThread.setVendorMap(vendorMap);
+        toggleDoorOpenStateThread.setCommunicationService(multicastListenerReaderThread);
+
+        multicastListenerReaderThread.openBroadCastSocket();
+
+        new Thread(multicastListenerReaderThread).start();
+//        new Thread(toggleDoorOpenStateThread).start();
+    }
+
+    private static Device createDevice(final Map<Integer, String> vendorMap) {
         final Device device = new DefaultDevice();
         device.setId(NetworkUtils.DEVICE_INSTANCE_NUMBER);
         device.setName(NetworkUtils.OBJECT_NAME);
@@ -374,25 +410,7 @@ public class App {
         childDevice.setVendorMap(vendorMap);
         childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
         device.getChildDevices().add(childDevice);
-
-        final DefaultMessageController defaultMessageController = new DefaultMessageController();
-        defaultMessageController.setDevice(device);
-        defaultMessageController.setVendorMap(vendorMap);
-
-        final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
-        multicastListenerReaderThread.setVendorMap(vendorMap);
-        multicastListenerReaderThread.setBindPort(NetworkUtils.DEFAULT_PORT);
-        multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
-
-        final ToogleDoorOpenStateThread toggleDoorOpenStateThread = new ToogleDoorOpenStateThread();
-        toggleDoorOpenStateThread.setDevice(device);
-        toggleDoorOpenStateThread.setVendorMap(vendorMap);
-        toggleDoorOpenStateThread.setCommunicationService(multicastListenerReaderThread);
-
-        multicastListenerReaderThread.openBroadCastSocket();
-
-        new Thread(multicastListenerReaderThread).start();
-        new Thread(toggleDoorOpenStateThread).start();
+        return device;
     }
 
     private static Map<Integer, String> readVendorMap(final String filename) throws IOException {

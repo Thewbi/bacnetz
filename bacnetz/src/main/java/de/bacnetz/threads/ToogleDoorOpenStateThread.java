@@ -91,7 +91,7 @@ public class ToogleDoorOpenStateThread implements Runnable {
 
                 // destination network information
                 npdu.setControl(0x20);
-                npdu.setDestinationNetworkNumber(302);
+                npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
                 npdu.setDestinationMACLayerAddressLength(3);
                 npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 

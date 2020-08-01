@@ -28,8 +28,6 @@ import de.bacnetz.stack.VirtualLinkControl;
 
 public class DefaultMessageController implements MessageController {
 
-//    private static final int AMOUNT_OF_OBJECTS = 15;
-
     private static final Logger LOG = LogManager.getLogger(DefaultMessageController.class);
 
     private Device device = new DefaultDevice();
@@ -215,7 +213,7 @@ public class DefaultMessageController implements MessageController {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
@@ -315,7 +313,7 @@ public class DefaultMessageController implements MessageController {
         final NPDU npdu = new NPDU();
         npdu.setVersion(0x01);
         npdu.setControl(0x20);
-        npdu.setDestinationNetworkNumber(0xFFFF);
+        npdu.setDestinationNetworkNumber(NetworkUtils.BROADCAST_NETWORK_NUMBER);
         // indicates broadcast on destination network
         npdu.setDestinationMACLayerAddressLength(0);
         npdu.setDestinationHopCount(255);
@@ -415,7 +413,7 @@ public class DefaultMessageController implements MessageController {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
@@ -491,7 +489,7 @@ public class DefaultMessageController implements MessageController {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 

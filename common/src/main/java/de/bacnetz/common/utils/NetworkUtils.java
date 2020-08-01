@@ -29,8 +29,10 @@ public class NetworkUtils {
 
     public static final String OBJECT_IDENTIFIER = "OBJECT_DEVICE:10001";
 
-//	public static final boolean ADD_ADDITIONAL_NETWORK_INFORMATION = true;
-    public static final boolean ADD_ADDITIONAL_NETWORK_INFORMATION = false;
+    public static final boolean ADD_ADDITIONAL_NETWORK_INFORMATION = true;
+//    public static final boolean ADD_ADDITIONAL_NETWORK_INFORMATION = false;
+
+    public static final int DESTINATION_NETWORK_NUMBER = 302;
 
 //	// Cockpit in local area network (test setup)
     public static final String LOCAL_BIND_IP = "192.168.2.1";
@@ -57,6 +59,8 @@ public class NetworkUtils {
     public static final String OBJECT_DESCRIPTION = "no entry";
 
     public static final String PROFILE_NAME = "p1";
+
+    public static final int BROADCAST_NETWORK_NUMBER = 0xFFFF;
 
     private static String hostAddress = null;
 

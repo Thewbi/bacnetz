@@ -102,7 +102,7 @@ public class MessageFactory implements Factory<Message> {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
@@ -205,7 +205,7 @@ public class MessageFactory implements Factory<Message> {
         final NPDU npdu = new NPDU();
         npdu.setVersion(0x01);
         npdu.setControl(0x28);
-        npdu.setDestinationNetworkNumber(0xFFFF);
+        npdu.setDestinationNetworkNumber(NetworkUtils.BROADCAST_NETWORK_NUMBER);
         npdu.setDestinationMACLayerAddressLength(0x00);
         npdu.setSourceMacLayerAddressLength(0x03);
         npdu.setSourceMac(NetworkUtils.DEVICE_MAC_ADDRESS);
@@ -257,7 +257,7 @@ public class MessageFactory implements Factory<Message> {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
@@ -341,7 +341,7 @@ public class MessageFactory implements Factory<Message> {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
@@ -424,7 +424,7 @@ public class MessageFactory implements Factory<Message> {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(302);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
