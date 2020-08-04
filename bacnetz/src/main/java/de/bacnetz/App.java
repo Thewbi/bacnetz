@@ -32,6 +32,7 @@ import de.bacnetz.controller.DefaultMessageController;
 import de.bacnetz.controller.Message;
 import de.bacnetz.devices.BinaryInputDevice;
 import de.bacnetz.devices.DefaultDevice;
+import de.bacnetz.devices.DefaultDeviceFactory;
 import de.bacnetz.devices.Device;
 import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.stack.IPv4Packet;
@@ -64,6 +65,12 @@ public class App {
     private static final Logger LOG = LogManager.getLogger(App.class);
 
     public static void main(final String[] args) throws IOException {
+
+        // https://github.com/apache/dubbo/issues/2423
+        //
+        // on a macbook, the JVM prioritizes IPv6 interfaces over
+        // IPv4 interfaces. Force the JVM to use IPv4.
+        System.setProperty("java.net.preferIPv4Stack", "true");
 
         final List<InetAddress> listAllBroadcastAddresses = listAllBroadcastAddresses();
 
@@ -248,7 +255,10 @@ public class App {
 
         final Map<Integer, String> vendorMap = readVendorMap("src/main/resources/BACnetVendors.csv");
 
-        final Device device = createDevice(vendorMap);
+        final DefaultDeviceFactory defaultDeviceFactory = new DefaultDeviceFactory();
+        final Device device = defaultDeviceFactory.create(vendorMap);
+
+//        final Device device = createDevice(vendorMap);
 
         final DefaultMessageController defaultMessageController = new DefaultMessageController();
         defaultMessageController.setDevice(device);
@@ -267,10 +277,11 @@ public class App {
         multicastListenerReaderThread.openBroadCastSocket();
 
         new Thread(multicastListenerReaderThread).start();
-//        new Thread(toggleDoorOpenStateThread).start();
+        new Thread(toggleDoorOpenStateThread).start();
     }
 
     private static Device createDevice(final Map<Integer, String> vendorMap) {
+
         final Device device = new DefaultDevice();
         device.setId(NetworkUtils.DEVICE_INSTANCE_NUMBER);
         device.setName(NetworkUtils.OBJECT_NAME);

@@ -5,14 +5,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 
 import de.bacnetz.common.utils.Utils;
 import de.bacnetz.controller.DefaultMessageController;
 import de.bacnetz.controller.Message;
+import de.bacnetz.controller.MessageController;
+import de.bacnetz.devices.DefaultDevice;
+import de.bacnetz.devices.Device;
+import de.bacnetz.stack.PDUType;
 import de.bacnetz.stack.ServiceParameter;
 
 public class MulticastListenerReaderThreadTest {
+
+    private static final Logger LOG = LogManager.getLogger(MulticastListenerReaderThreadTest.class);
 
     /**
      * Unconfirmed request who-is with specific range defined by two service
@@ -258,6 +266,47 @@ public class MulticastListenerReaderThreadTest {
 //		// closing tag
 //		final ServiceParameter closeingTagServiceParameter = request.getApdu().getServiceParameters().get(2);
 //		assertEquals(7, closeingTagServiceParameter.getLengthValueType());
+    }
+
+    @Test
+    public void testParseBuffer_MalformedRestartNotificationRecipients() {
+
+        final byte[] hexStringToByteArray = Utils
+                .hexStringToByteArray("810a0022010c012e030012680215fa0f0c0200271119ca3e1e22012e630012681f3f");
+
+        final MessageController messageController = new DefaultMessageController();
+
+        final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
+        multicastListenerReaderThread.getMessageControllers().add(messageController);
+
+        final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
+                hexStringToByteArray.length);
+        final Message response = multicastListenerReaderThread.sendMessageToController(request);
+
+        assertEquals(PDUType.SIMPLE_ACK_PDU, response.getApdu().getPduType());
+    }
+
+    @Test
+    public void testParseBuffer_ServiceStatus() {
+
+        final byte[] hexStringToByteArray = Utils
+                .hexStringToByteArray("810a0017010c012e030012680215000c0c020027111970");
+
+        final Device device = new DefaultDevice();
+        device.setId(10001);
+        device.setObjectType(8);
+
+        final DefaultMessageController messageController = new DefaultMessageController();
+        messageController.setDevice(device);
+
+        final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
+        multicastListenerReaderThread.getMessageControllers().add(messageController);
+
+        final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
+                hexStringToByteArray.length);
+        final Message response = multicastListenerReaderThread.sendMessageToController(request);
+
+        LOG.info(response);
     }
 
 }

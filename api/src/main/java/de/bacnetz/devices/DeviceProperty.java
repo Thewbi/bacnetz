@@ -2,10 +2,13 @@ package de.bacnetz.devices;
 
 import de.bacnet.factory.MessageType;
 
-public interface DeviceProperty {
+public interface DeviceProperty<T> {
 
     /** 0x0C = 12d = application-software-version */
     public static final int APPLICATION_SOFTWARE_VERSION = 0x0C;
+
+    /** 0x1C = 28d description */
+    public static final int DESCRIPTION = 0x1C;
 
     /** 0xC4 = 196d = last-restart-reason */
     public static final int LAST_RESTART_REASON = 0xC4;
@@ -75,9 +78,11 @@ public interface DeviceProperty {
 
     void setPropertyKey(int propertyKey);
 
-    byte[] getValue();
+    T getValue();
 
-    void setValue(byte[] value);
+    void setValue(T value);
+
+    byte[] getValueAsByteArray();
 
     MessageType getMessageType();
 
@@ -87,9 +92,9 @@ public interface DeviceProperty {
 
     void setPropertyName(String propertyName);
 
-    boolean getBooleanValue();
-
-    void setBooleanValue(boolean booleanValue);
+//    boolean getBooleanValue();
+//
+//    void setBooleanValue(boolean booleanValue);
 
     int getLengthTagValue();
 

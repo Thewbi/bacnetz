@@ -3,6 +3,9 @@ package de.bacnetz.factory;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import de.bacnet.factory.Factory;
 import de.bacnet.factory.MessageType;
 import de.bacnetz.common.utils.NetworkUtils;
@@ -20,7 +23,8 @@ import de.bacnetz.stack.VirtualLinkControl;
 
 public class MessageFactory implements Factory<Message> {
 
-//    private static final Logger LOG = LogManager.getLogger(MessageFactory.class);
+    @SuppressWarnings("unused")
+    private static final Logger LOG = LogManager.getLogger(MessageFactory.class);
 
     private Map<Integer, String> vendorMap = new HashMap<>();
 
@@ -28,7 +32,6 @@ public class MessageFactory implements Factory<Message> {
     public Message create(final Object... args) {
 
         int index = 0;
-//        int deviceInstanceNumber = -1;
         Device device;
         int invokeId = -1;
         int propertyKey = -1;
@@ -47,16 +50,14 @@ public class MessageFactory implements Factory<Message> {
                 return whoIsMessage();
             }
 
-        case INTEGER_PROPERTY:
-//            deviceInstanceNumber = (int) args[index++];
+        case UNSIGNED_INTEGER:
             device = (Device) args[index++];
             invokeId = (int) args[index++];
             propertyKey = (int) args[index++];
             payload = (byte[]) args[index++];
             return returnIntegerProperty(device, invokeId, propertyKey, payload);
 
-        case BOOLEAN_PROPERTY:
-//          deviceInstanceNumber = (int) args[index++];
+        case BOOLEAN:
             device = (Device) args[index++];
             invokeId = (int) args[index++];
             propertyKey = (int) args[index++];
@@ -64,15 +65,13 @@ public class MessageFactory implements Factory<Message> {
             return returnBooleanProperty(device, invokeId, propertyKey, value);
 
         case ENUMERATED:
-//          deviceInstanceNumber = (int) args[index++];
             device = (Device) args[index++];
             invokeId = (int) args[index++];
             propertyKey = (int) args[index++];
             payload = (byte[]) args[index++];
             return returnEnumeratedProperty(device, invokeId, propertyKey, payload);
 
-        case SINGED_INTEGER_TWOS_COMPLEMENT_NOTATION_PROPERTY:
-//          deviceInstanceNumber = (int) args[index++];
+        case SINGED_INTEGER_TWOS_COMPLEMENT_NOTATION:
             device = (Device) args[index++];
             invokeId = (int) args[index++];
             propertyKey = (int) args[index++];
@@ -113,8 +112,6 @@ public class MessageFactory implements Factory<Message> {
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
-//        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-//        objectIdentifierServiceParameter.setInstanceNumber(deviceInstanceNumber);
         objectIdentifierServiceParameter.setObjectType(device.getObjectType());
         objectIdentifierServiceParameter.setInstanceNumber(device.getId());
 

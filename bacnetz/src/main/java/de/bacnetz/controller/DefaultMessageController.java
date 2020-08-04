@@ -527,7 +527,7 @@ public class DefaultMessageController implements MessageController {
         boolean withinRequestedProperties = false;
         for (final ServiceParameter serviceParameter : serviceParameters) {
 
-//			LOG.info(serviceParameter);
+            LOG.trace(serviceParameter);
 
             // opening tag
             if (serviceParameter.getLengthValueType() == 0x06) {
@@ -624,7 +624,7 @@ public class DefaultMessageController implements MessageController {
         valueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         valueServiceParameter.setTagNumber(deviceProperty.getMessageType().getValue());
         valueServiceParameter.setLengthValueType(deviceProperty.getLengthTagValue());
-        valueServiceParameter.setPayload(deviceProperty.getValue());
+        valueServiceParameter.setPayload(deviceProperty.getValueAsByteArray());
         apdu.getServiceParameters().add(valueServiceParameter);
         LOG.trace(valueServiceParameter);
 

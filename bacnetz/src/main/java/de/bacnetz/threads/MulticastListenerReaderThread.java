@@ -79,7 +79,7 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
 //		LOG.info(">>> Sending who is done.");
 //		sendMessage(null, whoIsMessage);
 
-        LOG.info("Broadcast listener on Port " + NetworkUtils.DEFAULT_PORT + " started.");
+        LOG.info("Broadcast listener on " + NetworkUtils.LOCAL_BIND_IP + ":" + NetworkUtils.DEFAULT_PORT + " started.");
 
         while (running) {
 

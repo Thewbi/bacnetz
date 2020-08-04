@@ -2,100 +2,114 @@ package de.bacnetz.devices;
 
 import de.bacnet.factory.MessageType;
 
-public class DefaultDeviceProperty implements DeviceProperty {
+public class DefaultDeviceProperty<T> implements DeviceProperty<T> {
 
-	private String propertyName;
+    private String propertyName;
 
-	private int propertyKey;
+    private int propertyKey;
 
-	private byte[] value;
+    private T value;
 
-	private boolean booleanValue;
+//    private boolean booleanValue;
 
-	private MessageType messageType;
+    private MessageType messageType;
 
-	/**
-	 * ctor
-	 * 
-	 * @param propertyKey
-	 * @param value
-	 * @param messageType
-	 */
-	public DefaultDeviceProperty(final String propertyName, final int propertyKey, final byte[] value,
-			final MessageType messageType) {
-		super();
-		this.propertyName = propertyName;
-		this.propertyKey = propertyKey;
-		this.value = value;
-		this.messageType = messageType;
-	}
+    /**
+     * ctor
+     * 
+     * @param propertyKey
+     * @param value
+     * @param messageType
+     */
+    public DefaultDeviceProperty(final String propertyName, final int propertyKey, final T value,
+            final MessageType messageType) {
+        super();
+        this.propertyName = propertyName;
+        this.propertyKey = propertyKey;
+        this.value = value;
+        this.messageType = messageType;
+    }
 
-	public DefaultDeviceProperty(final String propertyName, final int propertyKey, final boolean booleanValue,
-			final MessageType messageType) {
-		super();
-		this.propertyName = propertyName;
-		this.propertyKey = propertyKey;
-		this.booleanValue = booleanValue;
-		this.messageType = messageType;
-	}
+//    public DefaultDeviceProperty(final String propertyName, final int propertyKey, final boolean booleanValue,
+//            final MessageType messageType) {
+//        super();
+//        this.propertyName = propertyName;
+//        this.propertyKey = propertyKey;
+////        this.booleanValue = booleanValue;
+//        this.messageType = messageType;
+//    }
 
-	@Override
-	public int getLengthTagValue() {
-		if (messageType == MessageType.BOOLEAN_PROPERTY) {
-			return getBooleanValue() ? 0x01 : 0x00;
-		} else {
-			return getValue().length;
-		}
-	}
+    @Override
+    public int getLengthTagValue() {
 
-	@Override
-	public int getPropertyKey() {
-		return propertyKey;
-	}
+        if (messageType == MessageType.BOOLEAN) {
+            return ((Boolean) value) ? 0x01 : 0x00;
+        } else {
+            return ((byte[]) getValue()).length;
+        }
+    }
 
-	@Override
-	public void setPropertyKey(final int propertyKey) {
-		this.propertyKey = propertyKey;
-	}
+    @Override
+    public int getPropertyKey() {
+        return propertyKey;
+    }
 
-	@Override
-	public byte[] getValue() {
-		return value;
-	}
+    @Override
+    public void setPropertyKey(final int propertyKey) {
+        this.propertyKey = propertyKey;
+    }
 
-	@Override
-	public void setValue(final byte[] value) {
-		this.value = value;
-	}
+    @Override
+    public T getValue() {
+        return value;
+    }
 
-	@Override
-	public MessageType getMessageType() {
-		return messageType;
-	}
+    @Override
+    public void setValue(final T value) {
+        this.value = value;
+    }
 
-	@Override
-	public void setMessageType(final MessageType messageType) {
-		this.messageType = messageType;
-	}
+    @Override
+    public MessageType getMessageType() {
+        return messageType;
+    }
 
-	@Override
-	public String getPropertyName() {
-		return propertyName;
-	}
+    @Override
+    public void setMessageType(final MessageType messageType) {
+        this.messageType = messageType;
+    }
 
-	@Override
-	public void setPropertyName(final String propertyName) {
-		this.propertyName = propertyName;
-	}
+    @Override
+    public String getPropertyName() {
+        return propertyName;
+    }
 
-	@Override
-	public boolean getBooleanValue() {
-		return booleanValue;
-	}
+    @Override
+    public void setPropertyName(final String propertyName) {
+        this.propertyName = propertyName;
+    }
 
-	@Override
-	public void setBooleanValue(final boolean booleanValue) {
-		this.booleanValue = booleanValue;
-	}
+    @Override
+    public byte[] getValueAsByteArray() {
+
+        switch (messageType) {
+
+        case BOOLEAN:
+            return new byte[] { (byte) (((Boolean) value) ? 0x01 : 0x00) };
+
+        default:
+            throw new RuntimeException("Unimplemented type: " + messageType);
+        }
+    }
+
+//    @Override
+//    public boolean getBooleanValue() {
+//        return booleanValue;
+//    }
+//
+//    @Override
+//    public void setBooleanValue(final boolean booleanValue) {
+//        this.booleanValue = booleanValue;
+//    }
 
 }

@@ -11,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.bacnetz.common.utils.Utils;
+import de.bacnetz.devices.DevicePropertyType;
 
 /**
  * Application Layer Protocol Data Unit (APDU)
@@ -613,17 +614,23 @@ public class APDU {
 
         final StringBuffer stringBuffer = new StringBuffer();
 
-        stringBuffer.append(pduType.toString()).append(" ");
+        stringBuffer.append("PDU Type: ").append(pduType.toString()).append("\n");
 
         if (confirmedServiceChoice != null) {
             stringBuffer.append(confirmedServiceChoice);
+            stringBuffer.append("ConfirmedServiceChoice: ").append(confirmedServiceChoice).append("\n");
         }
         if (unconfirmedServiceChoice != null) {
-            stringBuffer.append(unconfirmedServiceChoice);
+            stringBuffer.append("UnconfirmedServiceChoice: ").append(unconfirmedServiceChoice).append("\n");
+        }
+
+        if (propertyIdentifier >= 0) {
+            stringBuffer.append("Property: ").append(DevicePropertyType.getByCode(propertyIdentifier)).append(" (")
+                    .append(propertyIdentifier).append(")\n");
         }
 
         for (final ServiceParameter serviceParameter : serviceParameters) {
-            stringBuffer.append("\n").append(serviceParameter.toString());
+            stringBuffer.append(serviceParameter.toString()).append("\n");
         }
 
         return stringBuffer.toString();

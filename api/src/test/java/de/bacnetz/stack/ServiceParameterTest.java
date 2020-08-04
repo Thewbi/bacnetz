@@ -183,7 +183,7 @@ public class ServiceParameterTest {
 
         final ServiceParameter valueServiceParameter = new ServiceParameter();
         valueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-        valueServiceParameter.setTagNumber(MessageType.BOOLEAN_PROPERTY.getValue());
+        valueServiceParameter.setTagNumber(MessageType.BOOLEAN.getValue());
         valueServiceParameter.setLengthValueType(0x01);
 //		valueServiceParameter.setPayload(new byte[] { 0x01 });
 
@@ -205,9 +205,8 @@ public class ServiceParameterTest {
 
         final ServiceParameter valueServiceParameter = new ServiceParameter();
         valueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-        valueServiceParameter.setTagNumber(MessageType.BOOLEAN_PROPERTY.getValue());
+        valueServiceParameter.setTagNumber(MessageType.BOOLEAN.getValue());
         valueServiceParameter.setLengthValueType(0x00);
-//		valueServiceParameter.setPayload(new byte[] { 0x01 });
 
         valueServiceParameter.toBytes(result, 0);
 
