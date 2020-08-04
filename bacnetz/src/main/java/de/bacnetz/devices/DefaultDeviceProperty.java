@@ -1,115 +1,142 @@
 package de.bacnetz.devices;
 
 import de.bacnet.factory.MessageType;
+import de.bacnetz.common.utils.BACnetUtils;
 
 public class DefaultDeviceProperty<T> implements DeviceProperty<T> {
 
-    private String propertyName;
+	private String propertyName;
 
-    private int propertyKey;
+	private int propertyKey;
 
-    private T value;
+	private T value;
 
-//    private boolean booleanValue;
+	private MessageType messageType;
 
-    private MessageType messageType;
+	/**
+	 * ctor
+	 * 
+	 * @param propertyKey
+	 * @param value
+	 * @param messageType
+	 */
+	public DefaultDeviceProperty(final String propertyName, final int propertyKey, final T value,
+			final MessageType messageType) {
+		super();
+		this.propertyName = propertyName;
+		this.propertyKey = propertyKey;
+		this.value = value;
+		this.messageType = messageType;
+	}
 
-    /**
-     * ctor
-     * 
-     * @param propertyKey
-     * @param value
-     * @param messageType
-     */
-    public DefaultDeviceProperty(final String propertyName, final int propertyKey, final T value,
-            final MessageType messageType) {
-        super();
-        this.propertyName = propertyName;
-        this.propertyKey = propertyKey;
-        this.value = value;
-        this.messageType = messageType;
-    }
+	@Override
+	public int getLengthTagValue() {
 
-//    public DefaultDeviceProperty(final String propertyName, final int propertyKey, final boolean booleanValue,
-//            final MessageType messageType) {
-//        super();
-//        this.propertyName = propertyName;
-//        this.propertyKey = propertyKey;
-////        this.booleanValue = booleanValue;
-//        this.messageType = messageType;
-//    }
+		if (messageType == MessageType.BOOLEAN) {
+			return ((Boolean) value) ? 0x01 : 0x00;
+		} else {
+			return getValueAsByteArray().length;
+		}
+	}
 
-    @Override
-    public int getLengthTagValue() {
+	@Override
+	public byte[] getValueAsByteArray() {
 
-        if (messageType == MessageType.BOOLEAN) {
-            return ((Boolean) value) ? 0x01 : 0x00;
-        } else {
-            return ((byte[]) getValue()).length;
-        }
-    }
+		switch (messageType) {
 
-    @Override
-    public int getPropertyKey() {
-        return propertyKey;
-    }
+		case BOOLEAN:
+			return new byte[] { (byte) (((Boolean) value) ? 0x01 : 0x00) };
 
-    @Override
-    public void setPropertyKey(final int propertyKey) {
-        this.propertyKey = propertyKey;
-    }
+		case UNSIGNED_INTEGER:
+			final Integer valueAsInteger = (Integer) value;
+			return IntToByteArray(valueAsInteger);
 
-    @Override
-    public T getValue() {
-        return value;
-    }
+		case ENUMERATED:
+			return (byte[]) value;
 
-    @Override
-    public void setValue(final T value) {
-        this.value = value;
-    }
+		case CHARACTER_STRING:
+			return BACnetUtils.retrieveAsString((String) value);
 
-    @Override
-    public MessageType getMessageType() {
-        return messageType;
-    }
+		case SINGED_INTEGER_TWOS_COMPLEMENT_NOTATION:
+			return (byte[]) value;
 
-    @Override
-    public void setMessageType(final MessageType messageType) {
-        this.messageType = messageType;
-    }
+		default:
+			throw new RuntimeException("Unimplemented type: " + messageType);
+		}
+	}
 
-    @Override
-    public String getPropertyName() {
-        return propertyName;
-    }
+	byte[] IntToByteArray(final int data) {
 
-    @Override
-    public void setPropertyName(final String propertyName) {
-        this.propertyName = propertyName;
-    }
+		final byte byte0 = (byte) ((data & 0xFF000000) >> 24);
+		final byte byte1 = (byte) ((data & 0x00FF0000) >> 16);
+		final byte byte2 = (byte) ((data & 0x0000FF00) >> 8);
+		final byte byte3 = (byte) ((data & 0x000000FF) >> 0);
 
-    @Override
-    public byte[] getValueAsByteArray() {
+		if (byte0 > 0) {
+			final byte[] result = new byte[4];
+			result[0] = byte0;
+			result[1] = byte1;
+			result[2] = byte2;
+			result[3] = byte3;
+			return result;
+		}
 
-        switch (messageType) {
+		if (byte1 > 0) {
+			final byte[] result = new byte[3];
+			result[0] = byte1;
+			result[1] = byte2;
+			result[2] = byte3;
+			return result;
+		}
 
-        case BOOLEAN:
-            return new byte[] { (byte) (((Boolean) value) ? 0x01 : 0x00) };
+		if (byte2 > 0) {
+			final byte[] result = new byte[2];
+			result[0] = byte2;
+			result[1] = byte3;
+			return result;
+		}
 
-        default:
-            throw new RuntimeException("Unimplemented type: " + messageType);
-        }
-    }
+		return new byte[] { byte3 };
+	}
 
-//    @Override
-//    public boolean getBooleanValue() {
-//        return booleanValue;
-//    }
-//
-//    @Override
-//    public void setBooleanValue(final boolean booleanValue) {
-//        this.booleanValue = booleanValue;
-//    }
+	@Override
+	public int getPropertyKey() {
+		return propertyKey;
+	}
+
+	@Override
+	public void setPropertyKey(final int propertyKey) {
+		this.propertyKey = propertyKey;
+	}
+
+	@Override
+	public T getValue() {
+		return value;
+	}
+
+	@Override
+	public void setValue(final T value) {
+		this.value = value;
+	}
+
+	@Override
+	public MessageType getMessageType() {
+		return messageType;
+	}
+
+	@Override
+	public void setMessageType(final MessageType messageType) {
+		this.messageType = messageType;
+	}
+
+	@Override
+	public String getPropertyName() {
+		return propertyName;
+	}
+
+	@Override
+	public void setPropertyName(final String propertyName) {
+		this.propertyName = propertyName;
+	}
 
 }

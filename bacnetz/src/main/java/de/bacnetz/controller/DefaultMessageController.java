@@ -28,717 +28,722 @@ import de.bacnetz.stack.VirtualLinkControl;
 
 public class DefaultMessageController implements MessageController {
 
-    private static final Logger LOG = LogManager.getLogger(DefaultMessageController.class);
+	private static final Logger LOG = LogManager.getLogger(DefaultMessageController.class);
 
-    private Device device = new DefaultDevice();
+	private Device device = new DefaultDevice();
 
-    private Map<Integer, String> vendorMap = new HashMap<>();
+	private Map<Integer, String> vendorMap = new HashMap<>();
 
-    private final MessageFactory messageFactory = new MessageFactory();
+	private final MessageFactory messageFactory = new MessageFactory();
 
-    @Override
-    public Message processMessage(final Message message) {
-        if (message.getApdu() == null) {
-            return processNonAPDUMessage(message);
-        } else {
-            return processAPDUMessage(message);
-        }
-    }
+	@Override
+	public Message processMessage(final Message message) {
+		if (message.getApdu() == null) {
+			return processNonAPDUMessage(message);
+		} else {
+			return processAPDUMessage(message);
+		}
+	}
 
-    private Message processNonAPDUMessage(final Message message) {
+	private Message processNonAPDUMessage(final Message message) {
 
-        LOG.warn("<<< Not handling: " + message.getNpdu().getNetworkLayerMessageType().name());
+		LOG.warn("<<< Not handling: " + message.getNpdu().getNetworkLayerMessageType().name());
 
-        switch (message.getNpdu().getNetworkLayerMessageType()) {
-        case WHO_IS_ROUTER_TO_NETWORK:
-        case I_AM_ROUTER_TO_NETWORK:
-        case I_COULD_BE_ROUTER_TO_NETWORK:
-        case REJECT_MESSAGE_TO_NETWORK:
-        case ROUTER_BUSY_TO_NETWORK:
-        case ROUTER_AVAILABLE_TO_NETWORK:
-        case INITIALIZE_ROUTING_TABLE:
-        case INITIALIZE_ROUTING_TABLE_ACK:
-        case ESTABLISH_CONNECTION_TO_NETWORK:
-        case DISCONNECT_CONNECTION_TO_NETWORK:
-        case CHALLENGE_REQUEST:
-        case SECURITY_PAYLOAD:
-        case SECURITY_RESPONSE:
-        case REQUEST_KEY_UPDATE:
-        case UPDATE_KEY_SET:
-        case UPDATE_DISTRIBUTION_KEY:
-        case REQUEST_MASTER_KEY:
-        case SET_MASTER_KEY:
-        case WHAT_IS_NETWORK_NUMBER:
-        case NETWORK_NUMBER_IS:
-            return null;
+		switch (message.getNpdu().getNetworkLayerMessageType()) {
+		case WHO_IS_ROUTER_TO_NETWORK:
+		case I_AM_ROUTER_TO_NETWORK:
+		case I_COULD_BE_ROUTER_TO_NETWORK:
+		case REJECT_MESSAGE_TO_NETWORK:
+		case ROUTER_BUSY_TO_NETWORK:
+		case ROUTER_AVAILABLE_TO_NETWORK:
+		case INITIALIZE_ROUTING_TABLE:
+		case INITIALIZE_ROUTING_TABLE_ACK:
+		case ESTABLISH_CONNECTION_TO_NETWORK:
+		case DISCONNECT_CONNECTION_TO_NETWORK:
+		case CHALLENGE_REQUEST:
+		case SECURITY_PAYLOAD:
+		case SECURITY_RESPONSE:
+		case REQUEST_KEY_UPDATE:
+		case UPDATE_KEY_SET:
+		case UPDATE_DISTRIBUTION_KEY:
+		case REQUEST_MASTER_KEY:
+		case SET_MASTER_KEY:
+		case WHAT_IS_NETWORK_NUMBER:
+		case NETWORK_NUMBER_IS:
+			return null;
 
-        default:
-            LOG.warn("<<< Unknown message: " + message.getNpdu().getNetworkLayerMessageType());
-            return null;
-        }
-    }
+		default:
+			LOG.warn("<<< Unknown message: " + message.getNpdu().getNetworkLayerMessageType());
+			return null;
+		}
+	}
 
-    private Message processAPDUMessage(final Message message) {
+	private Message processAPDUMessage(final Message message) {
 
-        final ConfirmedServiceChoice confirmedServiceChoice = message.getApdu().getConfirmedServiceChoice();
-        if (confirmedServiceChoice != null) {
-            switch (confirmedServiceChoice) {
-            default:
-                LOG.warn("Not implemented: {} ", confirmedServiceChoice);
-            }
+		final ConfirmedServiceChoice confirmedServiceChoice = message.getApdu().getConfirmedServiceChoice();
+		if (confirmedServiceChoice != null) {
+			switch (confirmedServiceChoice) {
+			default:
+				LOG.warn("Not implemented: {} ", confirmedServiceChoice);
+			}
 
-            return null;
-        }
+			return null;
+		}
 
-        final UnconfirmedServiceChoice unconfirmedServiceChoice = message.getApdu().getUnconfirmedServiceChoice();
-        if (unconfirmedServiceChoice != null) {
-            switch (unconfirmedServiceChoice) {
+		final UnconfirmedServiceChoice unconfirmedServiceChoice = message.getApdu().getUnconfirmedServiceChoice();
+		if (unconfirmedServiceChoice != null) {
+			switch (unconfirmedServiceChoice) {
 
-            case I_AM:
-                LOG.info(">>> I_AM received!");
-                return processIAMMessage(message);
+			case I_AM:
+				LOG.info(">>> I_AM received!");
+				return processIAMMessage(message);
 
-            /** 20.1.3 BACnet-Unconfirmed-Request-PDU */
-            case I_HAVE:
-                LOG.info(">>> I_HAVE received!");
-                // throw new RuntimeException(">>> Not implemented yet! Message: " +
-                // message.getApdu().getServiceChoice());
-                return null;
+			/** 20.1.3 BACnet-Unconfirmed-Request-PDU */
+			case I_HAVE:
+				LOG.info(">>> I_HAVE received!");
+				// throw new RuntimeException(">>> Not implemented yet! Message: " +
+				// message.getApdu().getServiceChoice());
+				return null;
 
-            /** 20.1.4 BACnet-SimpleACK-PDU */
-            case UNCONFIRMED_COV_NOTIFICATION:
-                LOG.info(">>> UNCONFIRMED_COV_NOTIFICATION received!");
-                // throw new RuntimeException(">>> Not implemented yet! Message: " +
-                // message.getApdu().getServiceChoice());
-                return null;
+			/** 20.1.4 BACnet-SimpleACK-PDU */
+			case UNCONFIRMED_COV_NOTIFICATION:
+				LOG.info(">>> UNCONFIRMED_COV_NOTIFICATION received!");
+				// throw new RuntimeException(">>> Not implemented yet! Message: " +
+				// message.getApdu().getServiceChoice());
+				return null;
 
-            /** 20.1.5 BACnet-ComplexACK-PDU */
-            case UNCONFIRMED_EVENT_NOTIFICATION:
-                LOG.info(">>> UNCONFIRMED_EVENT_NOTIFICATION received!");
-                // throw new RuntimeException(">>> Not implemented yet! Message: " +
-                // message.getApdu().getServiceChoice());
-                return null;
+			/** 20.1.5 BACnet-ComplexACK-PDU */
+			case UNCONFIRMED_EVENT_NOTIFICATION:
+				LOG.info(">>> UNCONFIRMED_EVENT_NOTIFICATION received!");
+				// throw new RuntimeException(">>> Not implemented yet! Message: " +
+				// message.getApdu().getServiceChoice());
+				return null;
 
-            /** 20.1.6 BACnet-SegmentACK-PDU */
-            case UNCONFIRMED_PRIVATE_TRANSFER:
-                LOG.info(">>> UNCONFIRMED_PRIVATE_TRANSFER received!");
-                // throw new RuntimeException(">>> Not implemented yet! Message: " +
-                // message.getApdu().getServiceChoice());
-                return null;
+			/** 20.1.6 BACnet-SegmentACK-PDU */
+			case UNCONFIRMED_PRIVATE_TRANSFER:
+				LOG.info(">>> UNCONFIRMED_PRIVATE_TRANSFER received!");
+				// throw new RuntimeException(">>> Not implemented yet! Message: " +
+				// message.getApdu().getServiceChoice());
+				return null;
 
-            /** 20.1.7 BACnet-Error-PDU */
-            case UNCONFIRMED_TEXT_MESSAGE:
-                LOG.info(">>> UNCONFIRMED_TEXT_MESSAGE received!");
-                // throw new RuntimeException(">>> Not implemented yet! Message: " +
-                // message.getApdu().getServiceChoice());
-                return null;
+			/** 20.1.7 BACnet-Error-PDU */
+			case UNCONFIRMED_TEXT_MESSAGE:
+				LOG.info(">>> UNCONFIRMED_TEXT_MESSAGE received!");
+				// throw new RuntimeException(">>> Not implemented yet! Message: " +
+				// message.getApdu().getServiceChoice());
+				return null;
 
-            /** 20.1.8 BACnet-Reject-PDU */
-            case TIME_SYNCHRONIZATION:
-                LOG.info(">>> TIME_SYNCHRONIZATION received!");
-                // throw new RuntimeException(">>> Not implemented yet! Message: " +
-                // message.getApdu().getServiceChoice());
-                return null;
+			/** 20.1.8 BACnet-Reject-PDU */
+			case TIME_SYNCHRONIZATION:
+				LOG.info(">>> TIME_SYNCHRONIZATION received!");
+				// throw new RuntimeException(">>> Not implemented yet! Message: " +
+				// message.getApdu().getServiceChoice());
+				return null;
 
-            /** 20.1.9 BACnet-Abort-PDU */
-            case WHO_HAS:
-                LOG.info(">>> WHO_HAS received!");
-                // throw new RuntimeException(">>> Not implemented yet! Message: " +
-                // message.getApdu().getServiceChoice());
-                return null;
+			/** 20.1.9 BACnet-Abort-PDU */
+			case WHO_HAS:
+				LOG.info(">>> WHO_HAS received!");
+				// throw new RuntimeException(">>> Not implemented yet! Message: " +
+				// message.getApdu().getServiceChoice());
+				return null;
 
-            /** 20.1.2 BACnet-Confirmed-Request-PDU */
-            case WHO_IS:
-                LOG.trace(">>> WHO_IS received!");
-                return processWhoIsMessage(message);
+			/** 20.1.2 BACnet-Confirmed-Request-PDU */
+			case WHO_IS:
+				LOG.trace(">>> WHO_IS received!");
+				return processWhoIsMessage(message);
 
-            case UTC_TIME_SYNCHRONIZATION:
-                LOG.info(">>> UTC_TIME_SYNCHRONIZATION received!");
-                // throw new RuntimeException(">>> Not implemented yet! Message: " +
-                // message.getApdu().getServiceChoice());
-                return null;
+			case UTC_TIME_SYNCHRONIZATION:
+				LOG.info(">>> UTC_TIME_SYNCHRONIZATION received!");
+				// throw new RuntimeException(">>> Not implemented yet! Message: " +
+				// message.getApdu().getServiceChoice());
+				return null;
 
-            case WRITE_GROUP:
-                LOG.info(">>> WRITE_GROUP received!");
-                // throw new RuntimeException(">>> Not implemented yet! Message: " +
-                // message.getApdu().getServiceChoice());
-                return null;
+			case WRITE_GROUP:
+				LOG.info(">>> WRITE_GROUP received!");
+				// throw new RuntimeException(">>> Not implemented yet! Message: " +
+				// message.getApdu().getServiceChoice());
+				return null;
 
-            case READ_PROPERTY:
-                LOG.trace(">>> READ_PROPERTY received!");
-                return processReadProperty(message);
+			case READ_PROPERTY:
+				LOG.trace(">>> READ_PROPERTY received!");
+				return processReadProperty(message);
 
-            case READ_PROPERTY_MULTIPLE:
-                LOG.trace(">>> READ_PROPERTY_MULTIPLE received!");
-                return processReadPropertyMultiple(message);
+			case READ_PROPERTY_MULTIPLE:
+				LOG.trace(">>> READ_PROPERTY_MULTIPLE received!");
+				return processReadPropertyMultiple(message);
 
-            case WRITE_PROPERTY:
-                LOG.trace(">>> WRITE_PROPERTY received!");
-                return processWriteProperty(message);
+			case WRITE_PROPERTY:
+				LOG.trace(">>> WRITE_PROPERTY received!");
+				return processWriteProperty(message);
 
-            case DEVICE_COMMUNICATION_CONTROL:
-                LOG.trace(">>> DEVICE_COMMUNICATION_CONTROL received!");
-                return processDeviceCommunicationControl(message);
+			case DEVICE_COMMUNICATION_CONTROL:
+				LOG.trace(">>> DEVICE_COMMUNICATION_CONTROL received!");
+				return processDeviceCommunicationControl(message);
 
-            case REINITIALIZE_DEVICE:
-                LOG.trace(">>> REINITIALIZE_DEVICE received!");
-                return processReinitializeDevice(message);
+			case REINITIALIZE_DEVICE:
+				LOG.trace(">>> REINITIALIZE_DEVICE received!");
+				return processReinitializeDevice(message);
 
-            default:
-                LOG.warn(">>> Unknown message: " + message.getApdu().getUnconfirmedServiceChoice());
-                return null;
-            }
-        }
+			default:
+				LOG.warn(">>> Unknown message: " + message.getApdu().getUnconfirmedServiceChoice());
+				return null;
+			}
+		}
 
-        return null;
-    }
+		return null;
+	}
 
-    private Message processReinitializeDevice(final Message requestMessage) {
+	private Message processReinitializeDevice(final Message requestMessage) {
 
-        // TODO check for the correct password in the second service parameter
+		// TODO check for the correct password in the second service parameter
 
-        final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
-        virtualLinkControl.setType(0x81);
-        virtualLinkControl.setFunction(0x0A);
-        virtualLinkControl.setLength(0x00);
+		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
+		virtualLinkControl.setType(0x81);
+		virtualLinkControl.setFunction(0x0A);
+		virtualLinkControl.setLength(0x00);
 
-        final NPDU npdu = new NPDU();
-        npdu.setVersion(0x01);
+		final NPDU npdu = new NPDU();
+		npdu.setVersion(0x01);
 
-        // no additional information
-        // this works, if the cp is connected to the device directly via 192.168.2.1
-        npdu.setControl(0x00);
+		// no additional information
+		// this works, if the cp is connected to the device directly via 192.168.2.1
+		npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+		if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
 
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+			// destination network information
+			npdu.setControl(0x20);
+			npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+			npdu.setDestinationMACLayerAddressLength(3);
+			npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
-            npdu.setDestinationHopCount(255);
-        }
+			npdu.setDestinationHopCount(255);
+		}
 
-        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-        objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        objectIdentifierServiceParameter.setTagNumber(0x00);
-        objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+		objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		objectIdentifierServiceParameter.setTagNumber(0x00);
+		objectIdentifierServiceParameter.setLengthValueType(4);
+		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+		objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
 
-        final APDU apdu = new APDU();
-        apdu.setPduType(PDUType.SIMPLE_ACK_PDU);
-        apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.REINITIALIZE_DEVICE);
-        apdu.setVendorMap(vendorMap);
+		final APDU apdu = new APDU();
+		apdu.setPduType(PDUType.SIMPLE_ACK_PDU);
+		apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
+		apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.REINITIALIZE_DEVICE);
+		apdu.setVendorMap(vendorMap);
 
-        final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
-        result.setNpdu(npdu);
-        result.setApdu(apdu);
+		final DefaultMessage result = new DefaultMessage();
+		result.setVirtualLinkControl(virtualLinkControl);
+		result.setNpdu(npdu);
+		result.setApdu(apdu);
 
-        virtualLinkControl.setLength(result.getDataLength());
+		virtualLinkControl.setLength(result.getDataLength());
 
 //		final byte[] bytes = result.getBytes();
 //		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
-        return result;
-    }
+		return result;
+	}
 
-    private Message processDeviceCommunicationControl(final Message requestMessage) {
-        throw new RuntimeException("Not implemented!");
-    }
+	private Message processDeviceCommunicationControl(final Message requestMessage) {
+		throw new RuntimeException("Not implemented!");
+	}
 
-    /**
-     * Answer Who-Is with I-Am.
-     * 
-     * @param message
-     * @return
-     */
-    private Message processWhoIsMessage(final Message message) {
+	/**
+	 * Answer Who-Is with I-Am.
+	 * 
+	 * @param message
+	 * @return
+	 */
+	private Message processWhoIsMessage(final Message message) {
 
-        final List<ServiceParameter> serviceParameters = message.getApdu().getServiceParameters();
-        if (CollectionUtils.isNotEmpty(serviceParameters) && serviceParameters.size() == 2) {
+		final List<ServiceParameter> serviceParameters = message.getApdu().getServiceParameters();
+		if (CollectionUtils.isNotEmpty(serviceParameters) && serviceParameters.size() == 2) {
 
-            final ServiceParameter lowerBoundServiceParameter = serviceParameters.get(0);
-            final ServiceParameter upperBoundServiceParameter = serviceParameters.get(1);
+			final ServiceParameter lowerBoundServiceParameter = serviceParameters.get(0);
+			final ServiceParameter upperBoundServiceParameter = serviceParameters.get(1);
 
-            final boolean bigEndian = true;
+			final boolean bigEndian = true;
 
-            // find lower bound as integer
-            int lowerBound = 0;
-            if (lowerBoundServiceParameter.getPayload().length == 1) {
-                lowerBound = lowerBoundServiceParameter.getPayload()[0];
-            } else {
-                lowerBound = Utils.bytesToUnsignedShort(lowerBoundServiceParameter.getPayload()[0],
-                        lowerBoundServiceParameter.getPayload()[1], bigEndian);
-            }
+			// find lower bound as integer
+			int lowerBound = 0;
+			if (lowerBoundServiceParameter.getPayload().length == 1) {
+				lowerBound = lowerBoundServiceParameter.getPayload()[0];
+			} else {
+				lowerBound = Utils.bytesToUnsignedShort(lowerBoundServiceParameter.getPayload()[0],
+						lowerBoundServiceParameter.getPayload()[1], bigEndian);
+			}
 
-            // find upper bound as integer
-            int upperBound = 0;
-            if (upperBoundServiceParameter.getPayload().length == 1) {
-                upperBound = upperBoundServiceParameter.getPayload()[0];
-            } else {
-                upperBound = Utils.bytesToUnsignedShort(upperBoundServiceParameter.getPayload()[0],
-                        upperBoundServiceParameter.getPayload()[1], bigEndian);
-            }
+			// find upper bound as integer
+			int upperBound = 0;
+			if (upperBoundServiceParameter.getPayload().length == 1) {
+				upperBound = upperBoundServiceParameter.getPayload()[0];
+			} else {
+				upperBound = Utils.bytesToUnsignedShort(upperBoundServiceParameter.getPayload()[0],
+						upperBoundServiceParameter.getPayload()[1], bigEndian);
+			}
 
-            LOG.trace("Who-Is lower-bound: {} ({})",
-                    Utils.byteArrayToStringNoPrefix(lowerBoundServiceParameter.getPayload()), lowerBound);
-            LOG.trace("Who-Is upper-bound: {} ({})",
-                    Utils.byteArrayToStringNoPrefix(upperBoundServiceParameter.getPayload()), upperBound);
+			LOG.trace("Who-Is lower-bound: {} ({})",
+					Utils.byteArrayToStringNoPrefix(lowerBoundServiceParameter.getPayload()), lowerBound);
+			LOG.trace("Who-Is upper-bound: {} ({})",
+					Utils.byteArrayToStringNoPrefix(upperBoundServiceParameter.getPayload()), upperBound);
 
-            // do not process message if it is bounded and the device's id is out of bounds!
-            if ((lowerBound > NetworkUtils.DEVICE_INSTANCE_NUMBER)
-                    || (NetworkUtils.DEVICE_INSTANCE_NUMBER > upperBound)) {
+			// do not process message if it is bounded and the device's id is out of bounds!
+			if ((lowerBound > NetworkUtils.DEVICE_INSTANCE_NUMBER)
+					|| (NetworkUtils.DEVICE_INSTANCE_NUMBER > upperBound)) {
 
-                LOG.trace("Ignoring Who-Is! DeviceID: {}, [{} - {}]", NetworkUtils.DEVICE_INSTANCE_NUMBER, lowerBound,
-                        upperBound);
-                return null;
-            }
-        }
+				LOG.trace("Ignoring Who-Is! DeviceID: {}, [{} - {}]", NetworkUtils.DEVICE_INSTANCE_NUMBER, lowerBound,
+						upperBound);
+				return null;
+			}
+		}
 
-        LOG.trace("WHO_IS received!");
+		LOG.trace("WHO_IS received!");
 
-        // return Unconfirmed request i-Am device,10001
-        final int deviceInstanceNumber = NetworkUtils.DEVICE_INSTANCE_NUMBER;
+		// return Unconfirmed request i-Am device,10001
+		final int deviceInstanceNumber = NetworkUtils.DEVICE_INSTANCE_NUMBER;
 
-        final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
-        virtualLinkControl.setType(0x81);
-        virtualLinkControl.setFunction(0x0B);
-        virtualLinkControl.setLength(0x00);
+		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
+		virtualLinkControl.setType(0x81);
+		virtualLinkControl.setFunction(0x0B);
+		virtualLinkControl.setLength(0x00);
 
-        // NPDU including destination network information
-        final NPDU npdu = new NPDU();
-        npdu.setVersion(0x01);
-        npdu.setControl(0x20);
-        npdu.setDestinationNetworkNumber(NetworkUtils.BROADCAST_NETWORK_NUMBER);
-        // indicates broadcast on destination network
-        npdu.setDestinationMACLayerAddressLength(0);
-        npdu.setDestinationHopCount(255);
+		// NPDU including destination network information
+		final NPDU npdu = new NPDU();
+		npdu.setVersion(0x01);
+		npdu.setControl(0x20);
+		npdu.setDestinationNetworkNumber(NetworkUtils.BROADCAST_NETWORK_NUMBER);
+		// indicates broadcast on destination network
+		npdu.setDestinationMACLayerAddressLength(0);
+		npdu.setDestinationHopCount(255);
 
-        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-        objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-        objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
-        objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-        objectIdentifierServiceParameter.setInstanceNumber(deviceInstanceNumber);
+		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+		objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
+		objectIdentifierServiceParameter.setLengthValueType(4);
+		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+		objectIdentifierServiceParameter.setInstanceNumber(deviceInstanceNumber);
 
-        final ServiceParameter maximumAPDUServiceParameter = new ServiceParameter();
-        maximumAPDUServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-        maximumAPDUServiceParameter.setTagNumber(ServiceParameter.UNSIGNED_INTEGER_CODE);
-        maximumAPDUServiceParameter.setLengthValueType(2);
-        maximumAPDUServiceParameter.setPayload(new byte[] { (byte) 0x01, (byte) 0xE0 }); // 0x01E0 = 480
+		final ServiceParameter maximumAPDUServiceParameter = new ServiceParameter();
+		maximumAPDUServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		maximumAPDUServiceParameter.setTagNumber(ServiceParameter.UNSIGNED_INTEGER_CODE);
+		maximumAPDUServiceParameter.setLengthValueType(2);
+		maximumAPDUServiceParameter.setPayload(new byte[] { (byte) 0x01, (byte) 0xE0 }); // 0x01E0 = 480
 
-        final ServiceParameter segmentationSupportedServiceParameter = new ServiceParameter();
-        segmentationSupportedServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-        segmentationSupportedServiceParameter.setTagNumber(ServiceParameter.ENUMERATED_CODE);
-        segmentationSupportedServiceParameter.setLengthValueType(1);
-        segmentationSupportedServiceParameter.setPayload(new byte[] { (byte) 0x00 }); // segmented-both
+		final ServiceParameter segmentationSupportedServiceParameter = new ServiceParameter();
+		segmentationSupportedServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		segmentationSupportedServiceParameter.setTagNumber(ServiceParameter.ENUMERATED_CODE);
+		segmentationSupportedServiceParameter.setLengthValueType(1);
+		segmentationSupportedServiceParameter.setPayload(new byte[] { (byte) 0x00 }); // segmented-both
 
-        final ServiceParameter vendorIdServiceParameter = new ServiceParameter();
-        vendorIdServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-        vendorIdServiceParameter.setTagNumber(ServiceParameter.UNSIGNED_INTEGER_CODE);
+		final ServiceParameter vendorIdServiceParameter = new ServiceParameter();
+		vendorIdServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		vendorIdServiceParameter.setTagNumber(ServiceParameter.UNSIGNED_INTEGER_CODE);
 
-        // 0xB2 = 178d = loytec
+		// 0xB2 = 178d = loytec
 //		byte[] vendorIdBuffer = new byte[] { (byte) 0xB2 };
 
-        // 0x021A = 538d = GEZE
-        final byte[] vendorIdBuffer = new byte[] { (byte) 0x02, (byte) 0x1A };
+		// 0x021A = 538d = GEZE
+		final byte[] vendorIdBuffer = new byte[] { (byte) 0x02, (byte) 0x1A };
 
-        vendorIdServiceParameter.setLengthValueType(vendorIdBuffer.length);
-        vendorIdServiceParameter.setPayload(vendorIdBuffer);
+		vendorIdServiceParameter.setLengthValueType(vendorIdBuffer.length);
+		vendorIdServiceParameter.setPayload(vendorIdBuffer);
 
-        final APDU apdu = new APDU();
-        apdu.setPduType(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU);
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.I_AM);
-        apdu.setVendorMap(vendorMap);
-        apdu.getServiceParameters().add(objectIdentifierServiceParameter);
-        apdu.getServiceParameters().add(maximumAPDUServiceParameter);
-        apdu.getServiceParameters().add(segmentationSupportedServiceParameter);
-        apdu.getServiceParameters().add(vendorIdServiceParameter);
+		final APDU apdu = new APDU();
+		apdu.setPduType(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU);
+		apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.I_AM);
+		apdu.setVendorMap(vendorMap);
+		apdu.getServiceParameters().add(objectIdentifierServiceParameter);
+		apdu.getServiceParameters().add(maximumAPDUServiceParameter);
+		apdu.getServiceParameters().add(segmentationSupportedServiceParameter);
+		apdu.getServiceParameters().add(vendorIdServiceParameter);
 
-        final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
-        result.setNpdu(npdu);
-        result.setApdu(apdu);
+		final DefaultMessage result = new DefaultMessage();
+		result.setVirtualLinkControl(virtualLinkControl);
+		result.setNpdu(npdu);
+		result.setApdu(apdu);
 
-        virtualLinkControl.setLength(virtualLinkControl.getDataLength() + npdu.getDataLength() + apdu.getDataLength());
+		virtualLinkControl.setLength(virtualLinkControl.getDataLength() + npdu.getDataLength() + apdu.getDataLength());
 
-        return result;
-    }
+		return result;
+	}
 
-    private Message processWriteProperty(final Message requestMessage) {
+	private Message processWriteProperty(final Message requestMessage) {
 
-        LOG.trace("processWriteProperty()");
-        final int propertyIdentifier = requestMessage.getApdu().getPropertyIdentifier();
-        LOG.trace("Property Identifier: {}", propertyIdentifier);
-        final int propertyIdentifierCode = propertyIdentifier;
+		LOG.trace("processWriteProperty()");
+		final int propertyIdentifier = requestMessage.getApdu().getPropertyIdentifier();
+		LOG.trace("Property Identifier: {}", propertyIdentifier);
+		final int propertyIdentifierCode = propertyIdentifier;
 
-        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()
-                .getObjectIdentifierServiceParameter();
-        LOG.info(">>> Write Identifier: {} ({}) Object Identifier: {}", propertyIdentifierCode,
-                DevicePropertyType.getByCode(propertyIdentifierCode).getName(),
-                objectIdentifierServiceParameter.toString());
+		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()
+				.getObjectIdentifierServiceParameter();
+		LOG.info(">>> Write Identifier: {} ({}) Object Identifier: {}", propertyIdentifierCode,
+				DevicePropertyType.getByCode(propertyIdentifierCode).getName(),
+				objectIdentifierServiceParameter.toString());
 
-        switch (propertyIdentifier) {
+		switch (propertyIdentifier) {
 
-        // 0xCA = 202d
-        case 0xCA:
-            LOG.info("<<< WRITE_PROP: restart notification recipients ({})", propertyIdentifierCode);
-            return processWriteRestartNotificationRecipientsProperty(propertyIdentifierCode, requestMessage);
+		// 0xCA = 202d
+		case 0xCA:
+			LOG.info("<<< WRITE_PROP: restart notification recipients ({})", propertyIdentifierCode);
+			return processWriteRestartNotificationRecipientsProperty(propertyIdentifierCode, requestMessage);
 
-        default:
-            return processWriteRestartNotificationRecipientsProperty(propertyIdentifierCode, requestMessage);
-        }
-    }
+		default:
+			return processWriteRestartNotificationRecipientsProperty(propertyIdentifierCode, requestMessage);
+		}
+	}
 
-    private Message processWriteRestartNotificationRecipientsProperty(final int propertyIdentifierCode,
-            final Message requestMessage) {
+	private Message processWriteRestartNotificationRecipientsProperty(final int propertyIdentifierCode,
+			final Message requestMessage) {
 
-        final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
-        virtualLinkControl.setType(0x81);
-        virtualLinkControl.setFunction(0x0A);
-        virtualLinkControl.setLength(0x00);
+		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
+		virtualLinkControl.setType(0x81);
+		virtualLinkControl.setFunction(0x0A);
+		virtualLinkControl.setLength(0x00);
 
-        final NPDU npdu = new NPDU();
-        npdu.setVersion(0x01);
+		final NPDU npdu = new NPDU();
+		npdu.setVersion(0x01);
 
-        // no additional information
-        // this works, if the cp is connected to the device directly via 192.168.2.1
-        npdu.setControl(0x00);
+		// no additional information
+		// this works, if the cp is connected to the device directly via 192.168.2.1
+		npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+		if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
 
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+			// destination network information
+			npdu.setControl(0x20);
+			npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+			npdu.setDestinationMACLayerAddressLength(3);
+			npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
-            npdu.setDestinationHopCount(255);
-        }
+			npdu.setDestinationHopCount(255);
+		}
 
-        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-        objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        objectIdentifierServiceParameter.setTagNumber(0x00);
-        objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+		objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		objectIdentifierServiceParameter.setTagNumber(0x00);
+		objectIdentifierServiceParameter.setLengthValueType(4);
+		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+		objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
 
-        final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
-        propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        propertyIdentifierServiceParameter.setTagNumber(0x01);
-        propertyIdentifierServiceParameter.setLengthValueType(0x01);
-        propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) propertyIdentifierCode });
+		final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
+		propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		propertyIdentifierServiceParameter.setTagNumber(0x01);
+		propertyIdentifierServiceParameter.setLengthValueType(0x01);
+		propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) propertyIdentifierCode });
 
-        final APDU apdu = new APDU();
-        apdu.setPduType(PDUType.SIMPLE_ACK_PDU);
-        apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.WRITE_PROPERTY);
-        apdu.setVendorMap(vendorMap);
+		final APDU apdu = new APDU();
+		apdu.setPduType(PDUType.SIMPLE_ACK_PDU);
+		apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
+		apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.WRITE_PROPERTY);
+		apdu.setVendorMap(vendorMap);
 
-        final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
-        result.setNpdu(npdu);
-        result.setApdu(apdu);
+		final DefaultMessage result = new DefaultMessage();
+		result.setVirtualLinkControl(virtualLinkControl);
+		result.setNpdu(npdu);
+		result.setApdu(apdu);
 
-        virtualLinkControl.setLength(result.getDataLength());
-
-//		final byte[] bytes = result.getBytes();
-//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
-
-        return result;
-    }
-
-    private Message processReadProperty(final Message requestMessage) {
-
-        LOG.trace("processReadProperty()");
-
-        final int propertyIdentifierCode = requestMessage.getApdu().getPropertyIdentifier();
-        LOG.trace("Property Identifier: {}", propertyIdentifierCode);
-
-        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()
-                .getObjectIdentifierServiceParameter();
-        LOG.trace(">>> Property Identifier: {} ({}) Object Identifier: {}", propertyIdentifierCode,
-                DevicePropertyType.getByCode(propertyIdentifierCode).getName(),
-                objectIdentifierServiceParameter.toString());
-
-        // find device
-        final Device targetDevice = device.findDevice(objectIdentifierServiceParameter);
-
-        return targetDevice.getPropertyValue(requestMessage, propertyIdentifierCode);
-    }
-
-    private Message processReadPropertyMultiple(final Message requestMessage) {
-
-        final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
-        virtualLinkControl.setType(0x81);
-        virtualLinkControl.setFunction(0x0A);
-        virtualLinkControl.setLength(0x00);
-
-        final NPDU npdu = new NPDU();
-        npdu.setVersion(0x01);
-
-        // no additional information
-        // this works, if the cp is connected to the device directly via 192.168.2.1
-        npdu.setControl(0x00);
-
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
-
-        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-        objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-        objectIdentifierServiceParameter.setTagNumber(0x00);
-        objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
-
-        final APDU apdu = new APDU();
-        apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
-        apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY_MULTIPLE);
-        apdu.setVendorMap(vendorMap);
-        apdu.getServiceParameters().add(objectIdentifierServiceParameter);
-
-        // opening {[1]
-        final ServiceParameter openingTagServiceParameter = new ServiceParameter();
-        openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        openingTagServiceParameter.setTagNumber(0x01);
-        openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
-        apdu.getServiceParameters().add(openingTagServiceParameter);
-
-        LOG.trace(openingTagServiceParameter);
-
-        final List<ServiceParameter> serviceParameters = requestMessage.getApdu().getServiceParameters();
-        if (CollectionUtils.isEmpty(serviceParameters)) {
-            LOG.warn("No service parameters in readPropertyMultiple request");
-        }
-
-        boolean withinRequestedProperties = false;
-        for (final ServiceParameter serviceParameter : serviceParameters) {
-
-            LOG.trace(serviceParameter);
-
-            // opening tag
-            if (serviceParameter.getLengthValueType() == 0x06) {
-                withinRequestedProperties = true;
-                continue;
-            }
-
-            // closing tag
-            if (serviceParameter.getLengthValueType() == 0x07) {
-                withinRequestedProperties = false;
-                continue;
-            }
-
-            if (!withinRequestedProperties) {
-                continue;
-            }
-
-            // 'all' service property
-            if (serviceParameter.getPayload()[0] == DeviceProperty.ALL) {
-
-                for (final DeviceProperty deviceProperty : device.getProperties().values()) {
-
-                    LOG.trace("Adding ServiceParameter for DeviceProperty: " + deviceProperty + " ...");
-
-                    // add the property identifier
-                    final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
-                    propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-                    propertyIdentifierServiceParameter.setTagNumber(2);
-                    propertyIdentifierServiceParameter.setLengthValueType(1);
-                    propertyIdentifierServiceParameter
-                            .setPayload(new byte[] { (byte) deviceProperty.getPropertyKey() });
-                    apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
-                    LOG.trace(propertyIdentifierServiceParameter);
-
-                    // add the property value
-                    addPropertyValue(apdu, deviceProperty);
-
-                    LOG.trace("Adding ServiceParameter for DeviceProperty: " + deviceProperty + " done.");
-                }
-
-            } else if (serviceParameter.getPayload()[0] == DeviceProperty.SYSTEM_STATUS) {
-
-                // add the service property identifier
-                apdu.getServiceParameters().add(serviceParameter);
-                addPropertyValue(apdu, device.getProperties().get(DeviceProperty.SYSTEM_STATUS));
-
-            } else {
-
-                throw new RuntimeException("NotImplemented! " + serviceParameter.getPayload()[0]);
-
-            }
-        }
-
-        // closing }[1]
-        final ServiceParameter closingTagServiceParameter = new ServiceParameter();
-        closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        closingTagServiceParameter.setTagNumber(0x01);
-        closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
-        apdu.getServiceParameters().add(closingTagServiceParameter);
-        LOG.trace(closingTagServiceParameter);
-
-        final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
-        result.setNpdu(npdu);
-        result.setApdu(apdu);
-
-        LOG.trace("All service parameters ...");
-        if (CollectionUtils.isNotEmpty(apdu.getServiceParameters())) {
-            for (final ServiceParameter serviceParameter : apdu.getServiceParameters()) {
-                LOG.trace(serviceParameter);
-            }
-        }
-        LOG.trace("All service parameters done.");
-
-        virtualLinkControl.setLength(result.getDataLength());
+		virtualLinkControl.setLength(result.getDataLength());
 
 //		final byte[] bytes = result.getBytes();
 //		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
-        return result;
-    }
+		return result;
+	}
 
-    private void addPropertyValue(final APDU apdu, final DeviceProperty deviceProperty) {
+	private Message processReadProperty(final Message requestMessage) {
 
-        // opening tag {[4]
-        final ServiceParameter openingTagServiceParameter = new ServiceParameter();
-        openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        openingTagServiceParameter.setTagNumber(0x04);
-        openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
-        apdu.getServiceParameters().add(openingTagServiceParameter);
-        LOG.trace(openingTagServiceParameter);
+		LOG.trace("processReadProperty()");
 
-        final ServiceParameter valueServiceParameter = new ServiceParameter();
-        valueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-        valueServiceParameter.setTagNumber(deviceProperty.getMessageType().getValue());
-        valueServiceParameter.setLengthValueType(deviceProperty.getLengthTagValue());
-        valueServiceParameter.setPayload(deviceProperty.getValueAsByteArray());
-        apdu.getServiceParameters().add(valueServiceParameter);
-        LOG.trace(valueServiceParameter);
+		final int propertyIdentifierCode = requestMessage.getApdu().getPropertyIdentifier();
+		LOG.trace("Property Identifier: {}", propertyIdentifierCode);
 
-        // closing tag }[4]
-        final ServiceParameter closingTagServiceParameter = new ServiceParameter();
-        closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        closingTagServiceParameter.setTagNumber(0x04);
-        closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
-        apdu.getServiceParameters().add(closingTagServiceParameter);
-        LOG.trace(closingTagServiceParameter);
-    }
+		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()
+				.getObjectIdentifierServiceParameter();
+		LOG.trace(">>> Property Identifier: {} ({}) Object Identifier: {}", propertyIdentifierCode,
+				DevicePropertyType.getByCode(propertyIdentifierCode).getName(),
+				objectIdentifierServiceParameter.toString());
 
-    private Message processSystemStatusMessage(final Message message) {
+		// find device
+		final Device targetDevice = device.findDevice(objectIdentifierServiceParameter);
 
-        final DefaultMessage defaultMessage = new DefaultMessage(message);
+		return targetDevice.getPropertyValue(requestMessage, propertyIdentifierCode);
+	}
 
-        // TODO: copy message.VirtualLinkControl
+	private Message processReadPropertyMultiple(final Message requestMessage) {
 
-        // TODO: copy message.NPDU including all service parameters
-        // TODO: change NPDU.control to contain a destination specifier
-        defaultMessage.getNpdu().setControl(0x20);
-        defaultMessage.getNpdu().setDestinationNetworkNumber(302);
-        defaultMessage.getNpdu().setDestinationMACLayerAddressLength(3);
-        defaultMessage.getNpdu().setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-        // TODO: copy NPDU
-        // TODO: add hopCount, set it to 255 0xFF
-        defaultMessage.getNpdu().setDestinationHopCount(0xFF);
+		final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
+		virtualLinkControl.setType(0x81);
+		virtualLinkControl.setFunction(0x0A);
+		virtualLinkControl.setLength(0x00);
 
-        // APDU
-        defaultMessage.getApdu().setPduType(PDUType.COMPLEX_ACK_PDU);
+		final NPDU npdu = new NPDU();
+		npdu.setVersion(0x01);
 
-        // TODO: add new service parameters into the APDU
-        // opening bracket
-        // system status operational
-        // closing bracket
-        final ServiceParameter openingTagServiceParameter = new ServiceParameter();
-        openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        openingTagServiceParameter.setTagNumber(0x04);
-        openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
-        defaultMessage.getApdu().getServiceParameters().add(2, openingTagServiceParameter);
+		// no additional information
+		// this works, if the cp is connected to the device directly via 192.168.2.1
+		npdu.setControl(0x00);
 
-        final ServiceParameter segmentationSupportedServiceParameter = new ServiceParameter();
-        segmentationSupportedServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-        segmentationSupportedServiceParameter.setTagNumber(ServiceParameter.ENUMERATED_CODE);
-        segmentationSupportedServiceParameter.setLengthValueType(1);
-        segmentationSupportedServiceParameter.setPayload(new byte[] { (byte) 0x00 }); // system-status: operational
-        defaultMessage.getApdu().getServiceParameters().add(3, segmentationSupportedServiceParameter);
+		if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
 
-        final ServiceParameter closingTagServiceParameter = new ServiceParameter();
-        closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        closingTagServiceParameter.setTagNumber(0x04);
-        closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
-        defaultMessage.getApdu().getServiceParameters().add(4, closingTagServiceParameter);
+			// destination network information
+			npdu.setControl(0x20);
+			npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+			npdu.setDestinationMACLayerAddressLength(3);
+			npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
-        // TODO: set message.VirtualLinkControl.size to the size of the entire message
-        defaultMessage.getVirtualLinkControl().setLength(defaultMessage.getDataLength());
+			npdu.setDestinationHopCount(255);
+		}
 
-        LOG.info(Utils.byteArrayToStringNoPrefix(defaultMessage.getVirtualLinkControl().getBytes()));
-        LOG.info(Utils.byteArrayToStringNoPrefix(defaultMessage.getNpdu().getBytes()));
-        LOG.info(Utils.byteArrayToStringNoPrefix(defaultMessage.getApdu().getBytes()));
+		final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+		objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		objectIdentifierServiceParameter.setTagNumber(0x00);
+		objectIdentifierServiceParameter.setLengthValueType(4);
+		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+		objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
 
-        LOG.info(Utils.byteArrayToStringNoPrefix(defaultMessage.getBytes()));
+		final APDU apdu = new APDU();
+		apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
+		apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
+		apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY_MULTIPLE);
+		apdu.setVendorMap(vendorMap);
+		apdu.getServiceParameters().add(objectIdentifierServiceParameter);
 
-        return defaultMessage;
-    }
+		// opening {[1]
+		final ServiceParameter openingTagServiceParameter = new ServiceParameter();
+		openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		openingTagServiceParameter.setTagNumber(0x01);
+		openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
+		apdu.getServiceParameters().add(openingTagServiceParameter);
 
-    /**
-     * Answer I-Am with nothing
-     * 
-     * @param message
-     * @return
-     */
-    private Message processIAMMessage(final Message message) {
+		LOG.trace(openingTagServiceParameter);
 
-        final APDU apdu = message.getApdu();
+		final List<ServiceParameter> serviceParameters = requestMessage.getApdu().getServiceParameters();
+		if (CollectionUtils.isEmpty(serviceParameters)) {
+			LOG.warn("No service parameters in readPropertyMultiple request");
+		}
 
-        final ServiceParameter objectIdentifierServiceParameter = apdu.getServiceParameters().get(0);
+		boolean withinRequestedProperties = false;
+		for (final ServiceParameter serviceParameter : serviceParameters) {
 
-        final ServiceParameter vendorServiceParameter = apdu.getServiceParameters().get(3);
-        final byte[] payload = vendorServiceParameter.getPayload();
+			LOG.trace(serviceParameter);
 
-        int vendorId = -1;
-        if (payload.length == 1) {
-            vendorId = payload[0] & 0xFF;
-        } else if (payload.length == 2) {
-            final ByteBuffer byteBuffer = ByteBuffer.wrap(payload);
-            vendorId = byteBuffer.getShort();
-        } else if (payload.length == 4) {
-            final ByteBuffer byteBuffer = ByteBuffer.wrap(payload);
-            vendorId = byteBuffer.getInt();
-        }
+			// opening tag
+			if (serviceParameter.getLengthValueType() == 0x06) {
+				withinRequestedProperties = true;
+				continue;
+			}
 
-        LOG.info(">>> processIAMMessage: InstanceNumber: {} VendorId: {} VendorName: {}",
-                objectIdentifierServiceParameter.getInstanceNumber(), vendorId, vendorMap.get(vendorId));
+			// closing tag
+			if (serviceParameter.getLengthValueType() == 0x07) {
+				withinRequestedProperties = false;
+				continue;
+			}
 
-        return null;
-    }
+			if (!withinRequestedProperties) {
+				continue;
+			}
 
-    public Map<Integer, String> getVendorMap() {
-        return vendorMap;
-    }
+			// 'all' service property
+			if (serviceParameter.getPayload()[0] == DeviceProperty.ALL) {
 
-    public void setVendorMap(final Map<Integer, String> vendorMap) {
-        this.vendorMap = vendorMap;
-        messageFactory.setVendorMap(vendorMap);
-    }
+				for (final DeviceProperty<?> deviceProperty : device.getProperties().values()) {
 
-    public Device getDevice() {
-        return device;
-    }
+					// object-list is not part of the 'all' collection
+					if (deviceProperty.getPropertyKey() == DeviceProperty.OBJECT_LIST) {
+						continue;
+					}
 
-    public void setDevice(final Device device) {
-        this.device = device;
-    }
+					LOG.trace("Adding ServiceParameter for DeviceProperty: " + deviceProperty + " ...");
+
+					// add the property identifier
+					final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
+					propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+					propertyIdentifierServiceParameter.setTagNumber(2);
+					propertyIdentifierServiceParameter.setLengthValueType(1);
+					propertyIdentifierServiceParameter
+							.setPayload(new byte[] { (byte) deviceProperty.getPropertyKey() });
+					apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
+					LOG.trace(propertyIdentifierServiceParameter);
+
+					// add the property value
+					addPropertyValue(apdu, deviceProperty);
+
+					LOG.trace("Adding ServiceParameter for DeviceProperty: " + deviceProperty + " done.");
+				}
+
+			} else if (serviceParameter.getPayload()[0] == DeviceProperty.SYSTEM_STATUS) {
+
+				// add the service property identifier
+				apdu.getServiceParameters().add(serviceParameter);
+				addPropertyValue(apdu, device.getProperties().get(DeviceProperty.SYSTEM_STATUS));
+
+			} else {
+
+				throw new RuntimeException("NotImplemented! " + serviceParameter.getPayload()[0]);
+
+			}
+		}
+
+		// closing }[1]
+		final ServiceParameter closingTagServiceParameter = new ServiceParameter();
+		closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		closingTagServiceParameter.setTagNumber(0x01);
+		closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
+		apdu.getServiceParameters().add(closingTagServiceParameter);
+		LOG.trace(closingTagServiceParameter);
+
+		final DefaultMessage result = new DefaultMessage();
+		result.setVirtualLinkControl(virtualLinkControl);
+		result.setNpdu(npdu);
+		result.setApdu(apdu);
+
+		LOG.trace("All service parameters ...");
+		if (CollectionUtils.isNotEmpty(apdu.getServiceParameters())) {
+			for (final ServiceParameter serviceParameter : apdu.getServiceParameters()) {
+				LOG.trace(serviceParameter);
+			}
+		}
+		LOG.trace("All service parameters done.");
+
+		virtualLinkControl.setLength(result.getDataLength());
+
+//		final byte[] bytes = result.getBytes();
+//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
+
+		return result;
+	}
+
+	private void addPropertyValue(final APDU apdu, final DeviceProperty<?> deviceProperty) {
+
+		// opening tag {[4]
+		final ServiceParameter openingTagServiceParameter = new ServiceParameter();
+		openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		openingTagServiceParameter.setTagNumber(0x04);
+		openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
+		apdu.getServiceParameters().add(openingTagServiceParameter);
+		LOG.trace(openingTagServiceParameter);
+
+		final ServiceParameter valueServiceParameter = new ServiceParameter();
+		valueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		valueServiceParameter.setTagNumber(deviceProperty.getMessageType().getValue());
+		valueServiceParameter.setLengthValueType(deviceProperty.getLengthTagValue());
+		valueServiceParameter.setPayload(deviceProperty.getValueAsByteArray());
+		apdu.getServiceParameters().add(valueServiceParameter);
+		LOG.trace(valueServiceParameter);
+
+		// closing tag }[4]
+		final ServiceParameter closingTagServiceParameter = new ServiceParameter();
+		closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		closingTagServiceParameter.setTagNumber(0x04);
+		closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
+		apdu.getServiceParameters().add(closingTagServiceParameter);
+		LOG.trace(closingTagServiceParameter);
+	}
+
+	private Message processSystemStatusMessage(final Message message) {
+
+		final DefaultMessage defaultMessage = new DefaultMessage(message);
+
+		// TODO: copy message.VirtualLinkControl
+
+		// TODO: copy message.NPDU including all service parameters
+		// TODO: change NPDU.control to contain a destination specifier
+		defaultMessage.getNpdu().setControl(0x20);
+		defaultMessage.getNpdu().setDestinationNetworkNumber(302);
+		defaultMessage.getNpdu().setDestinationMACLayerAddressLength(3);
+		defaultMessage.getNpdu().setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+		// TODO: copy NPDU
+		// TODO: add hopCount, set it to 255 0xFF
+		defaultMessage.getNpdu().setDestinationHopCount(0xFF);
+
+		// APDU
+		defaultMessage.getApdu().setPduType(PDUType.COMPLEX_ACK_PDU);
+
+		// TODO: add new service parameters into the APDU
+		// opening bracket
+		// system status operational
+		// closing bracket
+		final ServiceParameter openingTagServiceParameter = new ServiceParameter();
+		openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		openingTagServiceParameter.setTagNumber(0x04);
+		openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
+		defaultMessage.getApdu().getServiceParameters().add(2, openingTagServiceParameter);
+
+		final ServiceParameter segmentationSupportedServiceParameter = new ServiceParameter();
+		segmentationSupportedServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		segmentationSupportedServiceParameter.setTagNumber(ServiceParameter.ENUMERATED_CODE);
+		segmentationSupportedServiceParameter.setLengthValueType(1);
+		segmentationSupportedServiceParameter.setPayload(new byte[] { (byte) 0x00 }); // system-status: operational
+		defaultMessage.getApdu().getServiceParameters().add(3, segmentationSupportedServiceParameter);
+
+		final ServiceParameter closingTagServiceParameter = new ServiceParameter();
+		closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		closingTagServiceParameter.setTagNumber(0x04);
+		closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
+		defaultMessage.getApdu().getServiceParameters().add(4, closingTagServiceParameter);
+
+		// TODO: set message.VirtualLinkControl.size to the size of the entire message
+		defaultMessage.getVirtualLinkControl().setLength(defaultMessage.getDataLength());
+
+		LOG.info(Utils.byteArrayToStringNoPrefix(defaultMessage.getVirtualLinkControl().getBytes()));
+		LOG.info(Utils.byteArrayToStringNoPrefix(defaultMessage.getNpdu().getBytes()));
+		LOG.info(Utils.byteArrayToStringNoPrefix(defaultMessage.getApdu().getBytes()));
+
+		LOG.info(Utils.byteArrayToStringNoPrefix(defaultMessage.getBytes()));
+
+		return defaultMessage;
+	}
+
+	/**
+	 * Answer I-Am with nothing
+	 * 
+	 * @param message
+	 * @return
+	 */
+	private Message processIAMMessage(final Message message) {
+
+		final APDU apdu = message.getApdu();
+
+		final ServiceParameter objectIdentifierServiceParameter = apdu.getServiceParameters().get(0);
+
+		final ServiceParameter vendorServiceParameter = apdu.getServiceParameters().get(3);
+		final byte[] payload = vendorServiceParameter.getPayload();
+
+		int vendorId = -1;
+		if (payload.length == 1) {
+			vendorId = payload[0] & 0xFF;
+		} else if (payload.length == 2) {
+			final ByteBuffer byteBuffer = ByteBuffer.wrap(payload);
+			vendorId = byteBuffer.getShort();
+		} else if (payload.length == 4) {
+			final ByteBuffer byteBuffer = ByteBuffer.wrap(payload);
+			vendorId = byteBuffer.getInt();
+		}
+
+		LOG.info(">>> processIAMMessage: InstanceNumber: {} VendorId: {} VendorName: {}",
+				objectIdentifierServiceParameter.getInstanceNumber(), vendorId, vendorMap.get(vendorId));
+
+		return null;
+	}
+
+	public Map<Integer, String> getVendorMap() {
+		return vendorMap;
+	}
+
+	public void setVendorMap(final Map<Integer, String> vendorMap) {
+		this.vendorMap = vendorMap;
+		messageFactory.setVendorMap(vendorMap);
+	}
+
+	public Device getDevice() {
+		return device;
+	}
+
+	public void setDevice(final Device device) {
+		this.device = device;
+	}
 
 }
 

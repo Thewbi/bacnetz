@@ -106,8 +106,6 @@ public class NPDUTest {
 
 		final NPDU npdu = new NPDU();
 		npdu.setVersion(0x01);
-//		npdu.setControl(0x00);
-
 		npdu.setControl(0x08);
 		npdu.setSourceNetworkAddress(999);
 		npdu.setSourceMacLayerAddressLength(2);
