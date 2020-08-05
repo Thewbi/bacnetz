@@ -1,6 +1,7 @@
 package de.bacnetz.devices;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import de.bacnetz.controller.Message;
@@ -11,7 +12,7 @@ public interface Device {
 
 	ServiceParameter getObjectIdentifierServiceParameter();
 
-	Map<Integer, DeviceProperty> getProperties();
+	Map<Integer, DeviceProperty<?>> getProperties();
 
 	Collection<Device> getChildDevices();
 
@@ -19,9 +20,9 @@ public interface Device {
 
 	void setId(int id);
 
-	int getObjectType();
+	ObjectType getObjectType();
 
-	void setObjectType(int objectType);
+	void setObjectType(ObjectType objectType);
 
 	String getName();
 
@@ -40,5 +41,19 @@ public interface Device {
 	ServiceParameter getStatusFlagsServiceParameter();
 
 	BACnetServicesSupportedBitString retrieveServicesSupported();
+
+	int getPresentValue();
+
+	void setPresentValue(int value);
+
+	boolean isOutOfService();
+
+	void setOutOfService(boolean outOfService);
+
+	List<String> getStates();
+
+	String getDescription();
+
+	void setDescription(String description);
 
 }

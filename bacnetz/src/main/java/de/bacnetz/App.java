@@ -34,9 +34,9 @@ import de.bacnetz.devices.BinaryInputDevice;
 import de.bacnetz.devices.DefaultDevice;
 import de.bacnetz.devices.DefaultDeviceFactory;
 import de.bacnetz.devices.Device;
+import de.bacnetz.devices.ObjectType;
 import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.stack.IPv4Packet;
-import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.UDPPacket;
 import de.bacnetz.threads.MulticastListenerReaderThread;
 import de.bacnetz.threads.ToogleDoorOpenStateThread;
@@ -72,9 +72,8 @@ public class App {
 		// IPv4 interfaces. Force the JVM to use IPv4.
 		System.setProperty("java.net.preferIPv4Stack", "true");
 
-		final List<InetAddress> listAllBroadcastAddresses = listAllBroadcastAddresses();
-
 		// DEBUG
+		final List<InetAddress> listAllBroadcastAddresses = listAllBroadcastAddresses();
 		LOG.info(listAllBroadcastAddresses);
 
 		runMain();
@@ -286,7 +285,7 @@ public class App {
 		device.setId(NetworkUtils.DEVICE_INSTANCE_NUMBER);
 		device.setName(NetworkUtils.OBJECT_NAME);
 		device.setVendorMap(vendorMap);
-		device.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+		device.setObjectType(ObjectType.DEVICE);
 
 		Device childDevice = null;
 
@@ -296,7 +295,7 @@ public class App {
 		childDevice.setId(1);
 		childDevice.setName("module_type");
 		childDevice.setVendorMap(vendorMap);
-		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
 		device.getChildDevices().add(childDevice);
 
 		// 2
@@ -305,7 +304,7 @@ public class App {
 		childDevice.setId(2);
 		childDevice.setName("alarm_type");
 		childDevice.setVendorMap(vendorMap);
-		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
 		device.getChildDevices().add(childDevice);
 
 		// 3
@@ -314,7 +313,7 @@ public class App {
 		childDevice.setId(1);
 		childDevice.setName("door1_close_state");
 		childDevice.setVendorMap(vendorMap);
-		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_BINARY_INPUT);
+		childDevice.setObjectType(ObjectType.BINARY_INPUT);
 		device.getChildDevices().add(childDevice);
 
 		// 4
@@ -323,7 +322,7 @@ public class App {
 		childDevice.setId(2);
 		childDevice.setName("door2_close_state");
 		childDevice.setVendorMap(vendorMap);
-		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_BINARY_INPUT);
+		childDevice.setObjectType(ObjectType.BINARY_INPUT);
 		device.getChildDevices().add(childDevice);
 
 		// 5
@@ -332,7 +331,7 @@ public class App {
 		childDevice.setId(3);
 		childDevice.setName("door1_state");
 		childDevice.setVendorMap(vendorMap);
-		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
 		device.getChildDevices().add(childDevice);
 
 		// 6
@@ -341,7 +340,7 @@ public class App {
 		childDevice.setId(4);
 		childDevice.setName("door1_command");
 		childDevice.setVendorMap(vendorMap);
-		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
 		device.getChildDevices().add(childDevice);
 
 		// 7
@@ -350,7 +349,7 @@ public class App {
 		childDevice.setId(50);
 		childDevice.setName("notificaton_class_object");
 		childDevice.setVendorMap(vendorMap);
-		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_NOTIFICATION_CLASS);
+		childDevice.setObjectType(ObjectType.NOTIFICATION_CLASS);
 		device.getChildDevices().add(childDevice);
 
 		// 8
@@ -359,7 +358,7 @@ public class App {
 		childDevice.setId(5);
 		childDevice.setName("door2_state");
 		childDevice.setVendorMap(vendorMap);
-		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
 		device.getChildDevices().add(childDevice);
 
 		// 9
@@ -367,7 +366,7 @@ public class App {
 		childDevice = new DefaultDevice();
 		childDevice.setId(6);
 		childDevice.setName("door2_command");
-		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
 		device.getChildDevices().add(childDevice);
 
 		// 10
@@ -376,7 +375,7 @@ public class App {
 		childDevice.setId(3);
 		childDevice.setName("door3_close_state");
 		childDevice.setVendorMap(vendorMap);
-		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_BINARY_INPUT);
+		childDevice.setObjectType(ObjectType.BINARY_INPUT);
 		device.getChildDevices().add(childDevice);
 
 		// 11
@@ -384,7 +383,7 @@ public class App {
 		childDevice = new BinaryInputDevice();
 		childDevice.setId(4);
 		childDevice.setName("door4_close_state");
-		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_BINARY_INPUT);
+		childDevice.setObjectType(ObjectType.BINARY_INPUT);
 		device.getChildDevices().add(childDevice);
 
 		// 12
@@ -393,7 +392,7 @@ public class App {
 		childDevice.setId(7);
 		childDevice.setName("door3_state");
 		childDevice.setVendorMap(vendorMap);
-		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
 		device.getChildDevices().add(childDevice);
 
 		// 13
@@ -401,7 +400,7 @@ public class App {
 		childDevice = new DefaultDevice();
 		childDevice.setId(8);
 		childDevice.setName("door3_command");
-		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
 		device.getChildDevices().add(childDevice);
 
 		// 14
@@ -410,7 +409,7 @@ public class App {
 		childDevice.setId(9);
 		childDevice.setName("door4_state");
 		childDevice.setVendorMap(vendorMap);
-		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
 		device.getChildDevices().add(childDevice);
 
 		// 15
@@ -419,8 +418,9 @@ public class App {
 		childDevice.setId(10);
 		childDevice.setName("door4_command");
 		childDevice.setVendorMap(vendorMap);
-		childDevice.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
 		device.getChildDevices().add(childDevice);
+
 		return device;
 	}
 

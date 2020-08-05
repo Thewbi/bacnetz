@@ -8,6 +8,7 @@ import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 import de.bacnetz.common.utils.Utils;
+import de.bacnetz.devices.ObjectType;
 
 public class ObjectIdentifierServiceParameterTest {
 
@@ -18,7 +19,7 @@ public class ObjectIdentifierServiceParameterTest {
 		objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
 		objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
 		objectIdentifierServiceParameter.setLengthValueType(4);
-		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+		objectIdentifierServiceParameter.setObjectType(ObjectType.DEVICE);
 		objectIdentifierServiceParameter.setInstanceNumber(10001);
 
 		final byte[] data = new byte[10];

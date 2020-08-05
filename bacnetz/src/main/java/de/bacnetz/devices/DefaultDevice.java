@@ -5,6 +5,7 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,21 +38,29 @@ public class DefaultDevice implements Device {
 
 	private static final Logger LOG = LogManager.getLogger(DefaultDevice.class);
 
-	private final Map<Integer, DeviceProperty> properties = new HashMap<>();
+	private final Map<Integer, DeviceProperty<?>> properties = new HashMap<>();
 
 	private final Collection<Device> children = new ArrayList<>();
 
 	private int id;
 
-	private int objectType;
+	private ObjectType objectType;
 
 	private String name;
+
+	private String description;
 
 	private final MessageFactory messageFactory = new MessageFactory();
 
 	private Map<Integer, String> vendorMap = new HashMap<>();
 
 	private final AtomicInteger invokeId = new AtomicInteger(0);
+
+	private int presentValue;
+
+	private boolean outOfService;
+
+	private final List<String> states = new ArrayList<>();
 
 	/**
 	 * ctor
@@ -89,16 +98,16 @@ public class DefaultDevice implements Device {
 
 		switch (objectType) {
 
-		case ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE:
+		case DEVICE:
 			return createDeviceServiceParameter();
 
-		case ObjectIdentifierServiceParameter.OBJECT_TYPE_NOTIFICATION_CLASS:
+		case NOTIFICATION_CLASS:
 			return createNotificationClassServiceParameter();
 
-		case ObjectIdentifierServiceParameter.OBJECT_TYPE_BINARY_INPUT:
+		case BINARY_INPUT:
 			return createBinaryInputServiceParameter();
 
-		case ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE:
+		case MULTI_STATE_VALUE:
 			return createMultiStateValueServiceParameter();
 
 		default:
@@ -124,7 +133,7 @@ public class DefaultDevice implements Device {
 		notificationServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
 		notificationServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
 		notificationServiceParameter.setLengthValueType(0x04);
-		notificationServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_NOTIFICATION_CLASS);
+		notificationServiceParameter.setObjectType(ObjectType.NOTIFICATION_CLASS);
 		notificationServiceParameter.setInstanceNumber(id);
 
 		return notificationServiceParameter;
@@ -136,7 +145,7 @@ public class DefaultDevice implements Device {
 		binaryInputServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
 		binaryInputServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
 		binaryInputServiceParameter.setLengthValueType(0x04);
-		binaryInputServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_BINARY_INPUT);
+		binaryInputServiceParameter.setObjectType(ObjectType.BINARY_INPUT);
 		binaryInputServiceParameter.setInstanceNumber(id);
 
 		return binaryInputServiceParameter;
@@ -148,7 +157,7 @@ public class DefaultDevice implements Device {
 		multiStateValueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
 		multiStateValueServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
 		multiStateValueServiceParameter.setLengthValueType(0x04);
-		multiStateValueServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_MULTI_STATE_VALUE);
+		multiStateValueServiceParameter.setObjectType(ObjectType.MULTI_STATE_VALUE);
 		multiStateValueServiceParameter.setInstanceNumber(id);
 
 		return multiStateValueServiceParameter;
@@ -157,11 +166,12 @@ public class DefaultDevice implements Device {
 	@Override
 	public Message getPropertyValue(final Message requestMessage, final int propertyIdentifierCode) {
 
-		LOG.info("<<< READ_PROP: {} ({})", DevicePropertyType.getByCode(propertyIdentifierCode).name(),
-				propertyIdentifierCode);
+		LOG.info("<<< READ_PROP: {} ({}) from device {}", DevicePropertyType.getByCode(propertyIdentifierCode).name(),
+				propertyIdentifierCode, getObjectIdentifierServiceParameter().toString());
 
 		final DeviceProperty<?> deviceProperty = getProperties().get(propertyIdentifierCode);
 		if (deviceProperty == null) {
+			LOG.info("error");
 			return messageFactory.error(requestMessage.getApdu().getInvokeId());
 		}
 
@@ -276,7 +286,7 @@ public class DefaultDevice implements Device {
 //                LOG.trace("<<< READ_PROP: state-text ({})", propertyIdentifierCode);
 //                return processStateTextProperty(propertyIdentifierCode, requestMessage);
 //
-//            // = 111d, status-flags
+//            // 0x6F = 111d, status-flags
 //            // see bacnet_device25_object_list.pcapng - message 11702
 //            case 0x6F:
 //                LOG.trace("<<< READ_PROP: status-flags ({})", propertyIdentifierCode);
@@ -328,8 +338,6 @@ public class DefaultDevice implements Device {
 //            case 0xCE:
 //                LOG.trace("<<< READ_PROP: UTC-time-synchronization-recipients ({})", propertyIdentifierCode);
 //                return processUTCTimeSynchronizationRecipientsProperty(propertyIdentifierCode, requestMessage);
-//
-
 //
 //            // 0x0173 = 371d property list
 //            case 0x0173:
@@ -384,16 +392,6 @@ public class DefaultDevice implements Device {
 		propertyIdentifierServiceParameter.setLengthValueType(0x01);
 		propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) propertyIdentifierCode });
 
-		final ServiceParameter openingTagServiceParameter = new ServiceParameter();
-		openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-		openingTagServiceParameter.setTagNumber(0x04);
-		openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
-
-		final ServiceParameter closingTagServiceParameter = new ServiceParameter();
-		closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-		closingTagServiceParameter.setTagNumber(0x04);
-		closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
-
 		final APDU apdu = new APDU();
 		apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
 		apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
@@ -401,6 +399,12 @@ public class DefaultDevice implements Device {
 		apdu.setVendorMap(vendorMap);
 		apdu.getServiceParameters().add(outwardObjectIdentifierServiceParameter);
 		apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
+
+		// {[4]
+		final ServiceParameter openingTagServiceParameter = new ServiceParameter();
+		openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		openingTagServiceParameter.setTagNumber(0x04);
+		openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
 		apdu.getServiceParameters().add(openingTagServiceParameter);
 
 		ServiceParameter stringServiceParameter = new ServiceParameter();
@@ -417,6 +421,11 @@ public class DefaultDevice implements Device {
 		stringServiceParameter.setPayload(BACnetUtils.retrieveAsString("1_door"));
 		apdu.getServiceParameters().add(stringServiceParameter);
 
+		// }[4]
+		final ServiceParameter closingTagServiceParameter = new ServiceParameter();
+		closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+		closingTagServiceParameter.setTagNumber(0x04);
+		closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
 		apdu.getServiceParameters().add(closingTagServiceParameter);
 
 		final DefaultMessage result = new DefaultMessage();
@@ -505,7 +514,7 @@ public class DefaultDevice implements Device {
 		openingTagServiceParameter.setTagNumber(0x03);
 		openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
 
-		final ServiceParameter protocolServicesSupportedBitStringServiceParameter = getStatusFlagsServiceParameter();
+		final ServiceParameter statusFlagsBitStringServiceParameter = getStatusFlagsServiceParameter();
 
 		final ServiceParameter closingTagServiceParameter = new ServiceParameter();
 		closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -520,7 +529,7 @@ public class DefaultDevice implements Device {
 		apdu.getServiceParameters().add(objectIdentifierServiceParameter);
 		apdu.getServiceParameters().add(protocolServicesSupportedServiceParameter);
 		apdu.getServiceParameters().add(openingTagServiceParameter);
-		apdu.getServiceParameters().add(protocolServicesSupportedBitStringServiceParameter);
+		apdu.getServiceParameters().add(statusFlagsBitStringServiceParameter);
 		apdu.getServiceParameters().add(closingTagServiceParameter);
 
 		final DefaultMessage result = new DefaultMessage();
@@ -1685,17 +1694,17 @@ public class DefaultDevice implements Device {
 	}
 
 	@Override
-	public int getObjectType() {
+	public ObjectType getObjectType() {
 		return objectType;
 	}
 
 	@Override
-	public void setObjectType(final int objectType) {
+	public void setObjectType(final ObjectType objectType) {
 		this.objectType = objectType;
 	}
 
 	@Override
-	public Map<Integer, DeviceProperty> getProperties() {
+	public Map<Integer, DeviceProperty<?>> getProperties() {
 		return properties;
 	}
 
@@ -1711,6 +1720,39 @@ public class DefaultDevice implements Device {
 
 	public MessageFactory getMessageFactory() {
 		return messageFactory;
+	}
+
+	@Override
+	public int getPresentValue() {
+		return presentValue;
+	}
+
+	@Override
+	public void setPresentValue(final int presentValue) {
+		this.presentValue = presentValue;
+	}
+
+	@Override
+	public boolean isOutOfService() {
+		return outOfService;
+	}
+
+	@Override
+	public void setOutOfService(final boolean outOfService) {
+		this.outOfService = outOfService;
+	}
+
+	@Override
+	public List<String> getStates() {
+		return states;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(final String description) {
+		this.description = description;
 	}
 
 }

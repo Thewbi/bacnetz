@@ -1,11 +1,17 @@
 package de.bacnetz.devices;
 
+import java.util.Collection;
+
 import de.bacnet.factory.MessageType;
+import de.bacnetz.stack.ServiceParameter;
 
 public interface DeviceProperty<T> {
 
 	/** 0x0C = 12d = application-software-version */
 	public static final int APPLICATION_SOFTWARE_VERSION = 0x0C;
+
+	/** 0x11 = 17d */
+	public static final int NOTIFICATION_CLASS = 0x11;
 
 	/** 0x1C = 28d description */
 	public static final int DESCRIPTION = 0x1C;
@@ -77,11 +83,28 @@ public interface DeviceProperty<T> {
 	/** 0xD1 = 209d */
 	public static final int STRUCTURED_OBJECT_LIST = 0xD1;
 
+	/** 0x4B = 75d */
+	public static final int OBJECT_IDENTIFIER = 0x4B;
+
 	/** 0x4c = 76d */
 	public static final int OBJECT_LIST = 0x4c;
 
 	/** 0x4d = 77d */
 	public static final int OBJECT_NAME = 0x4d;
+
+	public static final int PRESENT_VALUE = 0x55;
+
+	public static final int STATUS_FLAGS = 0x6F;
+
+	public static final int PROPERTY_LIST = 0x0173;
+
+	public static final int STATUS_TEXT = 0x6E;
+
+	public static final int POLARITY = 0x54;
+
+	public static final int INACTIVE_TEXT = 0x2E;
+
+	public static final int ACTIVE_TEXT = 0x03;
 
 	int getPropertyKey();
 
@@ -106,5 +129,7 @@ public interface DeviceProperty<T> {
 //    void setBooleanValue(boolean booleanValue);
 
 	int getLengthTagValue();
+
+	Collection<ServiceParameter> getServiceParameters();
 
 }

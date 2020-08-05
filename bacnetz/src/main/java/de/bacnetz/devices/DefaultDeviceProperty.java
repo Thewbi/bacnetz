@@ -1,7 +1,13 @@
 package de.bacnetz.devices;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import de.bacnet.factory.MessageType;
 import de.bacnetz.common.utils.BACnetUtils;
+import de.bacnetz.stack.ServiceParameter;
+import de.bacnetz.stack.TagClass;
 
 public class DefaultDeviceProperty<T> implements DeviceProperty<T> {
 
@@ -49,7 +55,7 @@ public class DefaultDeviceProperty<T> implements DeviceProperty<T> {
 
 		case UNSIGNED_INTEGER:
 			final Integer valueAsInteger = (Integer) value;
-			return IntToByteArray(valueAsInteger);
+			return BACnetUtils.IntToByteArray(valueAsInteger);
 
 		case ENUMERATED:
 			return (byte[]) value;
@@ -65,38 +71,21 @@ public class DefaultDeviceProperty<T> implements DeviceProperty<T> {
 		}
 	}
 
-	byte[] IntToByteArray(final int data) {
+	@Override
+	public Collection<ServiceParameter> getServiceParameters() {
 
-		final byte byte0 = (byte) ((data & 0xFF000000) >> 24);
-		final byte byte1 = (byte) ((data & 0x00FF0000) >> 16);
-		final byte byte2 = (byte) ((data & 0x0000FF00) >> 8);
-		final byte byte3 = (byte) ((data & 0x000000FF) >> 0);
+		final List<ServiceParameter> result = new ArrayList<>();
 
-		if (byte0 > 0) {
-			final byte[] result = new byte[4];
-			result[0] = byte0;
-			result[1] = byte1;
-			result[2] = byte2;
-			result[3] = byte3;
-			return result;
-		}
+		ServiceParameter serviceParameter;
 
-		if (byte1 > 0) {
-			final byte[] result = new byte[3];
-			result[0] = byte1;
-			result[1] = byte2;
-			result[2] = byte3;
-			return result;
-		}
+		serviceParameter = new ServiceParameter();
+		serviceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		serviceParameter.setTagNumber(getMessageType().getValue());
+		serviceParameter.setLengthValueType(getLengthTagValue());
+		serviceParameter.setPayload(getValueAsByteArray());
+		result.add(serviceParameter);
 
-		if (byte2 > 0) {
-			final byte[] result = new byte[2];
-			result[0] = byte2;
-			result[1] = byte3;
-			return result;
-		}
-
-		return new byte[] { byte3 };
+		return result;
 	}
 
 	@Override

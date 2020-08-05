@@ -112,27 +112,26 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
 					+ Utils.byteArrayToStringNoPrefix(datagramPacket.getData()));
 			LOG.trace("<<< " + Utils.byteArrayToStringNoPrefix(data));
 
+			Message response = null;
+			Message request = null;
+
 			// parse and process the request message and return a response message
 			try {
-
-				final Message request = parseBuffer(data, bytesReceived);
-				final Message response = sendMessageToController(request);
-
-				if (response != null) {
-					// send answer to the network
-					sendMessage(datagramPacketAddress, response, request);
-				} else {
-					LOG.trace("Controller returned a null message!");
-				}
-
-				LOG.trace("done");
-
+				request = parseBuffer(data, bytesReceived);
+				response = sendMessageToController(request);
 			} catch (final Exception e) {
-
 				LOG.error("Cannot parse buffer: {}", Utils.byteArrayToStringNoPrefix(data));
 				LOG.error(e.getMessage(), e);
-
 			}
+
+			if (response != null) {
+				// send answer to the network
+				sendMessage(datagramPacketAddress, response, request);
+			} else {
+				LOG.trace("Controller returned a null message!");
+			}
+
+			LOG.trace("done");
 		}
 	}
 
@@ -141,6 +140,11 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
 			return;
 		}
 		broadcastDatagramSocket = new DatagramSocket(NetworkUtils.DEFAULT_PORT);
+
+//		final SocketAddress socketAddress = new InetSocketAddress(NetworkUtils.LOCAL_BIND_IP,
+//				NetworkUtils.DEFAULT_PORT);
+//		broadcastDatagramSocket.bind(socketAddress);
+
 		broadcastDatagramSocket.setBroadcast(true);
 	}
 

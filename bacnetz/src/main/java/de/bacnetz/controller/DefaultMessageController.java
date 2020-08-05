@@ -15,6 +15,7 @@ import de.bacnetz.devices.DefaultDevice;
 import de.bacnetz.devices.Device;
 import de.bacnetz.devices.DeviceProperty;
 import de.bacnetz.devices.DevicePropertyType;
+import de.bacnetz.devices.ObjectType;
 import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.ConfirmedServiceChoice;
@@ -224,7 +225,7 @@ public class DefaultMessageController implements MessageController {
 		objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
 		objectIdentifierServiceParameter.setTagNumber(0x00);
 		objectIdentifierServiceParameter.setLengthValueType(4);
-		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+		objectIdentifierServiceParameter.setObjectType(ObjectType.DEVICE);
 		objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
 
 		final APDU apdu = new APDU();
@@ -322,7 +323,7 @@ public class DefaultMessageController implements MessageController {
 		objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
 		objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
 		objectIdentifierServiceParameter.setLengthValueType(4);
-		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+		objectIdentifierServiceParameter.setObjectType(ObjectType.DEVICE);
 		objectIdentifierServiceParameter.setInstanceNumber(deviceInstanceNumber);
 
 		final ServiceParameter maximumAPDUServiceParameter = new ServiceParameter();
@@ -424,7 +425,7 @@ public class DefaultMessageController implements MessageController {
 		objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
 		objectIdentifierServiceParameter.setTagNumber(0x00);
 		objectIdentifierServiceParameter.setLengthValueType(4);
-		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+		objectIdentifierServiceParameter.setObjectType(ObjectType.DEVICE);
 		objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
 
 		final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
@@ -500,7 +501,7 @@ public class DefaultMessageController implements MessageController {
 		objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
 		objectIdentifierServiceParameter.setTagNumber(0x00);
 		objectIdentifierServiceParameter.setLengthValueType(4);
-		objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
+		objectIdentifierServiceParameter.setObjectType(ObjectType.DEVICE);
 		objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
 
 		final APDU apdu = new APDU();
@@ -519,6 +520,8 @@ public class DefaultMessageController implements MessageController {
 
 		LOG.trace(openingTagServiceParameter);
 
+		// read the service parameters to find out which properties where requested or
+		// if the 'all' keyword was sent for all properties
 		final List<ServiceParameter> serviceParameters = requestMessage.getApdu().getServiceParameters();
 		if (CollectionUtils.isEmpty(serviceParameters)) {
 			LOG.warn("No service parameters in readPropertyMultiple request");
@@ -565,6 +568,7 @@ public class DefaultMessageController implements MessageController {
 					propertyIdentifierServiceParameter
 							.setPayload(new byte[] { (byte) deviceProperty.getPropertyKey() });
 					apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
+
 					LOG.trace(propertyIdentifierServiceParameter);
 
 					// add the property value
@@ -625,13 +629,12 @@ public class DefaultMessageController implements MessageController {
 		apdu.getServiceParameters().add(openingTagServiceParameter);
 		LOG.trace(openingTagServiceParameter);
 
-		final ServiceParameter valueServiceParameter = new ServiceParameter();
-		valueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-		valueServiceParameter.setTagNumber(deviceProperty.getMessageType().getValue());
-		valueServiceParameter.setLengthValueType(deviceProperty.getLengthTagValue());
-		valueServiceParameter.setPayload(deviceProperty.getValueAsByteArray());
-		apdu.getServiceParameters().add(valueServiceParameter);
-		LOG.trace(valueServiceParameter);
+		deviceProperty.getServiceParameters().stream().forEach(sp -> {
+
+			apdu.getServiceParameters().add(sp);
+			LOG.trace(sp);
+
+		});
 
 		// closing tag }[4]
 		final ServiceParameter closingTagServiceParameter = new ServiceParameter();
