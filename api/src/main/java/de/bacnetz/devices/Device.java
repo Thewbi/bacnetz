@@ -10,50 +10,54 @@ import de.bacnetz.stack.ServiceParameter;
 
 public interface Device {
 
-	ServiceParameter getObjectIdentifierServiceParameter();
+    ServiceParameter getObjectIdentifierServiceParameter();
 
-	Map<Integer, DeviceProperty<?>> getProperties();
+    Map<Integer, DeviceProperty<?>> getProperties();
 
-	Collection<Device> getChildDevices();
+    Collection<Device> getChildDevices();
 
-	int getId();
+    int getId();
 
-	void setId(int id);
+    void setId(int id);
 
-	ObjectType getObjectType();
+    ObjectType getObjectType();
 
-	void setObjectType(ObjectType objectType);
+    void setObjectType(ObjectType objectType);
 
-	String getName();
+    String getName();
 
-	void setName(String name);
+    void setName(String name);
 
-	Device findDevice(ServiceParameter objectIdentifierServiceParameter);
+    Device findDevice(ServiceParameter objectIdentifierServiceParameter);
 
-	Message getPropertyValue(Message requestMessage, int propertyIdentifierCode);
+    Message getPropertyValue(Message requestMessage, int propertyIdentifierCode);
 
-	Map<Integer, String> getVendorMap();
+    Map<Integer, String> getVendorMap();
 
-	void setVendorMap(Map<Integer, String> vendorMap);
+    void setVendorMap(Map<Integer, String> vendorMap);
 
-	int retrieveNextInvokeId();
+    int retrieveNextInvokeId();
 
-	ServiceParameter getStatusFlagsServiceParameter();
+    ServiceParameter getStatusFlagsServiceParameter();
 
-	BACnetServicesSupportedBitString retrieveServicesSupported();
+    BACnetServicesSupportedBitString retrieveServicesSupported();
 
-	int getPresentValue();
+    int getPresentValue();
 
-	void setPresentValue(int value);
+    void setPresentValue(int value);
 
-	boolean isOutOfService();
+    boolean isOutOfService();
 
-	void setOutOfService(boolean outOfService);
+    void setOutOfService(boolean outOfService);
 
-	List<String> getStates();
+    List<String> getStates();
 
-	String getDescription();
+    String getDescription();
 
-	void setDescription(String description);
+    void setDescription(String description);
+
+    String getFirmwareRevision();
+
+    void setFirmwareRevision(String firmwareRevision);
 
 }
