@@ -114,6 +114,23 @@ public class Utils {
 		buffer[offset + 3] = d;
 	}
 
+	public static byte[] intToBuffer(final int data) {
+
+		final byte a = (byte) ((data >> 24) & 0xff);
+		final byte b = (byte) ((data >> 16) & 0xff);
+		final byte c = (byte) ((data >> 8) & 0xff);
+		final byte d = (byte) ((data >> 0) & 0xff);
+
+		final byte[] buffer = new byte[4];
+
+		buffer[0] = a;
+		buffer[1] = b;
+		buffer[2] = c;
+		buffer[3] = d;
+
+		return buffer;
+	}
+
 	public static int addShortToBuffer(final byte[] buffer, int idx, final short data) {
 
 		buffer[idx] = (byte) (0xFF & (data >> 8));

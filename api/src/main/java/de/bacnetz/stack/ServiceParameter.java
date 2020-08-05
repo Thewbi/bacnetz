@@ -2,284 +2,313 @@ package de.bacnetz.stack;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import de.bacnet.factory.MessageType;
 import de.bacnetz.common.utils.Utils;
 
 public class ServiceParameter {
 
-    public static final int CLOSING_TAG_CODE = 7;
+	public static final int CLOSING_TAG_CODE = 7;
 
-    public static final int OPENING_TAG_CODE = 6;
+	public static final int OPENING_TAG_CODE = 6;
 
-    public static final int EXTENDED_TAG_CODE = 5;
+	public static final int EXTENDED_TAG_CODE = 5;
 
-    public static final int ENUMERATED_CODE = 9;
+	public static final int ENUMERATED_CODE = 9;
 
-    public static final int UNKOWN_TAG_NUMBER = 1;
+	public static final int UNKOWN_TAG_NUMBER = 1;
 
-    public static final int UNSIGNED_INTEGER_CODE = 2;
+	public static final int UNSIGNED_INTEGER_CODE = 2;
 
-    public static final int BOOLEAN_CODE = 1;
+	public static final int BOOLEAN_CODE = 1;
 
-    public static final int BACNET_OBJECT_IDENTIFIER = 12;
+	public static final int BACNET_OBJECT_IDENTIFIER = 12;
 
-    public static final int EXTENDED_VALUE = 0x05;
+	public static final int EXTENDED_VALUE = 0x05;
 
-    public static final int DATE = 0x0A;
+	public static final int DATE = 0x0A;
 
-    public static final int TIME = 0x0B;
+	public static final int TIME = 0x0B;
 
-    public static final int APPLICATION_TAG_NUMBER_CHARACTER_STRING = 7;
+	public static final int APPLICATION_TAG_NUMBER_CHARACTER_STRING = 7;
 
-    public static final int APPLICATION_TAG_NUMBER_BIT_STRING = 8;
+	public static final int APPLICATION_TAG_NUMBER_BIT_STRING = 8;
 
-    public static final int SIGNED_INTEGER_TWOS_COMMPLEMENT_NOTATION = 3;
+	public static final int SIGNED_INTEGER_TWOS_COMMPLEMENT_NOTATION = 3;
 
-    private int tagNumber;
+	private int tagNumber;
 
-    private TagClass tagClass;
+	private TagClass tagClass;
 
-    private int lengthValueType;
+	private int lengthValueType;
 
-    private byte[] payload;
+	private byte[] payload;
 
-    public ServiceParameter() {
-    }
+	private MessageType messageType;
 
-    public ServiceParameter(final ServiceParameter other) {
-        this.tagNumber = other.tagNumber;
-        this.tagClass = other.tagClass;
-        this.lengthValueType = other.lengthValueType;
-        if (other.payload != null) {
-            this.payload = other.payload.clone();
-        }
-    }
+	public ServiceParameter() {
+	}
 
-    /**
-     * 
-     * @param data
-     * @param offset
-     * 
-     * @return number of bytes processed.
-     */
-    public int fromBytes(final byte[] data, final int offset) {
+	public ServiceParameter(final ServiceParameter other) {
+		this.tagNumber = other.tagNumber;
+		this.tagClass = other.tagClass;
+		this.lengthValueType = other.lengthValueType;
+		if (other.payload != null) {
+			this.payload = other.payload.clone();
+		}
+	}
 
-        int length = 0;
+	/**
+	 * 
+	 * @param data
+	 * @param offset
+	 * 
+	 * @return number of bytes processed.
+	 */
+	public int fromBytes(final byte[] data, final int offset) {
 
-        // context tag number are upper four bit
-        tagNumber = (data[offset + 0] & 0xF0) >> 4;
+		int length = 0;
 
-        // tag class is bit number three
-        tagClass = TagClass.fromInt((data[offset + 0] & 0x08) >> 3);
+		// context tag number are upper four bit
+		tagNumber = (data[offset + 0] & 0xF0) >> 4;
 
-        // lower three bits are either a length value or a type value
-        lengthValueType = (data[offset + 0] & 0x07) >> 0;
+		// tag class is bit number three
+		tagClass = TagClass.fromInt((data[offset + 0] & 0x08) >> 3);
 
-        length++;
+		// lower three bits are either a length value or a type value
+		lengthValueType = (data[offset + 0] & 0x07) >> 0;
 
-        if (tagNumber == 0 && tagClass == null && lengthValueType == 0) {
-            return 0;
-        }
+		length++;
 
-        if (lengthValueType == OPENING_TAG_CODE) {
+		if (tagNumber == 0 && tagClass == null && lengthValueType == 0) {
+			return 0;
+		}
 
-            // tag number 6 is opening bracket without any payload
+		if (lengthValueType == OPENING_TAG_CODE) {
 
-        } else if (lengthValueType == CLOSING_TAG_CODE) {
+			// tag number 6 is opening bracket without any payload
 
-            // tag number 7 is closing bracket without any payload
+		} else if (lengthValueType == CLOSING_TAG_CODE) {
 
-        } else if (lengthValueType == EXTENDED_TAG_CODE) {
+			// tag number 7 is closing bracket without any payload
 
-            final int payloadLength = data[offset + 1];
-            length++;
+		} else if (lengthValueType == EXTENDED_TAG_CODE) {
 
-            payload = new byte[payloadLength];
-            System.arraycopy(data, offset + 2, payload, 0, payloadLength);
+			final int payloadLength = data[offset + 1];
+			length++;
 
-            length += payloadLength;
+			payload = new byte[payloadLength];
+			System.arraycopy(data, offset + 2, payload, 0, payloadLength);
 
-        } else {
+			length += payloadLength;
 
-            payload = new byte[lengthValueType];
-            System.arraycopy(data, offset + 1, payload, 0, lengthValueType);
+		} else {
 
-            length += lengthValueType;
+			payload = new byte[lengthValueType];
+			System.arraycopy(data, offset + 1, payload, 0, lengthValueType);
 
-        }
+			length += lengthValueType;
 
-        return length;
-    }
+		}
 
-    @Override
-    public String toString() {
+		return length;
+	}
 
-        final StringBuffer stringBuffer = new StringBuffer();
+	@Override
+	public String toString() {
 
-        switch (tagClass) {
-        case APPLICATION_TAG:
+		final StringBuffer stringBuffer = new StringBuffer();
 
-            switch (tagNumber) {
+		switch (tagClass) {
+		case APPLICATION_TAG:
 
-            case UNSIGNED_INTEGER_CODE:
-                stringBuffer.append("Unsigned Integer (2)");
-                break;
+			switch (tagNumber) {
 
-            case ENUMERATED_CODE:
-                stringBuffer.append("Enumerated (9)");
-                break;
+			case UNSIGNED_INTEGER_CODE:
+				stringBuffer.append("Unsigned Integer (2)");
+				break;
 
-            case BACNET_OBJECT_IDENTIFIER:
-                stringBuffer.append("BACnetObjectIdentifier (12)");
-                // the first ten bit contain the type of object this object identifier describes
-                int objectType = (payload[0] & 0xFF) << 2;
-                objectType += (payload[1] & 0xC0) >> 6;
+			case ENUMERATED_CODE:
+				stringBuffer.append("Enumerated (9)");
+				break;
 
-                switch (objectType) {
-                case 0x08:
-                    stringBuffer.append(", ObjectType: Object");
-                    break;
+			case BACNET_OBJECT_IDENTIFIER:
+				stringBuffer.append("BACnetObjectIdentifier (12)");
+				// the first ten bit contain the type of object this object identifier describes
+				int objectType = (payload[0] & 0xFF) << 2;
+				objectType += (payload[1] & 0xC0) >> 6;
 
-                default:
-                    throw new RuntimeException("Unknown ObjectType: " + objectType);
-                }
+				switch (objectType) {
 
-                final int instanceNumber = getInstanceNumber();
-                stringBuffer.append(", InstanceNumber: " + instanceNumber);
-                break;
+				case 0x03:
+					stringBuffer.append(", ObjectType: binary-input");
+					break;
 
-            default:
-                stringBuffer.append("Unknown Application Tag: " + tagNumber);
-            }
-            break;
+				case 0x08:
+					stringBuffer.append(", ObjectType: device");
+					break;
 
-        case CONTEXT_SPECIFIC_TAG:
+				case 0x0F:
+					stringBuffer.append(", ObjectType: notification-class");
+					break;
 
-            switch (lengthValueType) {
+				case 0x13:
+					stringBuffer.append(", ObjectType: multi-state-value");
+					break;
 
-            case ServiceParameter.OPENING_TAG_CODE:
-                stringBuffer.append("{[").append(tagNumber).append("]");
-                break;
+				default:
+					throw new RuntimeException("Unknown ObjectType: " + objectType);
+				}
 
-            case ServiceParameter.CLOSING_TAG_CODE:
-                stringBuffer.append("}[").append(tagNumber).append("]");
-                break;
+				final int instanceNumber = getInstanceNumber();
+				stringBuffer.append(", InstanceNumber: " + instanceNumber);
+				break;
 
-            default:
-                stringBuffer.append("Unknown Context Specific Tag: " + lengthValueType);
-            }
+			default:
+				stringBuffer.append("Unknown Application Tag: " + tagNumber);
+			}
+			break;
 
-            break;
-        }
+		case CONTEXT_SPECIFIC_TAG:
 
-        return stringBuffer.toString();
-    }
+			switch (lengthValueType) {
 
-    @SuppressWarnings("unused")
-    private void outputPayload(final StringBuffer stringBuffer) {
+			case ServiceParameter.OPENING_TAG_CODE:
+				stringBuffer.append("{[").append(tagNumber).append("]");
+				break;
 
-        if (ArrayUtils.isEmpty(payload)) {
+			case ServiceParameter.CLOSING_TAG_CODE:
+				stringBuffer.append("}[").append(tagNumber).append("]");
+				break;
 
-            // nop
+			default:
+				stringBuffer.append("Unknown Context Specific Tag: " + lengthValueType);
+			}
 
-        } else if (payload.length == 1) {
+			break;
+		}
 
-            stringBuffer.append(Utils.byteArrayToStringNoPrefix(payload));
+		return stringBuffer.toString();
+	}
 
-        } else if (payload.length == 2) {
+	@SuppressWarnings("unused")
+	private void outputPayload(final StringBuffer stringBuffer) {
 
-            final boolean bigEndian = true;
-            stringBuffer.append(Utils.bytesToUnsignedShort(payload[0], payload[1], bigEndian));
-        }
-    }
+		if (ArrayUtils.isEmpty(payload)) {
 
-    public int getInstanceNumber() {
+			// nop
 
-        if (ArrayUtils.isEmpty(payload)) {
-            return -1;
-        }
+		} else if (payload.length == 1) {
 
-        int instanceNumber = (payload[1] & 0x3F) << 16;
-        instanceNumber += (payload[2] & 0xFF) << 8;
-        instanceNumber += (payload[3] & 0xFF) << 0;
+			stringBuffer.append(Utils.byteArrayToStringNoPrefix(payload));
 
-        return instanceNumber;
-    }
+		} else if (payload.length == 2) {
 
-    public int getDataLength() {
+			final boolean bigEndian = true;
+			stringBuffer.append(Utils.bytesToUnsignedShort(payload[0], payload[1], bigEndian));
+		}
+	}
 
-        if (tagClass == TagClass.CONTEXT_SPECIFIC_TAG) {
+	public int getInstanceNumber() {
 
-            if ((lengthValueType == OPENING_TAG_CODE) || (lengthValueType == CLOSING_TAG_CODE)) {
+		if (ArrayUtils.isEmpty(payload)) {
+			return -1;
+		}
 
-                return 1;
-            }
+		int instanceNumber = (payload[1] & 0x3F) << 16;
+		instanceNumber += (payload[2] & 0xFF) << 8;
+		instanceNumber += (payload[3] & 0xFF) << 0;
 
-        } else if (tagClass == TagClass.APPLICATION_TAG) {
+		return instanceNumber;
+	}
 
-            if (lengthValueType == ServiceParameter.EXTENDED_VALUE) {
-                return getPayload().length + 2;
-            }
-        }
+	public int getDataLength() {
 
-        return lengthValueType + 1;
-    }
+		if (tagClass == TagClass.CONTEXT_SPECIFIC_TAG) {
 
-    public void toBytes(final byte[] data, final int offset) {
+			if ((lengthValueType == OPENING_TAG_CODE) || (lengthValueType == CLOSING_TAG_CODE)) {
+				return 1;
+			}
 
-        // the application tag is a byte that encodes the information type of this
-        // service parameter, the type of this service parameter (Application or context
-        // specific) and the length of the payload inside this service parameter
-        final int applicationTag = (tagNumber << 4) | (tagClass.getId() << 3) | (lengthValueType);
+		} else if (tagClass == TagClass.APPLICATION_TAG) {
 
-        int index = 0;
-        data[offset + index++] = (byte) applicationTag;
+			if (lengthValueType == ServiceParameter.EXTENDED_VALUE) {
 
-        // copy the payload in
-        if (ArrayUtils.isNotEmpty(payload)) {
+				return getPayload().length + 2;
 
-            if (lengthValueType == ServiceParameter.EXTENDED_VALUE) {
-                // payload length
-                data[offset + index++] = (byte) (payload.length);
-            }
+			} else if (messageType != null && messageType == MessageType.BOOLEAN) {
 
-            System.arraycopy(payload, 0, data, offset + index, payload.length);
-            index += payload.length;
-        }
-    }
+				return 1;
 
-    public int getTagNumber() {
-        return tagNumber;
-    }
+			}
+		}
 
-    public void setTagNumber(final int tagNumber) {
-        this.tagNumber = tagNumber;
-    }
+		return lengthValueType + 1;
+	}
 
-    public TagClass getTagClass() {
-        return tagClass;
-    }
+	public void toBytes(final byte[] data, final int offset) {
 
-    public void setTagClass(final TagClass tagClass) {
-        if (tagClass == null) {
-            throw new RuntimeException("Invalid");
-        }
-        this.tagClass = tagClass;
-    }
+		// the application tag is a byte that encodes the information type of this
+		// service parameter, the type of this service parameter (Application or context
+		// specific) and the length of the payload inside this service parameter
+		final int applicationTag = (tagNumber << 4) | (tagClass.getId() << 3) | (lengthValueType);
 
-    public int getLengthValueType() {
-        return lengthValueType;
-    }
+		int index = 0;
+		data[offset + index++] = (byte) applicationTag;
 
-    public void setLengthValueType(final int lengthValueType) {
-        this.lengthValueType = lengthValueType;
-    }
+		// copy the payload in
+		if (ArrayUtils.isNotEmpty(payload)) {
 
-    public byte[] getPayload() {
-        return payload;
-    }
+			if (lengthValueType == ServiceParameter.EXTENDED_VALUE) {
+				// payload length
+				data[offset + index++] = (byte) (payload.length);
+			}
 
-    public void setPayload(final byte[] payload) {
-        this.payload = payload;
-    }
+			System.arraycopy(payload, 0, data, offset + index, payload.length);
+			index += payload.length;
+		}
+	}
+
+	public int getTagNumber() {
+		return tagNumber;
+	}
+
+	public void setTagNumber(final int tagNumber) {
+		this.tagNumber = tagNumber;
+	}
+
+	public TagClass getTagClass() {
+		return tagClass;
+	}
+
+	public void setTagClass(final TagClass tagClass) {
+		if (tagClass == null) {
+			throw new RuntimeException("Invalid");
+		}
+		this.tagClass = tagClass;
+	}
+
+	public int getLengthValueType() {
+		return lengthValueType;
+	}
+
+	public void setLengthValueType(final int lengthValueType) {
+		this.lengthValueType = lengthValueType;
+	}
+
+	public byte[] getPayload() {
+		return payload;
+	}
+
+	public void setPayload(final byte[] payload) {
+		this.payload = payload;
+	}
+
+	public MessageType getMessageType() {
+		return messageType;
+	}
+
+	public void setMessageType(final MessageType messageType) {
+		this.messageType = messageType;
+	}
 
 }

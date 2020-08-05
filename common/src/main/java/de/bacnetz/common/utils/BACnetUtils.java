@@ -18,7 +18,7 @@ public class BACnetUtils {
 		return result;
 	}
 
-	public static byte[] IntToByteArray(final int data) {
+	public static byte[] intToByteArray(final int data) {
 
 		final byte byte0 = (byte) ((data & 0xFF000000) >> 24);
 		final byte byte1 = (byte) ((data & 0x00FF0000) >> 16);

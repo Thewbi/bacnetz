@@ -4,138 +4,172 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import de.bacnet.factory.MessageType;
 import de.bacnetz.common.utils.BACnetUtils;
+import de.bacnetz.common.utils.Utils;
 import de.bacnetz.stack.ServiceParameter;
 import de.bacnetz.stack.TagClass;
 
 public class DefaultDeviceProperty<T> implements DeviceProperty<T> {
 
-    private String propertyName;
+	private String propertyName;
 
-    private int propertyKey;
+	private int propertyKey;
 
-    private T value;
+	private T value;
 
-    private MessageType messageType;
+	private MessageType messageType;
 
-    /**
-     * ctor
-     * 
-     * @param propertyKey
-     * @param value
-     * @param messageType
-     */
-    public DefaultDeviceProperty(final String propertyName, final int propertyKey, final T value,
-            final MessageType messageType) {
-        super();
-        this.propertyName = propertyName;
-        this.propertyKey = propertyKey;
-        this.value = value;
-        this.messageType = messageType;
-    }
+	/**
+	 * ctor
+	 * 
+	 * @param propertyKey
+	 * @param value
+	 * @param messageType
+	 */
+	public DefaultDeviceProperty(final String propertyName, final int propertyKey, final T value,
+			final MessageType messageType) {
+		super();
+		this.propertyName = propertyName;
+		this.propertyKey = propertyKey;
+		this.value = value;
+		this.messageType = messageType;
+	}
 
-    @Override
-    public int getLengthTagValue() {
+	@Override
+	public int getLengthTagValue() {
 
-        if (messageType == MessageType.BOOLEAN) {
-            return ((Boolean) value) ? 0x01 : 0x00;
-        } else {
-            return getValueAsByteArray().length;
-        }
-    }
+		if (messageType == MessageType.BOOLEAN) {
 
-    @Override
-    public byte[] getValueAsByteArray() {
+			return ((Boolean) value) ? 0x01 : 0x00;
 
-        switch (messageType) {
+		} else if (messageType == MessageType.CHARACTER_STRING) {
 
-        case BOOLEAN:
-            return new byte[] { (byte) (((Boolean) value) ? 0x01 : 0x00) };
+			return ServiceParameter.EXTENDED_VALUE;
 
-        case UNSIGNED_INTEGER:
-            final Integer valueAsInteger = (Integer) value;
-            return BACnetUtils.IntToByteArray(valueAsInteger);
+		} else {
 
-        case ENUMERATED:
-            return (byte[]) value;
+			return getValueAsByteArray().length;
 
-        case CHARACTER_STRING:
-            return BACnetUtils.retrieveAsString((String) value);
+		}
+	}
 
-        case SINGED_INTEGER_TWOS_COMPLEMENT_NOTATION:
-            return (byte[]) value;
+	@Override
+	public byte[] getValueAsByteArray() {
 
-        default:
-            throw new RuntimeException("Unimplemented type: " + messageType);
-        }
-    }
+		Integer valueAsInteger = null;
 
-    @Override
-    public Collection<ServiceParameter> getServiceParameters() {
+		switch (messageType) {
 
-        final List<ServiceParameter> result = new ArrayList<>();
+		case BOOLEAN:
+			return new byte[] { (byte) (((Boolean) value) ? 0x01 : 0x00) };
 
-        ServiceParameter serviceParameter;
+		case BACNET_OBJECT_IDENTIFIER:
+			valueAsInteger = (Integer) value;
+			return Utils.intToBuffer(valueAsInteger);
 
-        serviceParameter = new ServiceParameter();
-        serviceParameter.setTagClass(TagClass.APPLICATION_TAG);
-        serviceParameter.setTagNumber(getMessageType().getValue());
-        serviceParameter.setLengthValueType(getLengthTagValue());
-        serviceParameter.setPayload(getValueAsByteArray());
-        result.add(serviceParameter);
+		case UNSIGNED_INTEGER:
+			valueAsInteger = (Integer) value;
+			return BACnetUtils.intToByteArray(valueAsInteger);
 
-        return result;
-    }
+		case ENUMERATED:
+			return (byte[]) value;
 
-    @Override
-    public int getPropertyKey() {
-        return propertyKey;
-    }
+		case CHARACTER_STRING:
+			return BACnetUtils.retrieveAsString((String) value);
 
-    @Override
-    public void setPropertyKey(final int propertyKey) {
-        this.propertyKey = propertyKey;
-    }
+		case SINGED_INTEGER_TWOS_COMPLEMENT_NOTATION:
+			return (byte[]) value;
 
-    @Override
-    public T getValue() {
-        return value;
-    }
+		default:
+			throw new RuntimeException("Unimplemented type: " + messageType);
+		}
+	}
 
-    @Override
-    public void setValue(final T value) {
-        this.value = value;
-    }
+	@Override
+	public Collection<ServiceParameter> getServiceParameters() {
 
-    @Override
-    public MessageType getMessageType() {
-        return messageType;
-    }
+		final List<ServiceParameter> result = new ArrayList<>();
 
-    @Override
-    public void setMessageType(final MessageType messageType) {
-        this.messageType = messageType;
-    }
+		ServiceParameter serviceParameter;
 
-    @Override
-    public String getPropertyName() {
-        return propertyName;
-    }
+		serviceParameter = new ServiceParameter();
+		serviceParameter.setMessageType(messageType);
+		serviceParameter.setTagClass(TagClass.APPLICATION_TAG);
+		serviceParameter.setTagNumber(getMessageType().getValue());
+		serviceParameter.setLengthValueType(getLengthTagValue());
 
-    @Override
-    public void setPropertyName(final String propertyName) {
-        this.propertyName = propertyName;
-    }
+		final byte[] payload = getValueAsByteArray();
+		if (messageType == MessageType.BOOLEAN) {
+			serviceParameter.setPayload(null);
+		} else if (ArrayUtils.isNotEmpty(payload)) {
+			serviceParameter.setPayload(payload);
+		}
 
-    @Override
-    public String getValueAsString() {
-        if (value == null) {
-            return StringUtils.EMPTY;
-        }
-        return value.toString();
-    }
+		result.add(serviceParameter);
+
+		return result;
+	}
+
+	@Override
+	public String toString() {
+
+		final StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append("DeviceProperty ").append(propertyName).append(" (").append(propertyKey).append(") ")
+				.append(messageType);
+
+		return stringBuilder.toString();
+	}
+
+	@Override
+	public int getPropertyKey() {
+		return propertyKey;
+	}
+
+	@Override
+	public void setPropertyKey(final int propertyKey) {
+		this.propertyKey = propertyKey;
+	}
+
+	@Override
+	public T getValue() {
+		return value;
+	}
+
+	@Override
+	public void setValue(final T value) {
+		this.value = value;
+	}
+
+	@Override
+	public MessageType getMessageType() {
+		return messageType;
+	}
+
+	@Override
+	public void setMessageType(final MessageType messageType) {
+		this.messageType = messageType;
+	}
+
+	@Override
+	public String getPropertyName() {
+		return propertyName;
+	}
+
+	@Override
+	public void setPropertyName(final String propertyName) {
+		this.propertyName = propertyName;
+	}
+
+	@Override
+	public String getValueAsString() {
+		if (value == null) {
+			return StringUtils.EMPTY;
+		}
+		return value.toString();
+	}
 
 }

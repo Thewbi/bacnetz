@@ -4,13 +4,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import de.bacnet.factory.MessageType;
 import de.bacnetz.stack.ServiceParameter;
 import de.bacnetz.stack.TagClass;
 
-public class StringListDeviceProperty extends DefaultDeviceProperty<Object> {
+public class CompositeDeviceProperty extends DefaultDeviceProperty<Object> {
 
-	public StringListDeviceProperty(final String propertyName, final int propertyKey, final Object value,
+	/**
+	 * ctor
+	 * 
+	 * @param propertyName
+	 * @param propertyKey
+	 * @param value
+	 * @param messageType
+	 */
+	public CompositeDeviceProperty(final String propertyName, final int propertyKey, final Object value,
 			final MessageType messageType) {
 		super(propertyName, propertyKey, value, messageType);
 	}
@@ -27,10 +37,18 @@ public class StringListDeviceProperty extends DefaultDeviceProperty<Object> {
 		for (final DefaultDeviceProperty<?> deviceProperty : compositeList) {
 
 			serviceParameter = new ServiceParameter();
+			serviceParameter.setMessageType(deviceProperty.getMessageType());
 			serviceParameter.setTagClass(TagClass.APPLICATION_TAG);
 			serviceParameter.setTagNumber(deviceProperty.getMessageType().getValue());
 			serviceParameter.setLengthValueType(deviceProperty.getLengthTagValue());
-			serviceParameter.setPayload(deviceProperty.getValueAsByteArray());
+
+			final byte[] payload = deviceProperty.getValueAsByteArray();
+			if (deviceProperty.getMessageType() == MessageType.BOOLEAN) {
+				serviceParameter.setPayload(null);
+			} else if (ArrayUtils.isNotEmpty(payload)) {
+				serviceParameter.setPayload(payload);
+			}
+
 			result.add(serviceParameter);
 		}
 

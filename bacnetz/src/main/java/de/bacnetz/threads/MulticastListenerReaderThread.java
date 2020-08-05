@@ -188,12 +188,6 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
 	public void pointToPointMessage(final Message responseMessage, final InetAddress datagramPacketAddress)
 			throws IOException {
 
-//		responseMessage.getNpdu().setSourceNetworkAddress(requestMessage.getNpdu().getDestinationNetworkNumber());
-//		responseMessage.getNpdu()
-//				.setDestinationMACLayerAddressLength(requestMessage.getNpdu().getDestinationMACLayerAddressLength());
-//		responseMessage.getNpdu().setDestinationMac(requestMessage.getNpdu().getDestinationMac());
-//		responseMessage.recomputeLength();
-
 		final byte[] bytes = responseMessage.getBytes();
 
 		if (responseMessage.getVirtualLinkControl().getLength() != bytes.length) {
@@ -201,14 +195,9 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
 					"Message is invalid! The length in the virtual link control does not match the real data length!");
 		}
 
-//		LOG.info(">>> " + Utils.byteArrayToStringNoPrefix(bytes));
-
 		final InetAddress destinationAddress = datagramPacketAddress;
 		final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, destinationAddress,
 				NetworkUtils.DEFAULT_PORT);
-
-//		final SocketAddress destinationAddress = new InetSocketAddress("192.168.2.2", NetworkUtils.DEFAULT_PORT);
-//		final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, destinationAddress);
 
 		broadcastDatagramSocket.send(responseDatagramPacket);
 	}
