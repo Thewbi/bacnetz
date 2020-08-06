@@ -15,12 +15,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.bacnet.factory.MessageType;
 import de.bacnetz.common.utils.BACnetUtils;
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.controller.DefaultMessage;
 import de.bacnetz.controller.Message;
+import de.bacnetz.factory.DefaultMessageFactory;
 import de.bacnetz.factory.MessageFactory;
+import de.bacnetz.factory.MessageType;
 import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.BACnetProtocolObjectTypesSupportedBitString;
 import de.bacnetz.stack.BACnetServicesSupportedBitString;
@@ -50,13 +51,15 @@ public class DefaultDevice implements Device {
 
     private String description;
 
-    private final MessageFactory messageFactory = new MessageFactory();
+    private String location;
+
+    private final MessageFactory messageFactory = new DefaultMessageFactory();
 
     private Map<Integer, String> vendorMap = new HashMap<>();
 
     private final AtomicInteger invokeId = new AtomicInteger(0);
 
-    private int presentValue;
+    private Object presentValue;
 
     private boolean outOfService;
 
@@ -168,36 +171,23 @@ public class DefaultDevice implements Device {
     @Override
     public Message getPropertyValue(final Message requestMessage, final int propertyIdentifierCode) {
 
-        LOG.info("<<< READ_PROP: {} ({}) from device {}", DevicePropertyType.getByCode(propertyIdentifierCode).name(),
+        LOG.trace("<<< READ_PROP: {} ({}) from device {}", DevicePropertyType.getByCode(propertyIdentifierCode).name(),
                 propertyIdentifierCode, getObjectIdentifierServiceParameter().toString());
 
         final DeviceProperty<?> deviceProperty = getProperties().get(propertyIdentifierCode);
         if (deviceProperty == null) {
             LOG.info("error");
-            return messageFactory.error(requestMessage.getApdu().getInvokeId());
+
+            final int errorClass = 0x02;
+            final int errorCode = 0x20;
+            return messageFactory.createErrorMessage(requestMessage, errorClass, errorCode);
         }
 
-//		LOG.info("<<< READ_PROP: {} ({})", deviceProperty.getPropertyName(), propertyIdentifierCode);
+        if ((propertyIdentifierCode == DevicePropertyType.PRESENT_VALUE.getCode()) && (getId() == 1)) {
+            LOG.trace("DEBUG");
+        }
 
         return messageFactory.create(deviceProperty, this, requestMessage);
-
-//            switch (deviceProperty.getMessageType()) {
-//
-//            case BOOLEAN:
-//                return messageFactory.create(deviceProperty.getMessageType(), this,
-//                        requestMessage.getApdu().getInvokeId(), deviceProperty.getPropertyKey(),
-//                        deviceProperty.getValue());
-//
-//            case CHARACTER_STRING:
-//                return processStringProperty(propertyIdentifierCode, requestMessage, NetworkUtils.OBJECT_DESCRIPTION);
-//
-//            default:
-//                return messageFactory.create(deviceProperty.getMessageType(), this,
-//                        requestMessage.getApdu().getInvokeId(), deviceProperty.getPropertyKey(),
-//                        deviceProperty.getValue());
-//
-//            }
-
     }
 
     // TODO: add all these properties over.
@@ -265,7 +255,7 @@ public class DefaultDevice implements Device {
 //                        propertyIdentifierCode);
 //                return processPresentValueProperty(propertyIdentifierCode, requestMessage);
 //
-//            // 0x60 = 96d protocol-services-supported
+//            // 0x60 = 96d - protocol-services-supported
 //            //
 //            // H.5.2.13 Protocol_Object_Types_Supported
 //            // This property indicates the BACnet protocol object types supported by this
@@ -443,7 +433,8 @@ public class DefaultDevice implements Device {
         return result;
     }
 
-    protected Message processPresentValueProperty(final int propertyIdentifierCode, final Message requestMessage) {
+    @Override
+    public Message processPresentValueProperty(final DeviceProperty<?> deviceProperty, final Message requestMessage) {
 
         if (StringUtils.equalsIgnoreCase(name, "module_type")) {
 
@@ -453,7 +444,8 @@ public class DefaultDevice implements Device {
             // values do not
             // have to be hardcoded
             return getMessageFactory().create(MessageType.UNSIGNED_INTEGER, this,
-                    requestMessage.getApdu().getInvokeId(), propertyIdentifierCode, new byte[] { (byte) 0x04 });
+                    requestMessage.getApdu().getInvokeId(), deviceProperty.getPropertyKey(),
+                    new byte[] { (byte) 0x04 });
         }
 
         if (StringUtils.equalsIgnoreCase(name, "alarm_type")) {
@@ -464,11 +456,12 @@ public class DefaultDevice implements Device {
             // values do not
             // have to be hardcoded
             return getMessageFactory().create(MessageType.UNSIGNED_INTEGER, this,
-                    requestMessage.getApdu().getInvokeId(), propertyIdentifierCode, new byte[] { (byte) 0x01 });
+                    requestMessage.getApdu().getInvokeId(), deviceProperty.getPropertyKey(),
+                    new byte[] { (byte) 0x01 });
         }
 
         return getMessageFactory().create(MessageType.ENUMERATED, this, requestMessage.getApdu().getInvokeId(),
-                propertyIdentifierCode, new byte[] { (byte) 0x01 });
+                deviceProperty.getPropertyKey(), new byte[] { (byte) 0x01 });
     }
 
     private Message processStatusFlagsProperty(final int propertyIdentifierCode, final Message requestMessage) {
@@ -1132,11 +1125,13 @@ public class DefaultDevice implements Device {
         propertyIdentifierServiceParameter.setLengthValueType(0x01);
         propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) propertyIdentifierCode });
 
+        // {[3]
         final ServiceParameter openingTagServiceParameter3 = new ServiceParameter();
         openingTagServiceParameter3.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         openingTagServiceParameter3.setTagNumber(0x03);
         openingTagServiceParameter3.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
 
+        // {[2]
         final ServiceParameter openingTagServiceParameter2 = new ServiceParameter();
         openingTagServiceParameter2.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         openingTagServiceParameter2.setTagNumber(0x02);
@@ -1154,11 +1149,13 @@ public class DefaultDevice implements Device {
         timeServiceParameter.setLengthValueType(0x04);
         timeServiceParameter.setPayload(new byte[] { (byte) 0x12, (byte) 0x0e, (byte) 0x16, (byte) 0x15 });
 
+        // }[2]
         final ServiceParameter closingTagServiceParameter2 = new ServiceParameter();
         closingTagServiceParameter2.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         closingTagServiceParameter2.setTagNumber(0x02);
         closingTagServiceParameter2.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
 
+        // }[3]
         final ServiceParameter closingTagServiceParameter3 = new ServiceParameter();
         closingTagServiceParameter3.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         closingTagServiceParameter3.setTagNumber(0x03);
@@ -1725,12 +1722,13 @@ public class DefaultDevice implements Device {
     }
 
     @Override
-    public int getPresentValue() {
+    public Object getPresentValue() {
         return presentValue;
     }
 
     @Override
-    public void setPresentValue(final int presentValue) {
+    public void setPresentValue(final Object presentValue) {
+        LOG.info("Set Present Value: " + presentValue);
         this.presentValue = presentValue;
     }
 
@@ -1759,12 +1757,24 @@ public class DefaultDevice implements Device {
         this.description = description;
     }
 
+    @Override
     public String getFirmwareRevision() {
         return firmwareRevision;
     }
 
+    @Override
     public void setFirmwareRevision(final String firmwareRevision) {
         this.firmwareRevision = firmwareRevision;
+    }
+
+    @Override
+    public String getLocation() {
+        return location;
+    }
+
+    @Override
+    public void setLocation(final String location) {
+        this.location = location;
     }
 
 }

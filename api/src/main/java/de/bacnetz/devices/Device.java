@@ -42,9 +42,9 @@ public interface Device {
 
     BACnetServicesSupportedBitString retrieveServicesSupported();
 
-    int getPresentValue();
+    Object getPresentValue();
 
-    void setPresentValue(int value);
+    void setPresentValue(Object value);
 
     boolean isOutOfService();
 
@@ -59,5 +59,11 @@ public interface Device {
     String getFirmwareRevision();
 
     void setFirmwareRevision(String firmwareRevision);
+
+    String getLocation();
+
+    void setLocation(String location);
+
+    Message processPresentValueProperty(DeviceProperty<?> deviceProperty, Message requestMessage);
 
 }

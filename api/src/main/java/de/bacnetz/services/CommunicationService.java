@@ -1,4 +1,4 @@
-package de.bacnet.services;
+package de.bacnetz.services;
 
 import java.io.IOException;
 import java.net.InetAddress;

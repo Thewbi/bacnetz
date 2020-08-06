@@ -1,4 +1,4 @@
-package de.bacnet.factory;
+package de.bacnetz.factory;
 
 public interface Factory<T> {
 

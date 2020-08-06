@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -25,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.bacnet.factory.MessageType;
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.common.utils.Utils;
 import de.bacnetz.controller.DefaultMessageController;
@@ -35,8 +35,11 @@ import de.bacnetz.devices.DefaultDevice;
 import de.bacnetz.devices.DefaultDeviceFactory;
 import de.bacnetz.devices.Device;
 import de.bacnetz.devices.ObjectType;
+import de.bacnetz.factory.DefaultMessageFactory;
 import de.bacnetz.factory.MessageFactory;
+import de.bacnetz.factory.MessageType;
 import de.bacnetz.stack.IPv4Packet;
+import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.UDPPacket;
 import de.bacnetz.threads.MulticastListenerReaderThread;
 import de.bacnetz.threads.ToogleDoorOpenStateThread;
@@ -61,6 +64,9 @@ import de.bacnetz.threads.ToogleDoorOpenStateThread;
  * </ol>
  */
 public class App {
+
+//    private static final boolean RUN_TOGGLE_DOOR_THREAD = false;
+    private static final boolean RUN_TOGGLE_DOOR_THREAD = true;
 
     private static final Logger LOG = LogManager.getLogger(App.class);
 
@@ -110,7 +116,7 @@ public class App {
 
         LOG.info("runBroadcast() ...");
 
-        final MessageFactory messageFactory = new MessageFactory();
+        final MessageFactory messageFactory = new DefaultMessageFactory();
 //		final Message whoIsMessage = messageFactory.create(MessageType.WHO_IS, 25, 25);
         final Message whoIsMessage = messageFactory.create(MessageType.WHO_IS);
 
@@ -266,15 +272,42 @@ public class App {
         multicastListenerReaderThread.setBindPort(NetworkUtils.DEFAULT_PORT);
         multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
 
+        final Device door1CloseStateBinaryInput = device.findDevice(
+                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 1));
+
         final ToogleDoorOpenStateThread toggleDoorOpenStateThread = new ToogleDoorOpenStateThread();
-        toggleDoorOpenStateThread.setDevice(device);
+        toggleDoorOpenStateThread.setParentDevice(device);
+        toggleDoorOpenStateThread.setChildDevice(door1CloseStateBinaryInput);
         toggleDoorOpenStateThread.setVendorMap(vendorMap);
         toggleDoorOpenStateThread.setCommunicationService(multicastListenerReaderThread);
 
         multicastListenerReaderThread.openBroadCastSocket();
 
         new Thread(multicastListenerReaderThread).start();
-        new Thread(toggleDoorOpenStateThread).start();
+
+        if (RUN_TOGGLE_DOOR_THREAD) {
+//            new Thread(toggleDoorOpenStateThread).start();
+
+            while (true) {
+
+                final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                LOG.info("Hit Enter to send message");
+
+                final String s = br.readLine();
+                LOG.info("Sending message ...");
+
+                // toggle
+                door1CloseStateBinaryInput.setPresentValue(!(Boolean) door1CloseStateBinaryInput.getPresentValue());
+
+                LOG.info("Door is now "
+                        + (((Boolean) door1CloseStateBinaryInput.getPresentValue()) ? "locked" : "unlocked"));
+
+                ToogleDoorOpenStateThread.sendCOV(device, door1CloseStateBinaryInput, vendorMap,
+                        multicastListenerReaderThread);
+
+                LOG.info("Sending message done.");
+            }
+        }
     }
 
     private static Device createDevice(final Map<Integer, String> vendorMap) {

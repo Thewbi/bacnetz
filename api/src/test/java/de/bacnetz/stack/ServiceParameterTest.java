@@ -7,10 +7,10 @@ import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 
-import de.bacnet.factory.MessageType;
 import de.bacnetz.common.utils.BACnetUtils;
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.common.utils.Utils;
+import de.bacnetz.factory.MessageType;
 
 public class ServiceParameterTest {
 

@@ -1,4 +1,4 @@
-package de.bacnet.conversion;
+package de.bacnetz.conversion;
 
 public interface Converter<S, T> {
 
