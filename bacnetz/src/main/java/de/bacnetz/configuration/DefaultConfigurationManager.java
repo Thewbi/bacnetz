@@ -1,0 +1,77 @@
+package de.bacnetz.configuration;
+
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import de.bacnetz.common.utils.NetworkUtils;
+
+public class DefaultConfigurationManager implements ConfigurationManager {
+
+    private static final Logger LOG = LogManager.getLogger(DefaultConfigurationManager.class);
+
+    private final Map<String, Object> properties = new HashMap<>();
+
+    /**
+     * ctor
+     */
+    public DefaultConfigurationManager() {
+
+        // add local_ip default value
+        properties.computeIfAbsent(LOCAL_IP_CONFIG_KEY, k -> {
+            try {
+                return NetworkUtils.retrieveLocalIP();
+            } catch (UnknownHostException | SocketException e) {
+                LOG.error(e.getMessage(), e);
+            }
+            return "error";
+        });
+
+        // add port default value
+        properties.computeIfAbsent(PORT_CONFIG_KEY, k -> {
+            return NetworkUtils.DEFAULT_PORT;
+        });
+    }
+
+    @Override
+    public String getPropertyAsString(final String key) {
+        final Object value = properties.get(key);
+        if (value == null) {
+            return null;
+        }
+        return value.toString();
+    }
+
+    @Override
+    public int getPropertyAsInt(final String key) {
+        final Object value = properties.get(key);
+        if (value == null) {
+            throw new RuntimeException("Configuration property '" + key + "' not present!");
+        }
+        return ((Integer) value).intValue();
+    }
+
+    public void updateWithCommandLine(final CommandLine commandLine) {
+
+        if (commandLine.hasOption(LOCAL_IP_CONFIG_KEY)) {
+            properties.put(LOCAL_IP_CONFIG_KEY, commandLine.getOptionValue(LOCAL_IP_CONFIG_KEY));
+        }
+    }
+
+    @Override
+    public void dumpOptions() {
+        LOG.info("---------------------------------------------------------------------------------");
+        LOG.info("Properties are:");
+        LOG.info("---------------------------------------------------------------------------------");
+        properties.entrySet().stream().forEach(entry -> {
+            LOG.info(entry.getKey() + ": " + entry.getValue());
+        });
+        LOG.info("---------------------------------------------------------------------------------");
+    }
+
+}

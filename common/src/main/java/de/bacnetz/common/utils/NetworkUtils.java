@@ -36,7 +36,7 @@ public class NetworkUtils {
     public static final int DESTINATION_NETWORK_NUMBER = 302;
 
 //	// Cockpit in local area network (test setup)
-    public static final String LOCAL_BIND_IP = "192.168.2.1";
+//    public static final String LOCAL_BIND_IP = "192.168.2.1";
     public static final String BACNET_MULTICAST_IP = "192.168.2.255";
 
 //	public static final String LOCAL_BIND_IP = "172.18.60.118";

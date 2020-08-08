@@ -22,12 +22,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.common.utils.Utils;
+import de.bacnetz.configuration.ConfigurationManager;
+import de.bacnetz.configuration.DefaultConfigurationManager;
 import de.bacnetz.controller.DefaultMessageController;
 import de.bacnetz.controller.Message;
 import de.bacnetz.devices.BinaryInputDevice;
@@ -70,7 +78,7 @@ public class App {
 
     private static final Logger LOG = LogManager.getLogger(App.class);
 
-    public static void main(final String[] args) throws IOException {
+    public static void main(final String[] args) throws IOException, ParseException {
 
         // https://github.com/apache/dubbo/issues/2423
         //
@@ -82,7 +90,30 @@ public class App {
         final List<InetAddress> listAllBroadcastAddresses = listAllBroadcastAddresses();
         LOG.info(listAllBroadcastAddresses);
 
-        runMain();
+        final DefaultConfigurationManager defaultConfigurationManager = new DefaultConfigurationManager();
+
+        // create Options object
+        Options options = new Options();
+
+        // add IP option
+        options = options.addOption(ConfigurationManager.LOCAL_IP_CONFIG_KEY, true,
+                "provide the bacnet devices on this ip");
+
+        // parse
+        final CommandLineParser commandLineParser = new DefaultParser();
+        final CommandLine commandLine = commandLineParser.parse(options, args);
+
+        if (commandLine.getOptions().length == 0) {
+            // automatically generate the help statement
+            final HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp("app -local_ip <IP Address>", options);
+            return;
+        }
+
+        defaultConfigurationManager.updateWithCommandLine(commandLine);
+        defaultConfigurationManager.dumpOptions();
+
+        runMain(defaultConfigurationManager);
 //		runWhoIsThread();
 //		runFixVendorCSV();
 //		runMainOld();
@@ -204,63 +235,29 @@ public class App {
         return broadcastList;
     }
 
-    @SuppressWarnings("unused")
-    private static void runFixVendorCSV() throws IOException {
-
-        boolean firstLine = true;
-
-        final File file = new File("C:\\Temp\\BACnetVerndors_fix.csv");
-        final FileOutputStream fileOutputStream = new FileOutputStream(file);
-
-        final BufferedWriter bufferedWriter = new BufferedWriter(
-                new OutputStreamWriter(fileOutputStream, Utils.ENCODING_UTF_8));
-
-        BufferedReader reader;
-        try {
-            reader = new BufferedReader(new FileReader("C:\\Temp\\BACnetVendors.csv"));
-            String line = reader.readLine();
-            line = StringUtils.trim(line);
-
-            StringBuffer stringBuffer = new StringBuffer();
-
-            while (line != null) {
-
-                System.out.println(line);
-
-                if (line.startsWith(";;;")) {
-                    stringBuffer.append(" ").append(line.substring(3));
-                } else {
-
-                    if (!firstLine) {
-                        stringBuffer.append("\n");
-                        final String outString = stringBuffer.toString();
-                        bufferedWriter.write(outString);
-                        stringBuffer = new StringBuffer();
-                        stringBuffer.append(line);
-                    } else {
-                        stringBuffer.append(line);
-                    }
-
-                    firstLine = false;
-                }
-
-                // read next line
-                line = reader.readLine();
-                line = StringUtils.trim(line);
-            }
-            reader.close();
-        } catch (final IOException e) {
-            e.printStackTrace();
-        }
-
-        bufferedWriter.close();
-    }
-
-    private static void runMain() throws SocketException, UnknownHostException, IOException {
-
-        final Map<Integer, String> vendorMap = readVendorMap("src/main/resources/BACnetVendors.csv");
+    private static void runMain(final ConfigurationManager configurationManager)
+            throws SocketException, UnknownHostException, IOException {
 
         final DefaultDeviceFactory defaultDeviceFactory = new DefaultDeviceFactory();
+
+        BufferedReader bufferedReader = null;
+
+//        // from jar
+//        final String path = "/BACnetVendors.csv";
+//        System.out.println("Trying to read " + path);
+//        final InputStream inputStream = App.class.getResourceAsStream(path);
+//        bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+        // from file from eclipse
+//        final String filename = "src/main/resources/BACnetVendors.csv";
+        final String filename = "BACnetVendors.csv";
+        final File file = new File(filename);
+        LOG.info(file.getAbsoluteFile());
+        System.out.println(file.getAbsoluteFile());
+        bufferedReader = new BufferedReader(new FileReader(filename));
+
+        final Map<Integer, String> vendorMap = readVendorMap(bufferedReader);
+
         final Device device = defaultDeviceFactory.create(vendorMap);
 
         final DefaultMessageController defaultMessageController = new DefaultMessageController();
@@ -268,8 +265,10 @@ public class App {
         defaultMessageController.setVendorMap(vendorMap);
 
         final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
+        multicastListenerReaderThread.setConfigurationManager(configurationManager);
         multicastListenerReaderThread.setVendorMap(vendorMap);
-        multicastListenerReaderThread.setBindPort(NetworkUtils.DEFAULT_PORT);
+        multicastListenerReaderThread
+                .setBindPort(configurationManager.getPropertyAsInt(ConfigurationManager.PORT_CONFIG_KEY));
         multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
 
         final Device door1CloseStateBinaryInput = device.findDevice(
@@ -285,22 +284,31 @@ public class App {
 
         new Thread(multicastListenerReaderThread).start();
 
+        String msg = "";
+
         if (RUN_TOGGLE_DOOR_THREAD) {
 //            new Thread(toggleDoorOpenStateThread).start();
 
             while (true) {
 
                 final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-                LOG.info("Hit Enter to send message");
+
+                msg = "Hit Enter to send message";
+                LOG.info(msg);
+                System.out.println(msg);
 
                 final String s = br.readLine();
-                LOG.info("Sending message ...");
+                msg = "Sending message ...";
+                LOG.info(msg);
+                System.out.println(msg);
 
                 // toggle
                 door1CloseStateBinaryInput.setPresentValue(!(Boolean) door1CloseStateBinaryInput.getPresentValue());
 
-                LOG.info("Door is now "
-                        + (((Boolean) door1CloseStateBinaryInput.getPresentValue()) ? "locked" : "unlocked"));
+                msg = "Door is now "
+                        + (((Boolean) door1CloseStateBinaryInput.getPresentValue()) ? "locked" : "unlocked");
+                LOG.info(msg);
+                System.out.println(msg);
 
                 ToogleDoorOpenStateThread.sendCOV(device, door1CloseStateBinaryInput, vendorMap,
                         multicastListenerReaderThread);
@@ -455,18 +463,14 @@ public class App {
         return device;
     }
 
-    private static Map<Integer, String> readVendorMap(final String filename) throws IOException {
-
-        final File file = new File(filename);
-        LOG.info(file.getAbsoluteFile());
+    private static Map<Integer, String> readVendorMap(final BufferedReader bufferedReader) throws IOException {
 
         final Map<Integer, String> map = new HashMap<>();
 
-        BufferedReader reader = null;
         try {
-            reader = new BufferedReader(new FileReader(filename));
+
             String line = null;
-            while ((line = reader.readLine()) != null) {
+            while ((line = bufferedReader.readLine()) != null) {
 
                 line = StringUtils.trim(line);
 
@@ -491,8 +495,8 @@ public class App {
         } catch (final IOException e) {
             e.printStackTrace();
         } finally {
-            if (reader != null) {
-                reader.close();
+            if (bufferedReader != null) {
+                bufferedReader.close();
             }
         }
 
@@ -670,5 +674,57 @@ public class App {
 
         serverDatagramSocket.close();
 //		}
+    }
+
+    @SuppressWarnings("unused")
+    private static void runFixVendorCSV() throws IOException {
+
+        boolean firstLine = true;
+
+        final File file = new File("C:\\Temp\\BACnetVerndors_fix.csv");
+        final FileOutputStream fileOutputStream = new FileOutputStream(file);
+
+        final BufferedWriter bufferedWriter = new BufferedWriter(
+                new OutputStreamWriter(fileOutputStream, Utils.ENCODING_UTF_8));
+
+        BufferedReader reader;
+        try {
+            reader = new BufferedReader(new FileReader("C:\\Temp\\BACnetVendors.csv"));
+            String line = reader.readLine();
+            line = StringUtils.trim(line);
+
+            StringBuffer stringBuffer = new StringBuffer();
+
+            while (line != null) {
+
+                System.out.println(line);
+
+                if (line.startsWith(";;;")) {
+                    stringBuffer.append(" ").append(line.substring(3));
+                } else {
+
+                    if (!firstLine) {
+                        stringBuffer.append("\n");
+                        final String outString = stringBuffer.toString();
+                        bufferedWriter.write(outString);
+                        stringBuffer = new StringBuffer();
+                        stringBuffer.append(line);
+                    } else {
+                        stringBuffer.append(line);
+                    }
+
+                    firstLine = false;
+                }
+
+                // read next line
+                line = reader.readLine();
+                line = StringUtils.trim(line);
+            }
+            reader.close();
+        } catch (final IOException e) {
+            e.printStackTrace();
+        }
+
+        bufferedWriter.close();
     }
 }

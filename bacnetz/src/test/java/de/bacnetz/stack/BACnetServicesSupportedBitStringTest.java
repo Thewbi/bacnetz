@@ -8,7 +8,6 @@ import java.util.BitSet;
 import org.junit.jupiter.api.Test;
 
 import de.bacnetz.common.utils.Utils;
-import de.bacnetz.stack.BACnetServicesSupportedBitString;
 
 public class BACnetServicesSupportedBitStringTest {
 
@@ -66,7 +65,8 @@ public class BACnetServicesSupportedBitStringTest {
 
         System.out.println(byteArrayToStringNoPrefix);
 
-        assertTrue(Arrays.equals(byteArray,
-                new byte[] { (byte) 0x43, (byte) 0xCB, (byte) 0xC8, (byte) 0x28, (byte) 0xFA }));
+        final byte[] expectedByteArray = new byte[] { (byte) 0x43, (byte) 0xCB, (byte) 0xC8, (byte) 0x28, (byte) 0xFA };
+
+        assertTrue(Arrays.equals(byteArray, expectedByteArray));
     }
 }

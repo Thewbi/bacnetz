@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.common.utils.Utils;
+import de.bacnetz.configuration.ConfigurationManager;
 import de.bacnetz.controller.Message;
 import de.bacnetz.controller.MessageController;
 import de.bacnetz.conversion.ByteArrayToMessageConverter;
@@ -29,6 +30,8 @@ import de.bacnetz.stack.UnconfirmedServiceChoice;
 public class MulticastListenerReaderThread implements Runnable, CommunicationService {
 
     private static final Logger LOG = LogManager.getLogger(MulticastListenerReaderThread.class);
+
+    private ConfigurationManager configurationManager;
 
     private boolean running;
 
@@ -61,16 +64,14 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
 
     private void runBroadCastListener() throws IOException {
 
-//		final MessageFactory messageFactory = new MessageFactory();
-//		final Message whoIsMessage = messageFactory.create(MessageType.WHO_IS, 25, 25);
-//		sendViaMulticastSocket(whoIsMessage);
-
-        final InetAddress inetAddress = InetAddress.getByName(NetworkUtils.LOCAL_BIND_IP);
-
-//		broadcastDatagramSocket = new DatagramSocket(NetworkUtils.DEFAULT_PORT, inetAddress);
-
         try {
             openBroadCastSocket();
+//            LOG.info("Broadcast listener on " + NetworkUtils.LOCAL_BIND_IP + ":" + NetworkUtils.DEFAULT_PORT
+//                    + " started.");
+
+            LOG.info("Broadcast listener on "
+                    + configurationManager.getPropertyAsString(ConfigurationManager.LOCAL_IP_CONFIG_KEY) + ":"
+                    + configurationManager.getPropertyAsString(ConfigurationManager.PORT_CONFIG_KEY) + " started.");
         } catch (final SocketException e) {
             LOG.error(e.getMessage(), e);
 
@@ -78,17 +79,6 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
                     "Cannot bind! Please close all other bacnet applications (Yabe, VTS, ...) that might be running on this PC!");
             return;
         }
-
-//		LOG.info(">>> Sending who is ...");
-//		final byte[] buffer = whoIsMessage.getBytes();
-//		final InetAddress broadcastInetAddress = InetAddress.getByName("192.168.2.1");
-//		final DatagramPacket whoIsDatagramPacket = new DatagramPacket(buffer, buffer.length, broadcastInetAddress,
-//				NetworkUtils.DEFAULT_PORT);
-//		broadcastDatagramSocket.send(whoIsDatagramPacket);
-//		LOG.info(">>> Sending who is done.");
-//		sendMessage(null, whoIsMessage);
-
-        LOG.info("Broadcast listener on " + NetworkUtils.LOCAL_BIND_IP + ":" + NetworkUtils.DEFAULT_PORT + " started.");
 
         while (running) {
 
@@ -111,7 +101,8 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
             final SocketAddress datagramPacketSocketAddress = datagramPacket.getSocketAddress();
 
             // do not process your own broadcast messages
-            if (datagramPacketAddress.equals(InetAddress.getByName(NetworkUtils.LOCAL_BIND_IP))) {
+            final String localIp = configurationManager.getPropertyAsString(ConfigurationManager.LOCAL_IP_CONFIG_KEY);
+            if (datagramPacketAddress.equals(InetAddress.getByName(localIp))) {
                 continue;
             }
 
@@ -144,16 +135,17 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
         }
     }
 
+    /**
+     * A broadcast socket is needed to receive WHO-IS and other broadcasted bacnet
+     * messages.
+     * 
+     * @throws SocketException
+     */
     public void openBroadCastSocket() throws SocketException {
         if (broadcastDatagramSocket != null) {
             return;
         }
         broadcastDatagramSocket = new DatagramSocket(NetworkUtils.DEFAULT_PORT);
-
-//		final SocketAddress socketAddress = new InetSocketAddress(NetworkUtils.LOCAL_BIND_IP,
-//				NetworkUtils.DEFAULT_PORT);
-//		broadcastDatagramSocket.bind(socketAddress);
-
         broadcastDatagramSocket.setBroadcast(true);
     }
 
@@ -220,11 +212,12 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
                     "Message is invalid! The length in the virtual link control does not match the real data length!");
         }
 
-        LOG.trace(">>> Broadcast Sending to " + NetworkUtils.BACNET_MULTICAST_IP + ":" + NetworkUtils.DEFAULT_PORT
-                + ": " + Utils.byteArrayToStringNoPrefix(bytes));
+        final int port = configurationManager.getPropertyAsInt(ConfigurationManager.PORT_CONFIG_KEY);
 
-        final SocketAddress socketAddress = new InetSocketAddress(NetworkUtils.BACNET_MULTICAST_IP,
-                NetworkUtils.DEFAULT_PORT);
+        LOG.trace(">>> Broadcast Sending to " + NetworkUtils.BACNET_MULTICAST_IP + ":" + port + ": "
+                + Utils.byteArrayToStringNoPrefix(bytes));
+
+        final SocketAddress socketAddress = new InetSocketAddress(NetworkUtils.BACNET_MULTICAST_IP, port);
         final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, socketAddress);
 
         broadcastDatagramSocket.send(responseDatagramPacket);
@@ -330,4 +323,25 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
         return messageControllers;
     }
 
+    public void setConfigurationManager(final ConfigurationManager configurationManager) {
+        this.configurationManager = configurationManager;
+    }
+
 }
+
+//final MessageFactory messageFactory = new MessageFactory();
+//final Message whoIsMessage = messageFactory.create(MessageType.WHO_IS, 25, 25);
+//sendViaMulticastSocket(whoIsMessage);
+
+//final InetAddress inetAddress = InetAddress.getByName(NetworkUtils.LOCAL_BIND_IP);
+
+//broadcastDatagramSocket = new DatagramSocket(NetworkUtils.DEFAULT_PORT, inetAddress);
+
+//LOG.info(">>> Sending who is ...");
+//final byte[] buffer = whoIsMessage.getBytes();
+//final InetAddress broadcastInetAddress = InetAddress.getByName("192.168.2.1");
+//final DatagramPacket whoIsDatagramPacket = new DatagramPacket(buffer, buffer.length, broadcastInetAddress,
+//      NetworkUtils.DEFAULT_PORT);
+//broadcastDatagramSocket.send(whoIsDatagramPacket);
+//LOG.info(">>> Sending who is done.");
+//sendMessage(null, whoIsMessage);
