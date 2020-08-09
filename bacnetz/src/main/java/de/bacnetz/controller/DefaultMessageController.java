@@ -1,6 +1,7 @@
 package de.bacnetz.controller;
 
 import java.nio.ByteBuffer;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -198,6 +199,13 @@ public class DefaultMessageController implements MessageController {
 
     private Message processReinitializeDevice(final Message requestMessage) {
 
+        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()
+                .getObjectIdentifierServiceParameter();
+        final Device findDevice = device.findDevice(objectIdentifierServiceParameter);
+
+        // update the restart date
+        findDevice.setTimeOfDeviceRestart(LocalDateTime.now());
+
         // TODO check for the correct password in the second service parameter
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
@@ -223,18 +231,20 @@ public class DefaultMessageController implements MessageController {
             npdu.setDestinationHopCount(255);
         }
 
-        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-        objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        objectIdentifierServiceParameter.setTagNumber(0x00);
-        objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(ObjectType.DEVICE);
-        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+        // TODO this parameter is not used
+        final ObjectIdentifierServiceParameter resultObjectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+        resultObjectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+        resultObjectIdentifierServiceParameter.setTagNumber(0x00);
+        resultObjectIdentifierServiceParameter.setLengthValueType(4);
+        resultObjectIdentifierServiceParameter.setObjectType(findDevice.getObjectType());
+        resultObjectIdentifierServiceParameter.setInstanceNumber(findDevice.getId());
 
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.SIMPLE_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
         apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.REINITIALIZE_DEVICE);
         apdu.setVendorMap(vendorMap);
+//        apdu.getServiceParameters().add(resultObjectIdentifierServiceParameter);
 
         final DefaultMessage result = new DefaultMessage();
         result.setVirtualLinkControl(virtualLinkControl);
@@ -423,6 +433,7 @@ public class DefaultMessageController implements MessageController {
             npdu.setDestinationHopCount(255);
         }
 
+        // TODO this object is not used!
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
@@ -430,6 +441,7 @@ public class DefaultMessageController implements MessageController {
         objectIdentifierServiceParameter.setObjectType(ObjectType.DEVICE);
         objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
 
+        // TODO this object is not used!
         final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
         propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         propertyIdentifierServiceParameter.setTagNumber(0x01);
@@ -730,7 +742,8 @@ public class DefaultMessageController implements MessageController {
         segmentationSupportedServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         segmentationSupportedServiceParameter.setTagNumber(ServiceParameter.ENUMERATED_CODE);
         segmentationSupportedServiceParameter.setLengthValueType(1);
-        segmentationSupportedServiceParameter.setPayload(new byte[] { (byte) 0x00 }); // system-status: operational
+        // 0x00 == system-status: operational
+        segmentationSupportedServiceParameter.setPayload(new byte[] { (byte) 0x00 });
         defaultMessage.getApdu().getServiceParameters().add(3, segmentationSupportedServiceParameter);
 
         final ServiceParameter closingTagServiceParameter = new ServiceParameter();

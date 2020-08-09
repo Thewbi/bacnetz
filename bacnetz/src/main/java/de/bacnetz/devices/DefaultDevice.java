@@ -1,5 +1,6 @@
 package de.bacnetz.devices;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -66,6 +67,8 @@ public class DefaultDevice implements Device {
     private final List<String> states = new ArrayList<>();
 
     private String firmwareRevision;
+
+    private LocalDateTime timeOfDeviceRestart;
 
     /**
      * ctor
@@ -1775,6 +1778,16 @@ public class DefaultDevice implements Device {
     @Override
     public void setLocation(final String location) {
         this.location = location;
+    }
+
+    @Override
+    public LocalDateTime getTimeOfDeviceRestart() {
+        return timeOfDeviceRestart;
+    }
+
+    @Override
+    public void setTimeOfDeviceRestart(final LocalDateTime timeOfDeviceRestart) {
+        this.timeOfDeviceRestart = timeOfDeviceRestart;
     }
 
 }

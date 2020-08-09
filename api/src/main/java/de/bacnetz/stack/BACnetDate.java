@@ -1,6 +1,7 @@
 package de.bacnetz.stack;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import de.bacnetz.common.utils.Utils;
@@ -63,6 +64,14 @@ public class BACnetDate {
         this.dayOfWeek = localDate.getDayOfWeek().getValue();
     }
 
+    public void fromLocalDateTime(final LocalDateTime localDateTime) {
+
+        this.year = localDateTime.getYear();
+        this.month = localDateTime.getMonthValue();
+        this.dayOfMonth = localDateTime.getDayOfMonth();
+        this.dayOfWeek = localDateTime.getDayOfWeek().getValue();
+    }
+
     public LocalDate toLocalDate() {
         return LocalDate.of(year, month, dayOfMonth);
     }
@@ -70,6 +79,11 @@ public class BACnetDate {
     public Date toDate() {
         final LocalDate localDate = toLocalDate();
         return Utils.localDateToDate(localDate);
+    }
+
+    @Override
+    public String toString() {
+        return toLocalDate().toString();
     }
 
     public int getYear() {

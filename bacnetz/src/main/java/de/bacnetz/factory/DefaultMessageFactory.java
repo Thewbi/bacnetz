@@ -1,7 +1,7 @@
 package de.bacnetz.factory;
 
+import java.time.LocalDateTime;
 import java.util.BitSet;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,11 +14,16 @@ import de.bacnetz.common.utils.BACnetUtils;
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.controller.DefaultMessage;
 import de.bacnetz.controller.Message;
+import de.bacnetz.conversion.BACnetDateToByteConverter;
+import de.bacnetz.conversion.BACnetTimeToByteConverter;
+import de.bacnetz.conversion.Converter;
 import de.bacnetz.devices.CompositeDeviceProperty;
 import de.bacnetz.devices.Device;
 import de.bacnetz.devices.DeviceProperty;
 import de.bacnetz.stack.APDU;
+import de.bacnetz.stack.BACnetDate;
 import de.bacnetz.stack.BACnetServicesSupportedBitString;
+import de.bacnetz.stack.BACnetTime;
 import de.bacnetz.stack.NPDU;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.PDUType;
@@ -32,6 +37,10 @@ public class DefaultMessageFactory implements MessageFactory {
     private static final Logger LOG = LogManager.getLogger(MessageFactory.class);
 
     private Map<Integer, String> vendorMap = new HashMap<>();
+
+    private final Converter<BACnetDate, byte[]> bacnetDateToByteConverter = new BACnetDateToByteConverter();
+
+    private final Converter<BACnetTime, byte[]> bacnetTimeToByteConverter = new BACnetTimeToByteConverter();
 
     @Override
     public Message create(final Object... args) {
@@ -69,15 +78,15 @@ public class DefaultMessageFactory implements MessageFactory {
 
             case DeviceProperty.TIME_OF_DEVICE_RESTART:
                 return processTimeOfDeviceRestartProperty(device, deviceProperty, requestMessage, true, true,
-                        new Date());
+                        device.getTimeOfDeviceRestart());
 
             case DeviceProperty.LOCAL_DATE:
                 return processTimeOfDeviceRestartProperty(device, deviceProperty, requestMessage, true, false,
-                        new Date());
+                        LocalDateTime.now());
 
             case DeviceProperty.LOCAL_TIME:
                 return processTimeOfDeviceRestartProperty(device, deviceProperty, requestMessage, false, true,
-                        new Date());
+                        LocalDateTime.now());
 
             case DeviceProperty.DEVICE_ADDRESS_BINDING:
                 return processAddressBindingProperty(device, deviceProperty, requestMessage);
@@ -1249,7 +1258,7 @@ public class DefaultMessageFactory implements MessageFactory {
     }
 
     private Message processTimeOfDeviceRestartProperty(final Device device, final DeviceProperty<?> deviceProperty,
-            final Message requestMessage, final boolean addDate, final boolean addTime, final Date date) {
+            final Message requestMessage, final boolean addDate, final boolean addTime, final LocalDateTime date) {
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
         virtualLinkControl.setType(0x81);
@@ -1300,19 +1309,31 @@ public class DefaultMessageFactory implements MessageFactory {
         openingTagServiceParameter2.setTagNumber(0x02);
         openingTagServiceParameter2.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
 
-        // TODO encode the date parameter here!
+        // encode the date parameter here
+        final BACnetDate bacnetDate = new BACnetDate();
+        bacnetDate.fromLocalDateTime(date);
+
+        final byte[] bacnetDateAsByteArray = bacnetDateToByteConverter.convert(bacnetDate);
+
         final ServiceParameter dateServiceParameter = new ServiceParameter();
         dateServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         dateServiceParameter.setTagNumber(ServiceParameter.DATE);
         dateServiceParameter.setLengthValueType(0x04);
-        dateServiceParameter.setPayload(new byte[] { (byte) 0x78, (byte) 0x07, (byte) 0x09, (byte) 0x04 });
+//        dateServiceParameter.setPayload(new byte[] { (byte) 0x78, (byte) 0x07, (byte) 0x09, (byte) 0x04 });
+        dateServiceParameter.setPayload(bacnetDateAsByteArray);
 
-        // TODO encode the time parameter here!
+        // encode the time parameter here!
+        final BACnetTime bacnetTime = new BACnetTime();
+        bacnetTime.fromLocalDateTime(date);
+
+        final byte[] bacnetTimeAsByteArray = bacnetTimeToByteConverter.convert(bacnetTime);
+
         final ServiceParameter timeServiceParameter = new ServiceParameter();
         timeServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         timeServiceParameter.setTagNumber(ServiceParameter.TIME);
         timeServiceParameter.setLengthValueType(0x04);
-        timeServiceParameter.setPayload(new byte[] { (byte) 0x12, (byte) 0x0e, (byte) 0x16, (byte) 0x15 });
+//        timeServiceParameter.setPayload(new byte[] { (byte) 0x12, (byte) 0x0e, (byte) 0x16, (byte) 0x15 });
+        timeServiceParameter.setPayload(bacnetTimeAsByteArray);
 
         // }[2]
         final ServiceParameter closingTagServiceParameter2 = new ServiceParameter();

@@ -1,5 +1,6 @@
 package de.bacnetz.devices;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -65,5 +66,9 @@ public interface Device {
     void setLocation(String location);
 
     Message processPresentValueProperty(DeviceProperty<?> deviceProperty, Message requestMessage);
+
+    LocalDateTime getTimeOfDeviceRestart();
+
+    void setTimeOfDeviceRestart(LocalDateTime timeOfDeviceRestart);
 
 }
