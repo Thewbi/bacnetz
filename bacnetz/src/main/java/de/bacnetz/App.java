@@ -99,6 +99,10 @@ public class App {
         options = options.addOption(ConfigurationManager.LOCAL_IP_CONFIG_KEY, true,
                 "provide the bacnet devices on this ip");
 
+        // add multicast IP option
+        options = options.addOption(ConfigurationManager.MULTICAST_IP_CONFIG_KEY, true,
+                "provide the bacnet devices on this multicast ip");
+
         // parse
         final CommandLineParser commandLineParser = new DefaultParser();
         final CommandLine commandLine = commandLineParser.parse(options, args);

@@ -32,6 +32,11 @@ public class DefaultConfigurationManager implements ConfigurationManager {
             return "error";
         });
 
+        // add multicast_ip default value
+        properties.computeIfAbsent(MULTICAST_IP_CONFIG_KEY, k -> {
+            return NetworkUtils.BACNET_MULTICAST_IP;
+        });
+
         // add port default value
         properties.computeIfAbsent(PORT_CONFIG_KEY, k -> {
             return NetworkUtils.DEFAULT_PORT;
@@ -60,6 +65,9 @@ public class DefaultConfigurationManager implements ConfigurationManager {
 
         if (commandLine.hasOption(LOCAL_IP_CONFIG_KEY)) {
             properties.put(LOCAL_IP_CONFIG_KEY, commandLine.getOptionValue(LOCAL_IP_CONFIG_KEY));
+        }
+        if (commandLine.hasOption(MULTICAST_IP_CONFIG_KEY)) {
+            properties.put(MULTICAST_IP_CONFIG_KEY, commandLine.getOptionValue(MULTICAST_IP_CONFIG_KEY));
         }
     }
 

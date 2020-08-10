@@ -6,6 +6,8 @@ public interface ConfigurationManager {
 
     static final String PORT_CONFIG_KEY = "port";
 
+    static final String MULTICAST_IP_CONFIG_KEY = "multicast_ip";
+
     String getPropertyAsString(String configKey);
 
     int getPropertyAsInt(String configKey);
