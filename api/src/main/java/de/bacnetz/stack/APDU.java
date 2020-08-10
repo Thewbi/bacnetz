@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -263,7 +264,8 @@ public class APDU {
 
             // unconfirmed service choice
             final int serviceChoiceCode = data[startIndex + offset] & 0xFF;
-            unconfirmedServiceChoice = UnconfirmedServiceChoice.fromInt(serviceChoiceCode);
+//            unconfirmedServiceChoice = UnconfirmedServiceChoice.fromInt(serviceChoiceCode);
+            confirmedServiceChoice = ConfirmedServiceChoice.fromInt(serviceChoiceCode);
 
         } else if (pduType == PDUType.SIMPLE_ACK_PDU) {
 
@@ -299,6 +301,16 @@ public class APDU {
                 structureLength += processIAm(startIndex + offset, data);
                 break;
 
+            default:
+                LOG.warn("Not implemented: " + unconfirmedServiceChoice.name());
+            }
+
+        }
+
+        if (confirmedServiceChoice != null) {
+
+            switch (confirmedServiceChoice) {
+
             case READ_PROPERTY:
                 structureLength += readServiceParameters(startIndex + offset, data, payloadLength);
                 break;
@@ -315,15 +327,9 @@ public class APDU {
                 structureLength += processReinitialize(startIndex + offset, data);
                 break;
 
-            default:
-                LOG.warn("Not implemented: " + unconfirmedServiceChoice.name());
-            }
-
-        }
-
-        if (confirmedServiceChoice != null) {
-
-            switch (confirmedServiceChoice) {
+            case SUBSCRIBE_COV:
+                structureLength += processSubscribeCOV(startIndex + offset, data);
+                break;
 
             default:
                 LOG.warn("Not implemented: " + confirmedServiceChoice.name());
@@ -331,6 +337,47 @@ public class APDU {
             }
 
         }
+    }
+
+    /**
+     * Read in data from the incoming byte array into the APDU. The APDU is later
+     * put into a message object.
+     * 
+     * At this point the APDU structure has been parsed up to the Service Choice.
+     * 
+     * @param offset
+     * @param data
+     * 
+     * @return
+     */
+    private int processSubscribeCOV(final int offset, final byte[] data) {
+
+        int tempOffset = offset;
+
+        // subscriber process id - the correlation id used inside the client that wants
+        // to subscribe for COV
+        final ServiceParameter subscriberProcessIdServiceParameter = new ServiceParameter();
+        tempOffset += subscriberProcessIdServiceParameter.fromBytes(data, tempOffset);
+        serviceParameters.add(subscriberProcessIdServiceParameter);
+
+        // objectIdentifier - which object to install a change-of-value (COV) listener
+        // for
+        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+        tempOffset += objectIdentifierServiceParameter.fromBytes(data, tempOffset);
+        serviceParameters.add(objectIdentifierServiceParameter);
+
+        // issue confirmed notifications - whether or not to send COV updates as
+        // confirmed or unconfirmed messages
+        final ServiceParameter issueConfirmedNotificationsServiceParameter = new ServiceParameter();
+        tempOffset += issueConfirmedNotificationsServiceParameter.fromBytes(data, tempOffset);
+        serviceParameters.add(issueConfirmedNotificationsServiceParameter);
+
+        // life-time of this subscription
+        final ServiceParameter lifetimeServiceParameter = new ServiceParameter();
+        tempOffset += lifetimeServiceParameter.fromBytes(data, tempOffset);
+        serviceParameters.add(lifetimeServiceParameter);
+
+        return tempOffset - offset;
     }
 
     private int processReinitialize(final int offset, final byte[] data) {
@@ -676,7 +723,15 @@ public class APDU {
     }
 
     public ObjectIdentifierServiceParameter getObjectIdentifierServiceParameter() {
-        return (ObjectIdentifierServiceParameter) serviceParameters.get(0);
+
+        final Optional<ServiceParameter> findFirstOptional = serviceParameters.stream()
+                .filter(sp -> sp instanceof ObjectIdentifierServiceParameter).findFirst();
+
+        if (findFirstOptional.isPresent()) {
+            return (ObjectIdentifierServiceParameter) findFirstOptional.get();
+        }
+
+        return null;
     }
 
     public int getInvokeId() {

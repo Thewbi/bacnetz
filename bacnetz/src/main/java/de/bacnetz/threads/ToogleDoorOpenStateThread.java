@@ -26,7 +26,8 @@ import de.bacnetz.stack.VirtualLinkControl;
 
 public class ToogleDoorOpenStateThread implements Runnable {
 
-    private static final String TARGET_IP = "192.168.2.2";
+//	private static final String TARGET_IP = "192.168.2.2";
+    private static final String TARGET_IP = "192.168.0.108";
 
     private static final int SLEEP_TIME = 10000;
 
@@ -64,7 +65,7 @@ public class ToogleDoorOpenStateThread implements Runnable {
             // toggle
             binaryInputDevice.setPresentValue(!(Boolean) binaryInputDevice.getPresentValue());
 
-            sendCOV(parentDevice, binaryInputDevice, vendorMap, communicationService);
+            sendCOV(parentDevice, binaryInputDevice, vendorMap, TARGET_IP, communicationService);
 
             try {
                 Thread.sleep(SLEEP_TIME);
@@ -75,21 +76,8 @@ public class ToogleDoorOpenStateThread implements Runnable {
     }
 
     public static void sendCOV(final Device parentDevice, final Device childDevice,
-            final Map<Integer, String> vendorMap, final CommunicationService communicationService) {
-
-        final ObjectIdentifierServiceParameter parentObjectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-        parentObjectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        parentObjectIdentifierServiceParameter.setTagNumber(0x01);
-        parentObjectIdentifierServiceParameter.setLengthValueType(4);
-        parentObjectIdentifierServiceParameter.setObjectType(parentDevice.getObjectType());
-        parentObjectIdentifierServiceParameter.setInstanceNumber(parentDevice.getId());
-
-        final ObjectIdentifierServiceParameter childObjectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-        childObjectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        childObjectIdentifierServiceParameter.setTagNumber(0x02);
-        childObjectIdentifierServiceParameter.setLengthValueType(4);
-        childObjectIdentifierServiceParameter.setObjectType(childDevice.getObjectType());
-        childObjectIdentifierServiceParameter.setInstanceNumber(childDevice.getId());
+            final Map<Integer, String> vendorMap, final String clientIp,
+            final CommunicationService communicationService) {
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
         virtualLinkControl.setType(0x81);
@@ -127,9 +115,23 @@ public class ToogleDoorOpenStateThread implements Runnable {
         processIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         processIdentifierServiceParameter.setTagNumber(0x00);
         processIdentifierServiceParameter.setLengthValueType(0x01);
+        processIdentifierServiceParameter.setPayload(new byte[] { 0x01 });
         apdu.getServiceParameters().add(processIdentifierServiceParameter);
 
+        final ObjectIdentifierServiceParameter parentObjectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+        parentObjectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+        parentObjectIdentifierServiceParameter.setTagNumber(0x01);
+        parentObjectIdentifierServiceParameter.setLengthValueType(4);
+        parentObjectIdentifierServiceParameter.setObjectType(parentDevice.getObjectType());
+        parentObjectIdentifierServiceParameter.setInstanceNumber(parentDevice.getId());
         apdu.getServiceParameters().add(parentObjectIdentifierServiceParameter);
+
+        final ObjectIdentifierServiceParameter childObjectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+        childObjectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+        childObjectIdentifierServiceParameter.setTagNumber(0x02);
+        childObjectIdentifierServiceParameter.setLengthValueType(4);
+        childObjectIdentifierServiceParameter.setObjectType(childDevice.getObjectType());
+        childObjectIdentifierServiceParameter.setInstanceNumber(childDevice.getId());
         apdu.getServiceParameters().add(childObjectIdentifierServiceParameter);
 
         final ServiceParameter timeRemainingServiceParameter = new ServiceParameter();

@@ -264,15 +264,17 @@ public class App {
 
         final Device device = defaultDeviceFactory.create(vendorMap);
 
-        final DefaultMessageController defaultMessageController = new DefaultMessageController();
-        defaultMessageController.setDevice(device);
-        defaultMessageController.setVendorMap(vendorMap);
-
         final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
         multicastListenerReaderThread.setConfigurationManager(configurationManager);
         multicastListenerReaderThread.setVendorMap(vendorMap);
         multicastListenerReaderThread
                 .setBindPort(configurationManager.getPropertyAsInt(ConfigurationManager.PORT_CONFIG_KEY));
+
+        final DefaultMessageController defaultMessageController = new DefaultMessageController();
+        defaultMessageController.setDevice(device);
+        defaultMessageController.setVendorMap(vendorMap);
+        defaultMessageController.setCommunicationService(multicastListenerReaderThread);
+
         multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
 
         final Device door1CloseStateBinaryInput = device.findDevice(
@@ -295,28 +297,34 @@ public class App {
 
             while (true) {
 
-                final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
+                // DEBUG
                 msg = "Hit Enter to send message";
                 LOG.info(msg);
                 System.out.println(msg);
 
+                // read input from the user
+                final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
                 final String s = br.readLine();
+
+                // send message
                 msg = "Sending message ...";
                 LOG.info(msg);
                 System.out.println(msg);
 
-                // toggle
+                // toggle, which sends a value to all COV subscribers
                 door1CloseStateBinaryInput.setPresentValue(!(Boolean) door1CloseStateBinaryInput.getPresentValue());
 
+                // DEBUG
                 msg = "Door is now "
                         + (((Boolean) door1CloseStateBinaryInput.getPresentValue()) ? "locked" : "unlocked");
                 LOG.info(msg);
                 System.out.println(msg);
 
-                ToogleDoorOpenStateThread.sendCOV(device, door1CloseStateBinaryInput, vendorMap,
-                        multicastListenerReaderThread);
+//				// send a bacnet message
+//				ToogleDoorOpenStateThread.sendCOV(device, door1CloseStateBinaryInput, vendorMap,
+//						multicastListenerReaderThread);
 
+                // DEBUG
                 LOG.info("Sending message done.");
             }
         }

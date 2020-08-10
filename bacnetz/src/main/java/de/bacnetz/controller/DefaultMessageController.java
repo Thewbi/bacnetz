@@ -18,8 +18,10 @@ import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.devices.ObjectType;
 import de.bacnetz.factory.DefaultMessageFactory;
 import de.bacnetz.factory.MessageFactory;
+import de.bacnetz.services.CommunicationService;
 import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.ConfirmedServiceChoice;
+import de.bacnetz.stack.DefaultCOVSubscription;
 import de.bacnetz.stack.NPDU;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.PDUType;
@@ -38,7 +40,7 @@ public class DefaultMessageController implements MessageController {
 
     private final MessageFactory messageFactory = new DefaultMessageFactory();
 
-//	private final int answerLength = 1;
+    private CommunicationService communicationService;
 
     @Override
     public Message processMessage(final Message message) {
@@ -87,6 +89,27 @@ public class DefaultMessageController implements MessageController {
         final ConfirmedServiceChoice confirmedServiceChoice = message.getApdu().getConfirmedServiceChoice();
         if (confirmedServiceChoice != null) {
             switch (confirmedServiceChoice) {
+
+            case READ_PROPERTY:
+                LOG.trace(">>> READ_PROPERTY received!");
+                return processReadProperty(message);
+
+            case READ_PROPERTY_MULTIPLE:
+                LOG.trace(">>> READ_PROPERTY_MULTIPLE received!");
+                return processReadPropertyMultiple(message);
+
+            case WRITE_PROPERTY:
+                LOG.trace(">>> WRITE_PROPERTY received!");
+                return processWriteProperty(message);
+
+            case REINITIALIZE_DEVICE:
+                LOG.trace(">>> REINITIALIZE_DEVICE received!");
+                return processReinitializeDevice(message);
+
+            case SUBSCRIBE_COV:
+                LOG.trace(">>> SUBSCRIBE_COV received!");
+                return processSubscribeCov(message);
+
             default:
                 LOG.warn("Not implemented: {} ", confirmedServiceChoice);
             }
@@ -168,25 +191,9 @@ public class DefaultMessageController implements MessageController {
                 // message.getApdu().getServiceChoice());
                 return null;
 
-            case READ_PROPERTY:
-                LOG.trace(">>> READ_PROPERTY received!");
-                return processReadProperty(message);
-
-            case READ_PROPERTY_MULTIPLE:
-                LOG.trace(">>> READ_PROPERTY_MULTIPLE received!");
-                return processReadPropertyMultiple(message);
-
-            case WRITE_PROPERTY:
-                LOG.trace(">>> WRITE_PROPERTY received!");
-                return processWriteProperty(message);
-
             case DEVICE_COMMUNICATION_CONTROL:
                 LOG.trace(">>> DEVICE_COMMUNICATION_CONTROL received!");
                 return processDeviceCommunicationControl(message);
-
-            case REINITIALIZE_DEVICE:
-                LOG.trace(">>> REINITIALIZE_DEVICE received!");
-                return processReinitializeDevice(message);
 
             default:
                 LOG.warn(">>> Unknown message: " + message.getApdu().getUnconfirmedServiceChoice());
@@ -195,6 +202,76 @@ public class DefaultMessageController implements MessageController {
         }
 
         return null;
+    }
+
+    private Message processSubscribeCov(final Message requestMessage) {
+
+        ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()
+                .getObjectIdentifierServiceParameter();
+        final Device findDevice = device.findDevice(objectIdentifierServiceParameter);
+
+        // @formatter:off
+		
+		final ServiceParameter subscriberProcessIdServiceParameter = requestMessage.getApdu().getServiceParameters().get(0);
+		objectIdentifierServiceParameter = (ObjectIdentifierServiceParameter) requestMessage.getApdu().getServiceParameters().get(1);
+		final ServiceParameter issueConfirmedNotificationsServiceParameter = requestMessage.getApdu().getServiceParameters().get(2);
+		final ServiceParameter lifetimeServiceParameter = requestMessage.getApdu().getServiceParameters().get(3);
+		
+		// @formatter:on
+
+        // TODO: factory
+        final DefaultCOVSubscription covSubscription = new DefaultCOVSubscription();
+        covSubscription.setClientIp(requestMessage.getSourceInetSocketAddress().getHostString());
+        covSubscription.setCommunicationService(communicationService);
+        covSubscription.setDevice(findDevice);
+        covSubscription.setParentDevice(findDevice.getParentDevice());
+        covSubscription.setLifetime(1000000);
+        covSubscription.setSubscriberProcessId(subscriberProcessIdServiceParameter.getPayload()[0]);
+        covSubscription.setVendorMap(vendorMap);
+
+        findDevice.getCovSubscriptions().add(covSubscription);
+
+        //
+        // Send Acknowledge
+        //
+
+        final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
+        virtualLinkControl.setType(0x81);
+        virtualLinkControl.setFunction(0x0A);
+        virtualLinkControl.setLength(0x00);
+
+        final NPDU npdu = new NPDU();
+        npdu.setVersion(0x01);
+
+        // no additional information
+        // this works, if the cp is connected to the device directly via 192.168.2.1
+        npdu.setControl(0x00);
+
+        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+
+            // destination network information
+            npdu.setControl(0x20);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+            npdu.setDestinationMACLayerAddressLength(3);
+            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+
+            npdu.setDestinationHopCount(255);
+        }
+
+        final APDU apdu = new APDU();
+        apdu.setPduType(PDUType.SIMPLE_ACK_PDU);
+        apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.SUBSCRIBE_COV);
+        apdu.setVendorMap(vendorMap);
+
+        final DefaultMessage result = new DefaultMessage();
+        result.setVirtualLinkControl(virtualLinkControl);
+        result.setNpdu(npdu);
+        result.setApdu(apdu);
+
+        virtualLinkControl.setLength(result.getDataLength());
+
+        return result;
     }
 
     private Message processReinitializeDevice(final Message requestMessage) {
@@ -242,7 +319,7 @@ public class DefaultMessageController implements MessageController {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.SIMPLE_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.REINITIALIZE_DEVICE);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.REINITIALIZE_DEVICE);
         apdu.setVendorMap(vendorMap);
 //        apdu.getServiceParameters().add(resultObjectIdentifierServiceParameter);
 
@@ -451,7 +528,7 @@ public class DefaultMessageController implements MessageController {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.SIMPLE_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.WRITE_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.WRITE_PROPERTY);
         apdu.setVendorMap(vendorMap);
 
         final DefaultMessage result = new DefaultMessage();
@@ -528,7 +605,7 @@ public class DefaultMessageController implements MessageController {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY_MULTIPLE);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY_MULTIPLE);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
 
@@ -811,6 +888,14 @@ public class DefaultMessageController implements MessageController {
 
     public void setDevice(final Device device) {
         this.device = device;
+    }
+
+    public CommunicationService getCommunicationService() {
+        return communicationService;
+    }
+
+    public void setCommunicationService(final CommunicationService communicationService) {
+        this.communicationService = communicationService;
     }
 
 }

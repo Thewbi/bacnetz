@@ -7,68 +7,75 @@ import java.util.Map;
 
 import de.bacnetz.controller.Message;
 import de.bacnetz.stack.BACnetServicesSupportedBitString;
+import de.bacnetz.stack.COVSubscription;
 import de.bacnetz.stack.ServiceParameter;
 
 public interface Device {
 
-    ServiceParameter getObjectIdentifierServiceParameter();
+	ServiceParameter getObjectIdentifierServiceParameter();
 
-    Map<Integer, DeviceProperty<?>> getProperties();
+	Map<Integer, DeviceProperty<?>> getProperties();
 
-    Collection<Device> getChildDevices();
+	Collection<Device> getChildDevices();
 
-    int getId();
+	int getId();
 
-    void setId(int id);
+	void setId(int id);
 
-    ObjectType getObjectType();
+	ObjectType getObjectType();
 
-    void setObjectType(ObjectType objectType);
+	void setObjectType(ObjectType objectType);
 
-    String getName();
+	String getName();
 
-    void setName(String name);
+	void setName(String name);
 
-    Device findDevice(ServiceParameter objectIdentifierServiceParameter);
+	Device findDevice(ServiceParameter objectIdentifierServiceParameter);
 
-    Message getPropertyValue(Message requestMessage, int propertyIdentifierCode);
+	Message getPropertyValue(Message requestMessage, int propertyIdentifierCode);
 
-    Map<Integer, String> getVendorMap();
+	Map<Integer, String> getVendorMap();
 
-    void setVendorMap(Map<Integer, String> vendorMap);
+	void setVendorMap(Map<Integer, String> vendorMap);
 
-    int retrieveNextInvokeId();
+	int retrieveNextInvokeId();
 
-    ServiceParameter getStatusFlagsServiceParameter();
+	ServiceParameter getStatusFlagsServiceParameter();
 
-    BACnetServicesSupportedBitString retrieveServicesSupported();
+	BACnetServicesSupportedBitString retrieveServicesSupported();
 
-    Object getPresentValue();
+	Object getPresentValue();
 
-    void setPresentValue(Object value);
+	void setPresentValue(Object value);
 
-    boolean isOutOfService();
+	boolean isOutOfService();
 
-    void setOutOfService(boolean outOfService);
+	void setOutOfService(boolean outOfService);
 
-    List<String> getStates();
+	List<String> getStates();
 
-    String getDescription();
+	String getDescription();
 
-    void setDescription(String description);
+	void setDescription(String description);
 
-    String getFirmwareRevision();
+	String getFirmwareRevision();
 
-    void setFirmwareRevision(String firmwareRevision);
+	void setFirmwareRevision(String firmwareRevision);
 
-    String getLocation();
+	String getLocation();
 
-    void setLocation(String location);
+	void setLocation(String location);
 
-    Message processPresentValueProperty(DeviceProperty<?> deviceProperty, Message requestMessage);
+	Message processPresentValueProperty(DeviceProperty<?> deviceProperty, Message requestMessage);
 
-    LocalDateTime getTimeOfDeviceRestart();
+	LocalDateTime getTimeOfDeviceRestart();
 
-    void setTimeOfDeviceRestart(LocalDateTime timeOfDeviceRestart);
+	void setTimeOfDeviceRestart(LocalDateTime timeOfDeviceRestart);
+
+	List<COVSubscription> getCovSubscriptions();
+
+	Device getParentDevice();
+
+	void setParentDevice(Device parentDevice);
 
 }

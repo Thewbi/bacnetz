@@ -24,6 +24,7 @@ import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.BACnetDate;
 import de.bacnetz.stack.BACnetServicesSupportedBitString;
 import de.bacnetz.stack.BACnetTime;
+import de.bacnetz.stack.ConfirmedServiceChoice;
 import de.bacnetz.stack.NPDU;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.PDUType;
@@ -210,7 +211,7 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(outwardObjectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -269,7 +270,8 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.ERROR_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+//        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(errorClassServiceParameter);
         apdu.getServiceParameters().add(errorCodeServiceParameter);
@@ -413,7 +415,8 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
 
         // a sub device
@@ -546,9 +549,9 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
-//		apdu.setObjectIdentifierServiceParameter(objectIdentifierServiceParameter);
 
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -630,7 +633,8 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(invokeId);
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -786,7 +790,8 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(invokeId);
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -861,7 +866,8 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(invokeId);
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -937,7 +943,8 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(invokeId);
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -1017,7 +1024,8 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(protocolServicesSupportedServiceParameter);
@@ -1089,7 +1097,8 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(protocolServicesSupportedServiceParameter);
@@ -1214,7 +1223,8 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(outwardObjectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -1350,7 +1360,8 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -1434,7 +1445,8 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -1508,7 +1520,8 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);

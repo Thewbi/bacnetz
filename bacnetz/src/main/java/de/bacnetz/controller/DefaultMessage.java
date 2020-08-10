@@ -1,5 +1,7 @@
 package de.bacnetz.controller;
 
+import java.net.InetSocketAddress;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -10,6 +12,8 @@ import de.bacnetz.stack.VirtualLinkControl;
 public class DefaultMessage implements Message {
 
 	private static final Logger LOG = LogManager.getLogger(DefaultMessage.class);
+
+	private InetSocketAddress sourceInetSocketAddress;
 
 	private VirtualLinkControl virtualLinkControl;
 
@@ -133,6 +137,14 @@ public class DefaultMessage implements Message {
 
 	public void setApdu(final APDU apdu) {
 		this.apdu = apdu;
+	}
+
+	public InetSocketAddress getSourceInetSocketAddress() {
+		return sourceInetSocketAddress;
+	}
+
+	public void setSourceInetSocketAddress(final InetSocketAddress sourceInetSocketAddress) {
+		this.sourceInetSocketAddress = sourceInetSocketAddress;
 	}
 
 }

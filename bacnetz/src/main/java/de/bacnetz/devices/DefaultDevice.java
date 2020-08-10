@@ -27,18 +27,21 @@ import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.BACnetProtocolObjectTypesSupportedBitString;
 import de.bacnetz.stack.BACnetServicesSupportedBitString;
 import de.bacnetz.stack.BaseBitString;
+import de.bacnetz.stack.COVSubscription;
+import de.bacnetz.stack.ConfirmedServiceChoice;
 import de.bacnetz.stack.NPDU;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.PDUType;
 import de.bacnetz.stack.ServiceParameter;
 import de.bacnetz.stack.StatusFlagsBitString;
 import de.bacnetz.stack.TagClass;
-import de.bacnetz.stack.UnconfirmedServiceChoice;
 import de.bacnetz.stack.VirtualLinkControl;
 
 public class DefaultDevice implements Device {
 
     private static final Logger LOG = LogManager.getLogger(DefaultDevice.class);
+
+    private Device parentDevice;
 
     private final Map<Integer, DeviceProperty<?>> properties = new HashMap<>();
 
@@ -69,6 +72,8 @@ public class DefaultDevice implements Device {
     private String firmwareRevision;
 
     private LocalDateTime timeOfDeviceRestart;
+
+    private final List<COVSubscription> covSubscriptions = new ArrayList<>();
 
     /**
      * ctor
@@ -179,10 +184,14 @@ public class DefaultDevice implements Device {
 
         final DeviceProperty<?> deviceProperty = getProperties().get(propertyIdentifierCode);
         if (deviceProperty == null) {
-            LOG.info("error");
+
+            LOG.info("Property {} ({}) not available in device {}! Sending error!",
+                    DevicePropertyType.getByCode(propertyIdentifierCode).name(), propertyIdentifierCode,
+                    getObjectIdentifierServiceParameter().toString());
 
             final int errorClass = 0x02;
             final int errorCode = 0x20;
+
             return messageFactory.createErrorMessage(requestMessage, errorClass, errorCode);
         }
 
@@ -390,7 +399,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(outwardObjectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -522,7 +531,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(protocolServicesSupportedServiceParameter);
@@ -641,7 +650,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -726,7 +735,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -825,7 +834,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -905,7 +914,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -985,7 +994,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -1063,7 +1072,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -1167,7 +1176,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -1237,7 +1246,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.ERROR_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(errorClassServiceParameter);
         apdu.getServiceParameters().add(errorCodeServiceParameter);
@@ -1330,7 +1339,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(outwardObjectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
@@ -1407,7 +1416,7 @@ public class DefaultDevice implements Device {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(protocolObjectTypesSupportedServiceParameter);
@@ -1731,8 +1740,35 @@ public class DefaultDevice implements Device {
 
     @Override
     public void setPresentValue(final Object presentValue) {
+
         LOG.info("Set Present Value: " + presentValue);
-        this.presentValue = presentValue;
+
+        boolean valueChanged = false;
+
+        if ((this.presentValue == null) && (presentValue != null)) {
+
+            valueChanged = true;
+
+        } else if ((this.presentValue != null) && (presentValue == null)) {
+
+            valueChanged = true;
+
+        } else if ((this.presentValue != null) && (presentValue != null)) {
+
+            if (!this.presentValue.equals(presentValue)) {
+
+                valueChanged = true;
+            }
+        }
+
+        if (valueChanged) {
+
+            this.presentValue = presentValue;
+
+            covSubscriptions.stream().forEach(s -> {
+                s.vaueChanged(this.presentValue);
+            });
+        }
     }
 
     @Override
@@ -1788,6 +1824,21 @@ public class DefaultDevice implements Device {
     @Override
     public void setTimeOfDeviceRestart(final LocalDateTime timeOfDeviceRestart) {
         this.timeOfDeviceRestart = timeOfDeviceRestart;
+    }
+
+    @Override
+    public List<COVSubscription> getCovSubscriptions() {
+        return covSubscriptions;
+    }
+
+    @Override
+    public Device getParentDevice() {
+        return parentDevice;
+    }
+
+    @Override
+    public void setParentDevice(final Device parentDevice) {
+        this.parentDevice = parentDevice;
     }
 
 }

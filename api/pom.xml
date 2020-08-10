@@ -29,13 +29,6 @@
 
 	<dependencies>
 
-		<!-- bacnetz -->
-		<dependency>
-			<groupId>de.bacnetz</groupId>
-			<artifactId>common</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-
 		<!-- Without this, JUnit tests won't run on macos! https://github.com/iluwatar/java-design-patterns/issues/1007 -->
 		<dependency>
 			<groupId>org.junit.platform</groupId>
@@ -48,6 +41,20 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
 			<version>3.6.1</version>
+		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.10</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>4.4</version>
 		</dependency>
 
 		<!-- unit testing -->

@@ -25,6 +25,7 @@ import de.bacnetz.controller.Message;
 import de.bacnetz.controller.MessageController;
 import de.bacnetz.conversion.ByteArrayToMessageConverter;
 import de.bacnetz.services.CommunicationService;
+import de.bacnetz.stack.ConfirmedServiceChoice;
 import de.bacnetz.stack.UnconfirmedServiceChoice;
 
 public class MulticastListenerReaderThread implements Runnable, CommunicationService {
@@ -117,8 +118,14 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
 
             // parse and process the request message and return a response message
             try {
+
+                // parse the incoming data into a BACnet request message
                 request = parseBuffer(data, bytesReceived);
+                request.setSourceInetSocketAddress((InetSocketAddress) datagramPacketSocketAddress);
+
+                // tell the controller to compute a response from the request
                 response = sendMessageToController(request);
+
             } catch (final Exception e) {
                 LOG.error("Cannot parse buffer: {}", Utils.byteArrayToStringNoPrefix(data));
                 LOG.error(e.getMessage(), e);
@@ -160,10 +167,21 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
     private void sendMessage(final InetAddress datagramPacketAddress, final Message responseMessage,
             final Message requestMessage) throws IOException {
 
-        LOG.trace(">>> ServiceChoice: {}", responseMessage.getApdu().getUnconfirmedServiceChoice().name());
+        final UnconfirmedServiceChoice unconfirmedServiceChoice = responseMessage.getApdu()
+                .getUnconfirmedServiceChoice();
+        final ConfirmedServiceChoice confirmedServiceChoice = responseMessage.getApdu().getConfirmedServiceChoice();
 
-        boolean broadcast = responseMessage.getApdu().getUnconfirmedServiceChoice() == UnconfirmedServiceChoice.I_AM;
-        broadcast |= responseMessage.getApdu().getUnconfirmedServiceChoice() == UnconfirmedServiceChoice.WHO_IS;
+        boolean broadcast = false;
+
+        if (unconfirmedServiceChoice != null) {
+            LOG.trace(">>> ServiceChoice: {}", responseMessage.getApdu().getUnconfirmedServiceChoice().name());
+
+            broadcast = responseMessage.getApdu().getUnconfirmedServiceChoice() == UnconfirmedServiceChoice.I_AM;
+            broadcast |= responseMessage.getApdu().getUnconfirmedServiceChoice() == UnconfirmedServiceChoice.WHO_IS;
+        }
+        if (confirmedServiceChoice != null) {
+            LOG.trace(">>> ServiceChoice: {}", responseMessage.getApdu().getConfirmedServiceChoice().name());
+        }
 
 //		final byte[] bytes = responseMessage.getBytes();
 //		LOG.trace(">>> " + Utils.byteArrayToStringNoPrefix(bytes));

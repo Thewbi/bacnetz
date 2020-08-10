@@ -56,12 +56,6 @@ public enum UnconfirmedServiceChoice {
 
     WRITE_GROUP(0x0A),
 
-    READ_PROPERTY(0x0C),
-
-    READ_PROPERTY_MULTIPLE(0x0E),
-
-    WRITE_PROPERTY(0x0F),
-
     DEVICE_COMMUNICATION_CONTROL(0x11),
 
     UNNOWN_SERVICE_CHOICE(0xFFFFFFFF),
@@ -71,8 +65,6 @@ public enum UnconfirmedServiceChoice {
     UNNOWN_SERVICE_CHOICE_129(0x81),
 
     UNNOWN_SERVICE_CHOICE_130(0x82),
-
-    REINITIALIZE_DEVICE(0x14),
 
     CONFIRMED_COV_NOTIFICATION(0x01);
 
@@ -167,18 +159,6 @@ public enum UnconfirmedServiceChoice {
 
         case WRITE_GROUP_CODE:
             return WRITE_GROUP;
-
-        case READ_PROPERTY_CODE:
-            return READ_PROPERTY;
-
-        case READ_PROPERTY_MULTIPLE_CODE:
-            return READ_PROPERTY_MULTIPLE;
-
-        case WRITE_PROPERTY_CODE:
-            return WRITE_PROPERTY;
-
-        case REINITIALIZE_DEVICE_CODE:
-            return REINITIALIZE_DEVICE;
 
         case UNNOWN_SERVICE_CHOICE_CODE:
             return UNNOWN_SERVICE_CHOICE;

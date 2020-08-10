@@ -47,7 +47,7 @@ public class APDUTest {
 		assertFalse(apdu.isMoreSegmentsFollow());
 		assertTrue(apdu.isSegmentedResponseAccepted());
 
-		assertEquals(UnconfirmedServiceChoice.READ_PROPERTY_MULTIPLE, apdu.getUnconfirmedServiceChoice());
+		assertEquals(ConfirmedServiceChoice.READ_PROPERTY_MULTIPLE, apdu.getConfirmedServiceChoice());
 
 		final List<ServiceParameter> serviceParameters = apdu.getServiceParameters();
 		assertEquals(3, serviceParameters.size());

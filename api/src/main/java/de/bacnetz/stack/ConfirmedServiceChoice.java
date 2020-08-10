@@ -61,7 +61,7 @@ public enum ConfirmedServiceChoice {
     getAlarmSummary (3),
     getEnrollmentSummary (4),
     getEventInformation (29),
-    subscribeCOV (5),
+    SUBSCRIBE_COV (5),
     subscribeCOVProperty (28),
     lifeSafetyOperation (27),
     
@@ -74,17 +74,17 @@ public enum ConfirmedServiceChoice {
     removeListElement (9),
     createObject (10),
     deleteObject (11),
-    readProperty (12),
-    readPropertyMultiple (14),
+    READ_PROPERTY (12),
+    READ_PROPERTY_MULTIPLE (14),
     readRange (26),
-    writeProperty (15),
+    WRITE_PROPERTY (15),
     writePropertyMultiple (16),
     
     //  Remote Device Management Services
     deviceCommunicationControl (17),
     confirmedPrivateTransfer (18),
     confirmedTextMessage (19),
-    reinitializeDevice (20),
+    REINITIALIZE_DEVICE (20),
     
     //  Virtual Terminal Services
     vtOpen (21),
@@ -123,7 +123,7 @@ public enum ConfirmedServiceChoice {
             return getEnrollmentSummary;
 
         case (5):
-            return subscribeCOV;
+            return SUBSCRIBE_COV;
 
         case (6):
             return atomicReadFile;
@@ -144,13 +144,13 @@ public enum ConfirmedServiceChoice {
             return deleteObject;
 
         case (12):
-            return readProperty;
+            return READ_PROPERTY;
 
         case (14):
-            return readPropertyMultiple;
+            return READ_PROPERTY_MULTIPLE;
 
         case (15):
-            return writeProperty;
+            return WRITE_PROPERTY;
 
         case (16):
             return writePropertyMultiple;
@@ -165,7 +165,7 @@ public enum ConfirmedServiceChoice {
             return confirmedTextMessage;
 
         case (20):
-            return reinitializeDevice;
+            return REINITIALIZE_DEVICE;
 
         case (21):
             return vtOpen;

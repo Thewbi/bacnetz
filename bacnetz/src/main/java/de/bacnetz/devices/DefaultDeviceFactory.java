@@ -46,6 +46,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         // 1
         childDevice = new DefaultDevice();
+        childDevice.setParentDevice(device);
         childDevice.setId(1);
         childDevice.setName("module_type");
         childDevice.setDescription("no entry");
@@ -58,6 +59,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         // 2
         childDevice = new DefaultDevice();
+        childDevice.setParentDevice(device);
         childDevice.setId(2);
         childDevice.setName("alarm_type");
         childDevice.setDescription("no entry");
@@ -70,6 +72,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         // 3 binary-input,1 - open/close state
         childDevice = new BinaryInputDevice();
+        childDevice.setParentDevice(device);
         childDevice.setId(1);
         childDevice.setName("door1_close_state");
         childDevice.setDescription("no entry");
@@ -82,6 +85,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         // 4
         childDevice = new BinaryInputDevice();
+        childDevice.setParentDevice(device);
         childDevice.setId(2);
         childDevice.setName("door2_close_state");
         childDevice.setDescription("no entry");
@@ -94,6 +98,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         // 5 - multi_state_value,5 - door1_state
         childDevice = new DefaultDevice();
+        childDevice.setParentDevice(device);
         childDevice.setId(3);
         childDevice.setName("door1_state");
         childDevice.setDescription("no entry");
@@ -106,6 +111,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         // 6 - multi_state_value,6 - command
         childDevice = new DefaultDevice();
+        childDevice.setParentDevice(device);
         childDevice.setId(4);
         childDevice.setName("door1_command");
         childDevice.setDescription("no entry");
@@ -118,6 +124,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         // 7
         childDevice = new DefaultDevice();
+        childDevice.setParentDevice(device);
         childDevice.setId(50);
         childDevice.setName("notificaton_class_obj");
         childDevice.setDescription("no entry");
@@ -129,6 +136,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         // 8
         childDevice = new DefaultDevice();
+        childDevice.setParentDevice(device);
         childDevice.setId(5);
         childDevice.setName("door2_state");
         childDevice.setDescription("no entry");
@@ -141,6 +149,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         // 9
         childDevice = new DefaultDevice();
+        childDevice.setParentDevice(device);
         childDevice.setId(6);
         childDevice.setName("door2_command");
         childDevice.setDescription("no entry");
@@ -152,6 +161,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         // 10
         childDevice = new BinaryInputDevice();
+        childDevice.setParentDevice(device);
         childDevice.setId(3);
         childDevice.setName("door3_close_state");
         childDevice.setDescription("no entry");
@@ -164,6 +174,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         // 11
         childDevice = new BinaryInputDevice();
+        childDevice.setParentDevice(device);
         childDevice.setId(4);
         childDevice.setName("door4_close_state");
         childDevice.setDescription("no entry");
@@ -176,6 +187,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         // 12
         childDevice = new DefaultDevice();
+        childDevice.setParentDevice(device);
         childDevice.setId(7);
         childDevice.setName("door3_state");
         childDevice.setDescription("no entry");
@@ -188,6 +200,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         // 13
         childDevice = new DefaultDevice();
+        childDevice.setParentDevice(device);
         childDevice.setId(8);
         childDevice.setName("door3_command");
         childDevice.setDescription("no entry");
@@ -198,6 +211,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         // 14
         childDevice = new DefaultDevice();
+        childDevice.setParentDevice(device);
         childDevice.setId(9);
         childDevice.setName("door4_state");
         childDevice.setDescription("no entry");
@@ -210,6 +224,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         // 15
         childDevice = new DefaultDevice();
+        childDevice.setParentDevice(device);
         childDevice.setId(10);
         childDevice.setName("door4_command");
         childDevice.setDescription("no entry");
