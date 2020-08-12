@@ -667,7 +667,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
                 device.getStates().size(), MessageType.UNSIGNED_INTEGER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
-        // 0x6E = 110d state-text
+        // 0x6E = 110d - state-text
         // composite
         final CompositeDeviceProperty stateTextCompositeDeviceProperty = new CompositeDeviceProperty("state-text",
                 DeviceProperty.STATE_TEXT, objectIdentifier, MessageType.UNSIGNED_INTEGER);
@@ -891,6 +891,32 @@ public class DefaultDeviceFactory implements Factory<Device> {
         deviceProperty = new DefaultDeviceProperty<Integer>("notification-class", DeviceProperty.NOTIFICATION_CLASS, 50,
                 MessageType.UNSIGNED_INTEGER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
+
+        // 0x66 = 102d - recipient-list
+//        final recipient-list
+
+        // 0x56 = 86d - priority
+//        deviceProperty = new DefaultDeviceProperty<Integer>(DevicePropertyType.PRIORITY.getName(),
+//                DevicePropertyType.PRIORITY.getCode(), 0, MessageType.UNSIGNED_INTEGER);
+
+        final CompositeDeviceProperty stateTextCompositeDeviceProperty = new CompositeDeviceProperty(
+                DevicePropertyType.PRIORITY.getName(), DevicePropertyType.PRIORITY.getCode(), null,
+                MessageType.UNSIGNED_INTEGER);
+
+        DefaultDeviceProperty subDeviceProperty = new DefaultDeviceProperty<Integer>(
+                DevicePropertyType.PRIORITY.getName(), DevicePropertyType.PRIORITY.getCode(), 10,
+                MessageType.UNSIGNED_INTEGER);
+        stateTextCompositeDeviceProperty.getCompositeList().add(subDeviceProperty);
+
+        subDeviceProperty = new DefaultDeviceProperty<Integer>(DevicePropertyType.PRIORITY.getName(),
+                DevicePropertyType.PRIORITY.getCode(), 20, MessageType.UNSIGNED_INTEGER);
+        stateTextCompositeDeviceProperty.getCompositeList().add(subDeviceProperty);
+
+        subDeviceProperty = new DefaultDeviceProperty<Integer>(DevicePropertyType.PRIORITY.getName(),
+                DevicePropertyType.PRIORITY.getCode(), 30, MessageType.UNSIGNED_INTEGER);
+        stateTextCompositeDeviceProperty.getCompositeList().add(subDeviceProperty);
+
+        device.getProperties().put(stateTextCompositeDeviceProperty.getPropertyKey(), stateTextCompositeDeviceProperty);
     }
 
     private void addPropertiesToModuleTypeDevice(final Device device) {
