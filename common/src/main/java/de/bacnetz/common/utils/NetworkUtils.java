@@ -72,6 +72,9 @@ public class NetworkUtils {
 
     private static String hostAddress = null;
 
+    /**
+     * ctor
+     */
     private NetworkUtils() {
         // no instances of this class
     }

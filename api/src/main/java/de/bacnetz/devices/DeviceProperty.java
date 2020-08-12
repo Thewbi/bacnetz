@@ -131,6 +131,9 @@ public interface DeviceProperty<T> {
     /** 0xCA = 202d - restart-notification-recipients */
     public static final int RESTART_NOTIFICATION_RECIPIENTS = 0xCA;
 
+    /** 0x98 = 152d - active-cov-subscriptions */
+    public static final int ACTIVE_COV_SUBSCRIPTION = 0x98;
+
     int getPropertyKey();
 
     void setPropertyKey(int propertyKey);

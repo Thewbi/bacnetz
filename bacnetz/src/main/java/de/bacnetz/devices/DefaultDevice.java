@@ -63,7 +63,7 @@ public class DefaultDevice implements Device {
 
     private final AtomicInteger invokeId = new AtomicInteger(0);
 
-    private Object presentValue;
+//    private Object presentValue;
 
     private boolean outOfService;
 
@@ -71,7 +71,7 @@ public class DefaultDevice implements Device {
 
     private String firmwareRevision;
 
-    private LocalDateTime timeOfDeviceRestart;
+    private LocalDateTime timeOfDeviceRestart = LocalDateTime.now();
 
     private final List<COVSubscription> covSubscriptions = new ArrayList<>();
 
@@ -1468,7 +1468,8 @@ public class DefaultDevice implements Device {
 
     @Override
     public BACnetServicesSupportedBitString retrieveServicesSupported() {
-        return retrieveIO420ServicesSupported();
+//        return retrieveIO420ServicesSupported();
+        return retrieveIO420ServicesSupportedModified();
     }
 
     /**
@@ -1549,6 +1550,63 @@ public class DefaultDevice implements Device {
         return bacnetServicesSupportedBitString;
     }
 
+    private BACnetServicesSupportedBitString retrieveIO420ServicesSupportedModified() {
+
+        final BACnetServicesSupportedBitString bacnetServicesSupportedBitString = new BACnetServicesSupportedBitString();
+
+        // byte 1
+        bacnetServicesSupportedBitString.setAcknowledgeAlarm(true);
+        bacnetServicesSupportedBitString.setConfirmedCOVNotification(true);
+        bacnetServicesSupportedBitString.setConfirmedEventNotification(false);
+        bacnetServicesSupportedBitString.setGetAlarmSummary(true);
+        bacnetServicesSupportedBitString.setGetEnrollmentSummary(true);
+        bacnetServicesSupportedBitString.setSubscribeCOV(true);
+        bacnetServicesSupportedBitString.setAtomicReadFile(true);
+        bacnetServicesSupportedBitString.setAtomicWriteFile(true);
+
+        // byte 2
+        bacnetServicesSupportedBitString.setAddListElement(true);
+        bacnetServicesSupportedBitString.setRemoveListElement(true);
+        bacnetServicesSupportedBitString.setCreateObject(false);
+        bacnetServicesSupportedBitString.setDeleteObject(false);
+        bacnetServicesSupportedBitString.setReadProperty(true);
+        bacnetServicesSupportedBitString.setReadPropertyConditional(false);
+        bacnetServicesSupportedBitString.setReadPropertyMultiple(true);
+        bacnetServicesSupportedBitString.setWriteProperty(true);
+
+        // byte 3
+        bacnetServicesSupportedBitString.setWritePropertyMultiple(true);
+        bacnetServicesSupportedBitString.setDeviceCommunicationControl(true);
+        bacnetServicesSupportedBitString.setConfirmedPrivateTransfer(true);
+        bacnetServicesSupportedBitString.setConfirmedTextMessage(false);
+        bacnetServicesSupportedBitString.setReinitializeDevice(true);
+        bacnetServicesSupportedBitString.setVtOpen(false);
+        bacnetServicesSupportedBitString.setVtClose(false);
+        bacnetServicesSupportedBitString.setVtData(false);
+
+        // byte 4
+        bacnetServicesSupportedBitString.setAuthenticate(false);
+        bacnetServicesSupportedBitString.setRequestKey(false);
+        bacnetServicesSupportedBitString.setiAm(true);
+        bacnetServicesSupportedBitString.setiHave(true);
+        bacnetServicesSupportedBitString.setUnconfirmedCOVNotification(true);
+        bacnetServicesSupportedBitString.setUnconfirmedEventNotification(false);
+        bacnetServicesSupportedBitString.setUnconfirmedPrivateTransfer(true);
+        bacnetServicesSupportedBitString.setUnconfirmedTextMessage(false);
+
+        // byte 5
+        bacnetServicesSupportedBitString.setTimeSynchronization(true);
+        bacnetServicesSupportedBitString.setWhoHas(true);
+        bacnetServicesSupportedBitString.setWhoIs(true);
+        bacnetServicesSupportedBitString.setReadRange(false);
+        bacnetServicesSupportedBitString.setUtcTimeSynchronization(true);
+        bacnetServicesSupportedBitString.setLifeSafetyOperation(false);
+        bacnetServicesSupportedBitString.setSubscribeCOVProperty(true);
+        bacnetServicesSupportedBitString.setGetEventInformation(true);
+
+        return bacnetServicesSupportedBitString;
+    }
+
     /**
      * <pre>
      * Loytex:
@@ -1612,7 +1670,7 @@ public class DefaultDevice implements Device {
         bacnetServicesSupportedBitString.setReadRange(false);
         bacnetServicesSupportedBitString.setUtcTimeSynchronization(true);
         bacnetServicesSupportedBitString.setLifeSafetyOperation(false);
-        bacnetServicesSupportedBitString.setSubscribeCOVProperty(false);
+        bacnetServicesSupportedBitString.setSubscribeCOVProperty(true);
         bacnetServicesSupportedBitString.setGetEventInformation(true);
 
         return bacnetServicesSupportedBitString;
@@ -1735,27 +1793,50 @@ public class DefaultDevice implements Device {
 
     @Override
     public Object getPresentValue() {
-        return presentValue;
+
+        final DeviceProperty<Object> deviceProperty = (DeviceProperty<Object>) properties
+                .get(DevicePropertyType.PRESENT_VALUE.getCode());
+
+        if (deviceProperty == null) {
+            return 0;
+        }
+
+        final Object value = deviceProperty.getValue();
+
+        if (value == null) {
+            deviceProperty.setValue(0);
+        }
+
+        return properties.get(DevicePropertyType.PRESENT_VALUE.getCode()).getValue();
     }
 
     @Override
-    public void setPresentValue(final Object presentValue) {
+    public void setPresentValue(final Object newPresentValue) {
 
-        LOG.info("Set Present Value: " + presentValue);
+        if (!properties.containsKey(DevicePropertyType.PRESENT_VALUE.getCode())) {
+            return;
+        }
+
+        LOG.info("Set Present Value: " + newPresentValue);
+
+        final DeviceProperty<Object> presentValueDeviceProperty = (DeviceProperty<Object>) properties
+                .get(DevicePropertyType.PRESENT_VALUE.getCode());
+
+        final Integer presentValue = (Integer) presentValueDeviceProperty.getValue();
 
         boolean valueChanged = false;
 
-        if ((this.presentValue == null) && (presentValue != null)) {
+        if ((presentValue == null) && (newPresentValue != null)) {
 
             valueChanged = true;
 
-        } else if ((this.presentValue != null) && (presentValue == null)) {
+        } else if ((presentValue != null) && (newPresentValue == null)) {
 
             valueChanged = true;
 
-        } else if ((this.presentValue != null) && (presentValue != null)) {
+        } else if ((presentValue != null) && (newPresentValue != null)) {
 
-            if (!this.presentValue.equals(presentValue)) {
+            if (!presentValue.equals(newPresentValue)) {
 
                 valueChanged = true;
             }
@@ -1763,10 +1844,10 @@ public class DefaultDevice implements Device {
 
         if (valueChanged) {
 
-            this.presentValue = presentValue;
+            presentValueDeviceProperty.setValue(newPresentValue);
 
             covSubscriptions.stream().forEach(s -> {
-                s.vaueChanged(this.presentValue);
+                s.vaueChanged(newPresentValue);
             });
         }
     }

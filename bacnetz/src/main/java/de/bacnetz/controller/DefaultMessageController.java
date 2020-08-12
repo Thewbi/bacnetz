@@ -88,6 +88,7 @@ public class DefaultMessageController implements MessageController {
 
         final ConfirmedServiceChoice confirmedServiceChoice = message.getApdu().getConfirmedServiceChoice();
         if (confirmedServiceChoice != null) {
+
             switch (confirmedServiceChoice) {
 
             case READ_PROPERTY:
@@ -549,6 +550,7 @@ public class DefaultMessageController implements MessageController {
         LOG.trace("processReadProperty()");
 
         final int propertyIdentifierCode = requestMessage.getApdu().getPropertyIdentifier();
+
         LOG.trace("Property Identifier: {}", propertyIdentifierCode);
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()

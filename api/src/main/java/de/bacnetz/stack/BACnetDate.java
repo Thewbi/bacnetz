@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 
-import de.bacnetz.common.utils.Utils;
+import de.bacnet.common.APIUtils;
 
 public class BACnetDate {
 
@@ -56,7 +56,7 @@ public class BACnetDate {
 
     public void fromDate(final Date date) {
 
-        final LocalDate localDate = Utils.dateToLocalDate(date);
+        final LocalDate localDate = APIUtils.dateToLocalDate(date);
 
         this.year = localDate.getYear();
         this.month = localDate.getMonthValue();
@@ -78,7 +78,7 @@ public class BACnetDate {
 
     public Date toDate() {
         final LocalDate localDate = toLocalDate();
-        return Utils.localDateToDate(localDate);
+        return APIUtils.localDateToDate(localDate);
     }
 
     @Override

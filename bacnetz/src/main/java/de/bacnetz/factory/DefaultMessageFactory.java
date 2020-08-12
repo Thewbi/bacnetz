@@ -20,6 +20,7 @@ import de.bacnetz.conversion.Converter;
 import de.bacnetz.devices.CompositeDeviceProperty;
 import de.bacnetz.devices.Device;
 import de.bacnetz.devices.DeviceProperty;
+import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.BACnetDate;
 import de.bacnetz.stack.BACnetServicesSupportedBitString;
@@ -95,6 +96,10 @@ public class DefaultMessageFactory implements MessageFactory {
             case DeviceProperty.RESTART_NOTIFICATION_RECIPIENTS:
                 return processRestartNotificationRecipientsProperty(device, deviceProperty, requestMessage);
 
+            case DeviceProperty.ACTIVE_COV_SUBSCRIPTION:
+                LOG.trace(">>> SUBSCRIBE_COV received!");
+                return processActiveCOVSubscriptions(device, deviceProperty, requestMessage);
+
 //            case DeviceProperty.PRESENT_VALUE:
 //                return device.processPresentValueProperty(deviceProperty, requestMessage);
             }
@@ -132,9 +137,11 @@ public class DefaultMessageFactory implements MessageFactory {
                         deviceProperty.getValueAsString());
 
             default:
-//			String msg = "Unknown property! PropertyIdentifier = " + propertyIdentifierCode + " property: "
-//					+ DevicePropertyType.getByCode(propertyIdentifierCode).getName();
-//			LOG.error(msg);
+                final String msg = "Unknown property! PropertyIdentifier = " + deviceProperty.getPropertyKey()
+                        + " property: " + DevicePropertyType.getByCode(deviceProperty.getPropertyKey()).getName();
+                LOG.trace(msg);
+
+                // return error message
                 final int errorClass = 0x02;
                 final int errorCode = 0x20;
                 return createErrorMessage(requestMessage, errorClass, errorCode);
@@ -147,6 +154,142 @@ public class DefaultMessageFactory implements MessageFactory {
         final int errorCode = 0x20;
 
         return createErrorMessage(requestMessage, errorClass, errorCode);
+    }
+
+    /**
+     * 12.11.39 Active_COV_Subscriptions
+     * 
+     * The Active_COV_Subscriptions property is a BACnetLIST of
+     * BACnetCOVSubscription, each of which consists of a Recipient, a Monitored
+     * Property Reference, an Issue Confirmed Notifications flag, a Time Remaining
+     * value and an optional COV Increment. This property provides a network-visible
+     * indication of those COV subscriptions that are active at any given time.
+     * Whenever a COV Subscription is created with the SubscribeCOV or
+     * SubscribeCOVProperty service, a new entry is added to the
+     * Active_COV_Subscriptions list. Similarly, whenever a COV Subscription is
+     * terminated, the corresponding entry shall be removed from the
+     * Active_COV_Subscriptions list.
+     * 
+     * <pre>
+     * BACnetCOVSubscription ::= SEQUENCE {
+     *      recipient [0] BACnetRecipientProcess,
+     *      monitoredPropertyReference [1] BACnetObjectPropertyReference,
+     *      issueConfirmedNotifications [2] BOOLEAN,
+     *      timeRemaining [3] Unsigned,
+     *      covIncrement [4] REAL OPTIONAL -- used only with monitored properties with a numeric datatype
+     * }
+     * </pre>
+     * 
+     * @param device
+     * @param deviceProperty
+     * @param requestMessage
+     * @return
+     */
+    private Message processActiveCOVSubscriptions(final Device device, final DeviceProperty<?> deviceProperty,
+            final Message requestMessage) {
+
+        final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
+        virtualLinkControl.setType(0x81);
+        virtualLinkControl.setFunction(0x0A);
+        virtualLinkControl.setLength(0x00);
+
+        final NPDU npdu = new NPDU();
+        npdu.setVersion(0x01);
+
+        // no additional information
+        // this works, if the cp is connected to the device directly via 192.168.2.1
+        npdu.setControl(0x00);
+
+        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+
+            // destination network information
+            npdu.setControl(0x20);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+            npdu.setDestinationMACLayerAddressLength(3);
+            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+
+            npdu.setDestinationHopCount(255);
+        }
+
+        final APDU apdu = new APDU();
+        apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
+        apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
+        apdu.setVendorMap(vendorMap);
+
+        final ObjectIdentifierServiceParameter outwardObjectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+        outwardObjectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+        outwardObjectIdentifierServiceParameter.setTagNumber(0x00);
+        outwardObjectIdentifierServiceParameter.setLengthValueType(4);
+        outwardObjectIdentifierServiceParameter.setObjectType(device.getObjectType());
+        outwardObjectIdentifierServiceParameter.setInstanceNumber(device.getId());
+        apdu.getServiceParameters().add(outwardObjectIdentifierServiceParameter);
+
+        final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
+        propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+        propertyIdentifierServiceParameter.setTagNumber(0x01);
+        propertyIdentifierServiceParameter.setLengthValueType(0x01);
+        propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) deviceProperty.getPropertyKey() });
+        apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
+
+        // {[3]
+        final ServiceParameter openingTagServiceParameter = new ServiceParameter();
+        openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+        openingTagServiceParameter.setTagNumber(0x03);
+        openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
+        apdu.getServiceParameters().add(openingTagServiceParameter);
+
+//        final ServiceParameter objectNameServiceParameter = new ServiceParameter();
+//        objectNameServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+//        objectNameServiceParameter.setTagNumber(ServiceParameter.APPLICATION_TAG_NUMBER_CHARACTER_STRING);
+//        objectNameServiceParameter.setLengthValueType(ServiceParameter.EXTENDED_VALUE);
+//        objectNameServiceParameter.setPayload(BACnetUtils.retrieveAsString(data));
+//        apdu.getServiceParameters().add(objectNameServiceParameter);
+
+        // @formatter:off
+        
+        // recipient
+        // {[0] - ServiceParamter: Opening Tag: 6
+        
+        //      recipient process
+        //      {[0] - ServiceParamter: Opening Tag: 6
+        //          {[1] - ServiceParamter: Opening Tag: 6
+        //          network number - Service Parameter: Unsigned Integer, value=100 ????
+        //          mac address/IP/PORT - Service Parameter: OctetString, (4 byte IPv4) (2 byte Port)
+        //          }[1] - ServiceParamter: Closing Tag: 7
+        //      }[0] - ServiceParamter: Closing Tag: 7
+        //
+        //      process identifier - Context Tag: 1
+        
+        // }[0] - ServiceParamter: Closing Tag: 7
+        
+        // monitored property reference
+        // {[1] - ServiceParamter: Opening Tag: 6
+        //      object identifier Service parameter
+        //      Property identifier: Service parameter
+        // }[1] - ServiceParamter: Closing Tag: 7
+        
+        // issue confirmed notifications: TRUE: Context Specific Tag, Value = 0x01 == TRUE
+        
+        // time remaining: Context Specific Tag, value = 2 byte (e.g. 0x1a43 = 6723d ==)
+        
+        // @formatter:on
+
+        // }[3]
+        final ServiceParameter closingTagServiceParameter = new ServiceParameter();
+        closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+        closingTagServiceParameter.setTagNumber(0x03);
+        closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
+        apdu.getServiceParameters().add(closingTagServiceParameter);
+
+        final DefaultMessage result = new DefaultMessage();
+        result.setVirtualLinkControl(virtualLinkControl);
+        result.setNpdu(npdu);
+        result.setApdu(apdu);
+
+        virtualLinkControl.setLength(result.getDataLength());
+
+        return result;
     }
 
     private Message stringProperty(final Device device, final int propertyIdentifierCode, final Message requestMessage,
@@ -333,6 +476,27 @@ public class DefaultMessageFactory implements MessageFactory {
         return processObjectListProperty(device, deviceProperty.getPropertyKey(), requestMessage);
     }
 
+//    public byte[] getSupportedServicesPayload(final Device device) {
+//
+//        // retrieve the bits that describe which services are supported by this device
+//        final BACnetServicesSupportedBitString bacnetServicesSupportedBitString = device.retrieveServicesSupported();
+//        final BitSet bitSet = bacnetServicesSupportedBitString.getBitSet();
+//        final byte[] bitSetByteArray = bitSet.toByteArray();
+//
+//        // this is the result payload
+//        final byte[] result = new byte[7];
+//
+//        // length value is 6 byte
+//        result[0] = (byte) 0x06;
+//        // first byte is an unused zero byte
+//        // there is an unused zero byte at the beginning for some reason
+//        result[1] = (byte) 0x00;
+//        // the last 5 byte contain the bit set of all available services of this device
+//        System.arraycopy(bitSetByteArray, 0, result, 2, bitSetByteArray.length);
+//
+//        return result;
+//    }
+
     public byte[] getSupportedServicesPayload(final Device device) {
 
         // retrieve the bits that describe which services are supported by this device
@@ -341,15 +505,15 @@ public class DefaultMessageFactory implements MessageFactory {
         final byte[] bitSetByteArray = bitSet.toByteArray();
 
         // this is the result payload
-        final byte[] result = new byte[7];
+        final byte[] result = new byte[6];
 
-        // length value is 6 byte
-        result[0] = (byte) 0x06;
+//        // length value is 6 byte
+//        result[0] = (byte) 0x06;
         // first byte is an unused zero byte
         // there is an unused zero byte at the beginning for some reason
-        result[1] = (byte) 0x00;
+        result[0] = (byte) 0x00;
         // the last 5 byte contain the bit set of all available services of this device
-        System.arraycopy(bitSetByteArray, 0, result, 2, bitSetByteArray.length);
+        System.arraycopy(bitSetByteArray, 0, result, 1, bitSetByteArray.length);
 
         return result;
     }
@@ -395,6 +559,7 @@ public class DefaultMessageFactory implements MessageFactory {
         propertyIdentifierServiceParameter.setLengthValueType(0x01);
         propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) propertyIdentifierCode });
 
+        // {[3]
         final ServiceParameter openingTagServiceParameter = new ServiceParameter();
         openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         openingTagServiceParameter.setTagNumber(0x03);
@@ -407,6 +572,7 @@ public class DefaultMessageFactory implements MessageFactory {
         protocolServicesSupportedBitStringServiceParameter.setLengthValueType(ServiceParameter.EXTENDED_VALUE);
         protocolServicesSupportedBitStringServiceParameter.setPayload(getSupportedServicesPayload(device));
 
+        // }[3]
         final ServiceParameter closingTagServiceParameter = new ServiceParameter();
         closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         closingTagServiceParameter.setTagNumber(0x03);
@@ -1004,6 +1170,7 @@ public class DefaultMessageFactory implements MessageFactory {
         protocolServicesSupportedServiceParameter.setLengthValueType(1);
         protocolServicesSupportedServiceParameter.setPayload(new byte[] { (byte) deviceProperty.getPropertyKey() });
 
+        // {[3]
         final ServiceParameter openingTagServiceParameter = new ServiceParameter();
         openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         openingTagServiceParameter.setTagNumber(0x03);
@@ -1016,6 +1183,7 @@ public class DefaultMessageFactory implements MessageFactory {
         protocolServicesSupportedBitStringServiceParameter.setLengthValueType(ServiceParameter.EXTENDED_VALUE);
         protocolServicesSupportedBitStringServiceParameter.setPayload(getSupportedServicesPayload(device));
 
+        // }[3]
         final ServiceParameter closingTagServiceParameter = new ServiceParameter();
         closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         closingTagServiceParameter.setTagNumber(0x03);

@@ -38,8 +38,6 @@ import de.bacnetz.configuration.ConfigurationManager;
 import de.bacnetz.configuration.DefaultConfigurationManager;
 import de.bacnetz.controller.DefaultMessageController;
 import de.bacnetz.controller.Message;
-import de.bacnetz.devices.BinaryInputDevice;
-import de.bacnetz.devices.DefaultDevice;
 import de.bacnetz.devices.DefaultDeviceFactory;
 import de.bacnetz.devices.Device;
 import de.bacnetz.devices.ObjectType;
@@ -253,8 +251,8 @@ public class App {
 //        bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
 
         // from file from eclipse
-//        final String filename = "src/main/resources/BACnetVendors.csv";
-        final String filename = "BACnetVendors.csv";
+        final String filename = "src/main/resources/BACnetVendors.csv";
+//        final String filename = "BACnetVendors.csv";
         final File file = new File(filename);
         LOG.info(file.getAbsoluteFile());
         System.out.println(file.getAbsoluteFile());
@@ -312,13 +310,15 @@ public class App {
                 System.out.println(msg);
 
                 // toggle, which sends a value to all COV subscribers
-                door1CloseStateBinaryInput.setPresentValue(!(Boolean) door1CloseStateBinaryInput.getPresentValue());
+                final byte[] byteArray = (byte[]) door1CloseStateBinaryInput.getPresentValue();
+//                final Integer currentValue = (Integer) ;
+                door1CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray[0]) });
 
                 // DEBUG
-                msg = "Door is now "
-                        + (((Boolean) door1CloseStateBinaryInput.getPresentValue()) ? "locked" : "unlocked");
-                LOG.info(msg);
-                System.out.println(msg);
+//                msg = "Door is now "
+//                        + (((Boolean) door1CloseStateBinaryInput.getPresentValue()) ? "locked" : "unlocked");
+//                LOG.info(msg);
+//                System.out.println(msg);
 
 //				// send a bacnet message
 //				ToogleDoorOpenStateThread.sendCOV(device, door1CloseStateBinaryInput, vendorMap,
@@ -328,151 +328,6 @@ public class App {
                 LOG.info("Sending message done.");
             }
         }
-    }
-
-    private static Device createDevice(final Map<Integer, String> vendorMap) {
-
-        final Device device = new DefaultDevice();
-        device.setId(NetworkUtils.DEVICE_INSTANCE_NUMBER);
-        device.setName(NetworkUtils.OBJECT_NAME);
-        device.setVendorMap(vendorMap);
-        device.setObjectType(ObjectType.DEVICE);
-
-        Device childDevice = null;
-
-        // 1
-        // apdu.getServiceParameters().add(createMultiStateValueServiceParameter(1));
-        childDevice = new DefaultDevice();
-        childDevice.setId(1);
-        childDevice.setName("module_type");
-        childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-        device.getChildDevices().add(childDevice);
-
-        // 2
-//		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(2));
-        childDevice = new DefaultDevice();
-        childDevice.setId(2);
-        childDevice.setName("alarm_type");
-        childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-        device.getChildDevices().add(childDevice);
-
-        // 3
-//		apdu.getServiceParameters().add(binaryInputServiceParameter(1));
-        childDevice = new BinaryInputDevice();
-        childDevice.setId(1);
-        childDevice.setName("door1_close_state");
-        childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.BINARY_INPUT);
-        device.getChildDevices().add(childDevice);
-
-        // 4
-//		apdu.getServiceParameters().add(binaryInputServiceParameter(2));
-        childDevice = new BinaryInputDevice();
-        childDevice.setId(2);
-        childDevice.setName("door2_close_state");
-        childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.BINARY_INPUT);
-        device.getChildDevices().add(childDevice);
-
-        // 5
-//		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(3));
-        childDevice = new DefaultDevice();
-        childDevice.setId(3);
-        childDevice.setName("door1_state");
-        childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-        device.getChildDevices().add(childDevice);
-
-        // 6
-//		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(4));
-        childDevice = new DefaultDevice();
-        childDevice.setId(4);
-        childDevice.setName("door1_command");
-        childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-        device.getChildDevices().add(childDevice);
-
-        // 7
-//		apdu.getServiceParameters().add(createNotificationClassServiceParameter(50));
-        childDevice = new DefaultDevice();
-        childDevice.setId(50);
-        childDevice.setName("notificaton_class_object");
-        childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.NOTIFICATION_CLASS);
-        device.getChildDevices().add(childDevice);
-
-        // 8
-//		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(5));
-        childDevice = new DefaultDevice();
-        childDevice.setId(5);
-        childDevice.setName("door2_state");
-        childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-        device.getChildDevices().add(childDevice);
-
-        // 9
-//		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(6));
-        childDevice = new DefaultDevice();
-        childDevice.setId(6);
-        childDevice.setName("door2_command");
-        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-        device.getChildDevices().add(childDevice);
-
-        // 10
-//		apdu.getServiceParameters().add(binaryInputServiceParameter(3));
-        childDevice = new BinaryInputDevice();
-        childDevice.setId(3);
-        childDevice.setName("door3_close_state");
-        childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.BINARY_INPUT);
-        device.getChildDevices().add(childDevice);
-
-        // 11
-//		apdu.getServiceParameters().add(binaryInputServiceParameter(4));
-        childDevice = new BinaryInputDevice();
-        childDevice.setId(4);
-        childDevice.setName("door4_close_state");
-        childDevice.setObjectType(ObjectType.BINARY_INPUT);
-        device.getChildDevices().add(childDevice);
-
-        // 12
-//		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(7));
-        childDevice = new DefaultDevice();
-        childDevice.setId(7);
-        childDevice.setName("door3_state");
-        childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-        device.getChildDevices().add(childDevice);
-
-        // 13
-//		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(8));
-        childDevice = new DefaultDevice();
-        childDevice.setId(8);
-        childDevice.setName("door3_command");
-        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-        device.getChildDevices().add(childDevice);
-
-        // 14
-//		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(9));
-        childDevice = new DefaultDevice();
-        childDevice.setId(9);
-        childDevice.setName("door4_state");
-        childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-        device.getChildDevices().add(childDevice);
-
-        // 15
-//		apdu.getServiceParameters().add(createMultiStateValueServiceParameter(10));
-        childDevice = new DefaultDevice();
-        childDevice.setId(10);
-        childDevice.setName("door4_command");
-        childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-        device.getChildDevices().add(childDevice);
-
-        return device;
     }
 
     private static Map<Integer, String> readVendorMap(final BufferedReader bufferedReader) throws IOException {
@@ -740,3 +595,148 @@ public class App {
         bufferedWriter.close();
     }
 }
+
+//private static Device createDevice(final Map<Integer, String> vendorMap) {
+//
+//    final Device device = new DefaultDevice();
+//    device.setId(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+//    device.setName(NetworkUtils.OBJECT_NAME);
+//    device.setVendorMap(vendorMap);
+//    device.setObjectType(ObjectType.DEVICE);
+//
+//    Device childDevice = null;
+//
+//    // 1
+//    // apdu.getServiceParameters().add(createMultiStateValueServiceParameter(1));
+//    childDevice = new DefaultDevice();
+//    childDevice.setId(1);
+//    childDevice.setName("module_type");
+//    childDevice.setVendorMap(vendorMap);
+//    childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+//    device.getChildDevices().add(childDevice);
+//
+//    // 2
+////  apdu.getServiceParameters().add(createMultiStateValueServiceParameter(2));
+//    childDevice = new DefaultDevice();
+//    childDevice.setId(2);
+//    childDevice.setName("alarm_type");
+//    childDevice.setVendorMap(vendorMap);
+//    childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+//    device.getChildDevices().add(childDevice);
+//
+//    // 3
+////  apdu.getServiceParameters().add(binaryInputServiceParameter(1));
+//    childDevice = new BinaryInputDevice();
+//    childDevice.setId(1);
+//    childDevice.setName("door1_close_state");
+//    childDevice.setVendorMap(vendorMap);
+//    childDevice.setObjectType(ObjectType.BINARY_INPUT);
+//    device.getChildDevices().add(childDevice);
+//
+//    // 4
+////  apdu.getServiceParameters().add(binaryInputServiceParameter(2));
+//    childDevice = new BinaryInputDevice();
+//    childDevice.setId(2);
+//    childDevice.setName("door2_close_state");
+//    childDevice.setVendorMap(vendorMap);
+//    childDevice.setObjectType(ObjectType.BINARY_INPUT);
+//    device.getChildDevices().add(childDevice);
+//
+//    // 5
+////  apdu.getServiceParameters().add(createMultiStateValueServiceParameter(3));
+//    childDevice = new DefaultDevice();
+//    childDevice.setId(3);
+//    childDevice.setName("door1_state");
+//    childDevice.setVendorMap(vendorMap);
+//    childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+//    device.getChildDevices().add(childDevice);
+//
+//    // 6
+////  apdu.getServiceParameters().add(createMultiStateValueServiceParameter(4));
+//    childDevice = new DefaultDevice();
+//    childDevice.setId(4);
+//    childDevice.setName("door1_command");
+//    childDevice.setVendorMap(vendorMap);
+//    childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+//    device.getChildDevices().add(childDevice);
+//
+//    // 7
+////  apdu.getServiceParameters().add(createNotificationClassServiceParameter(50));
+//    childDevice = new DefaultDevice();
+//    childDevice.setId(50);
+//    childDevice.setName("notificaton_class_object");
+//    childDevice.setVendorMap(vendorMap);
+//    childDevice.setObjectType(ObjectType.NOTIFICATION_CLASS);
+//    device.getChildDevices().add(childDevice);
+//
+//    // 8
+////  apdu.getServiceParameters().add(createMultiStateValueServiceParameter(5));
+//    childDevice = new DefaultDevice();
+//    childDevice.setId(5);
+//    childDevice.setName("door2_state");
+//    childDevice.setVendorMap(vendorMap);
+//    childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+//    device.getChildDevices().add(childDevice);
+//
+//    // 9
+////  apdu.getServiceParameters().add(createMultiStateValueServiceParameter(6));
+//    childDevice = new DefaultDevice();
+//    childDevice.setId(6);
+//    childDevice.setName("door2_command");
+//    childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+//    device.getChildDevices().add(childDevice);
+//
+//    // 10
+////  apdu.getServiceParameters().add(binaryInputServiceParameter(3));
+//    childDevice = new BinaryInputDevice();
+//    childDevice.setId(3);
+//    childDevice.setName("door3_close_state");
+//    childDevice.setVendorMap(vendorMap);
+//    childDevice.setObjectType(ObjectType.BINARY_INPUT);
+//    device.getChildDevices().add(childDevice);
+//
+//    // 11
+////  apdu.getServiceParameters().add(binaryInputServiceParameter(4));
+//    childDevice = new BinaryInputDevice();
+//    childDevice.setId(4);
+//    childDevice.setName("door4_close_state");
+//    childDevice.setObjectType(ObjectType.BINARY_INPUT);
+//    device.getChildDevices().add(childDevice);
+//
+//    // 12
+////  apdu.getServiceParameters().add(createMultiStateValueServiceParameter(7));
+//    childDevice = new DefaultDevice();
+//    childDevice.setId(7);
+//    childDevice.setName("door3_state");
+//    childDevice.setVendorMap(vendorMap);
+//    childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+//    device.getChildDevices().add(childDevice);
+//
+//    // 13
+////  apdu.getServiceParameters().add(createMultiStateValueServiceParameter(8));
+//    childDevice = new DefaultDevice();
+//    childDevice.setId(8);
+//    childDevice.setName("door3_command");
+//    childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+//    device.getChildDevices().add(childDevice);
+//
+//    // 14
+////  apdu.getServiceParameters().add(createMultiStateValueServiceParameter(9));
+//    childDevice = new DefaultDevice();
+//    childDevice.setId(9);
+//    childDevice.setName("door4_state");
+//    childDevice.setVendorMap(vendorMap);
+//    childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+//    device.getChildDevices().add(childDevice);
+//
+//    // 15
+////  apdu.getServiceParameters().add(createMultiStateValueServiceParameter(10));
+//    childDevice = new DefaultDevice();
+//    childDevice.setId(10);
+//    childDevice.setName("door4_command");
+//    childDevice.setVendorMap(vendorMap);
+//    childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+//    device.getChildDevices().add(childDevice);
+//
+//    return device;
+//}

@@ -7,7 +7,7 @@ import java.util.Date;
 
 import org.junit.jupiter.api.Test;
 
-import de.bacnetz.common.utils.Utils;
+import de.bacnet.common.APIUtils;
 
 public class BACnetDateTest {
 
@@ -18,7 +18,7 @@ public class BACnetDateTest {
         final int month = 12;
         final int day = 22;
         final LocalDate localDate = LocalDate.of(year, month, day);
-        final Date date = Utils.localDateToDate(localDate);
+        final Date date = APIUtils.localDateToDate(localDate);
 
         final BACnetDate bacnetDate = new BACnetDate(date);
 

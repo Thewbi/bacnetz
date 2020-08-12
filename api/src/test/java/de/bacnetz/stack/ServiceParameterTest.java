@@ -7,17 +7,17 @@ import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 
-import de.bacnetz.common.utils.BACnetUtils;
-import de.bacnetz.common.utils.NetworkUtils;
-import de.bacnetz.common.utils.Utils;
+import de.bacnet.common.APIUtils;
 import de.bacnetz.factory.MessageType;
 
 public class ServiceParameterTest {
 
+    private static final String OBJECT_NAME = "IO 420";
+
     @Test
     public void testDeserialize() {
 
-        final byte[] hexStringToByteArray = Utils.hexStringToByteArray("0a1f47");
+        final byte[] hexStringToByteArray = APIUtils.hexStringToByteArray("0a1f47");
 
         final ServiceParameter serviceParameter = new ServiceParameter();
         final int bytesProcessed = serviceParameter.fromBytes(hexStringToByteArray, 0);
@@ -32,7 +32,7 @@ public class ServiceParameterTest {
     @Test
     public void testDeserializeSecondParameter() {
 
-        final byte[] hexStringToByteArray = Utils.hexStringToByteArray("1a1f47");
+        final byte[] hexStringToByteArray = APIUtils.hexStringToByteArray("1a1f47");
 
         final ServiceParameter serviceParameter = new ServiceParameter();
         final int bytesProcessed = serviceParameter.fromBytes(hexStringToByteArray, 0);
@@ -47,7 +47,7 @@ public class ServiceParameterTest {
     @Test
     public void testDeserializeServiceParameter() {
 
-        final byte[] hexStringToByteArray = Utils.hexStringToByteArray("1a0173");
+        final byte[] hexStringToByteArray = APIUtils.hexStringToByteArray("1a0173");
 
         final ServiceParameter serviceParameter = new ServiceParameter();
         final int bytesProcessed = serviceParameter.fromBytes(hexStringToByteArray, 0);
@@ -75,8 +75,8 @@ public class ServiceParameterTest {
         final byte[] expected = new byte[] { 0x00, 0x00, (byte) 0x22, (byte) 0x01, (byte) 0xE0, (byte) 0x00, 0x00, 0x00,
                 0x00, 0x00 };
 
-        System.out.println("Result:   " + Utils.byteArrayToStringNoPrefix(data));
-        System.out.println("Expected: " + Utils.byteArrayToStringNoPrefix(expected));
+        System.out.println("Result:   " + APIUtils.byteArrayToStringNoPrefix(data));
+        System.out.println("Expected: " + APIUtils.byteArrayToStringNoPrefix(expected));
 
         // the NPDU Type serializes into a three byte long array
         assertEquals(3, maximumAPDUServiceParameter.getDataLength());
@@ -98,8 +98,8 @@ public class ServiceParameterTest {
         final byte[] expected = new byte[] { 0x00, 0x00, (byte) 0x91, (byte) 0x00, (byte) 0x00, (byte) 0x00, 0x00, 0x00,
                 0x00, 0x00 };
 
-        System.out.println("Result:   " + Utils.byteArrayToStringNoPrefix(data));
-        System.out.println("Expected: " + Utils.byteArrayToStringNoPrefix(expected));
+        System.out.println("Result:   " + APIUtils.byteArrayToStringNoPrefix(data));
+        System.out.println("Expected: " + APIUtils.byteArrayToStringNoPrefix(expected));
 
         // the NPDU Type serializes into a two byte long array
         assertEquals(2, segmentationSupportedServiceParameter.getDataLength());
@@ -121,8 +121,8 @@ public class ServiceParameterTest {
         final byte[] expected = new byte[] { 0x00, 0x00, (byte) 0x21, (byte) 0xb2, (byte) 0x00, (byte) 0x00, 0x00, 0x00,
                 0x00, 0x00 };
 
-        System.out.println("Result:   " + Utils.byteArrayToStringNoPrefix(data));
-        System.out.println("Expected: " + Utils.byteArrayToStringNoPrefix(expected));
+        System.out.println("Result:   " + APIUtils.byteArrayToStringNoPrefix(data));
+        System.out.println("Expected: " + APIUtils.byteArrayToStringNoPrefix(expected));
 
         // the NPDU Type serializes into a two byte long array
         assertEquals(2, vendorIdServiceParameter.getDataLength());
@@ -132,7 +132,7 @@ public class ServiceParameterTest {
     @Test
     public void testDeserializeSystemStatus() {
 
-        final byte[] hexStringToByteArray = Utils.hexStringToByteArray("2970");
+        final byte[] hexStringToByteArray = APIUtils.hexStringToByteArray("2970");
 
         final ServiceParameter serviceParameter = new ServiceParameter();
         final int bytesProcessed = serviceParameter.fromBytes(hexStringToByteArray, 0);
@@ -163,12 +163,12 @@ public class ServiceParameterTest {
         objectNameServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         objectNameServiceParameter.setTagNumber(ServiceParameter.APPLICATION_TAG_NUMBER_CHARACTER_STRING);
         objectNameServiceParameter.setLengthValueType(ServiceParameter.EXTENDED_VALUE);
-        objectNameServiceParameter.setPayload(BACnetUtils.retrieveAsString(NetworkUtils.OBJECT_NAME));
+        objectNameServiceParameter.setPayload(APIUtils.retrieveAsString(OBJECT_NAME));
 
         objectNameServiceParameter.toBytes(result, 0);
 
-        System.out.println("Result:   " + Utils.byteArrayToStringNoPrefix(result));
-        System.out.println("Expected: " + Utils.byteArrayToStringNoPrefix(expected));
+        System.out.println("Result:   " + APIUtils.byteArrayToStringNoPrefix(result));
+        System.out.println("Expected: " + APIUtils.byteArrayToStringNoPrefix(expected));
 
         assertTrue(Arrays.equals(result, expected));
     }
@@ -189,8 +189,8 @@ public class ServiceParameterTest {
 
         valueServiceParameter.toBytes(result, 0);
 
-        System.out.println("Result:   " + Utils.byteArrayToStringNoPrefix(result));
-        System.out.println("Expected: " + Utils.byteArrayToStringNoPrefix(expected));
+        System.out.println("Result:   " + APIUtils.byteArrayToStringNoPrefix(result));
+        System.out.println("Expected: " + APIUtils.byteArrayToStringNoPrefix(expected));
 
         assertTrue(Arrays.equals(result, expected));
     }
@@ -210,8 +210,8 @@ public class ServiceParameterTest {
 
         valueServiceParameter.toBytes(result, 0);
 
-        System.out.println("Result:   " + Utils.byteArrayToStringNoPrefix(result));
-        System.out.println("Expected: " + Utils.byteArrayToStringNoPrefix(expected));
+        System.out.println("Result:   " + APIUtils.byteArrayToStringNoPrefix(result));
+        System.out.println("Expected: " + APIUtils.byteArrayToStringNoPrefix(expected));
 
         assertTrue(Arrays.equals(result, expected));
     }

@@ -94,9 +94,7 @@ public class DefaultDeviceProperty<T> implements DeviceProperty<T> {
 
         final List<ServiceParameter> result = new ArrayList<>();
 
-        ServiceParameter serviceParameter;
-
-        serviceParameter = new ServiceParameter();
+        final ServiceParameter serviceParameter = new ServiceParameter();
         serviceParameter.setMessageType(messageType);
         serviceParameter.setTagClass(TagClass.APPLICATION_TAG);
         serviceParameter.setTagNumber(getMessageType().getValue());

@@ -26,6 +26,13 @@ public class Utils {
 
     public static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
+    /**
+     * ctor
+     */
+    private Utils() {
+        // no instances of this class
+    }
+
     public static String byteArrayToStringNoPrefix(final byte[] data) {
 
         if (data == null) {

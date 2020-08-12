@@ -10,116 +10,119 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 
-import de.bacnetz.common.utils.NetworkUtils;
-import de.bacnetz.common.utils.Utils;
+import de.bacnet.common.APIUtils;
 
 public class NPDUTest {
 
-	private static final Logger LOG = LogManager.getLogger(NPDUTest.class);
+    private static final Logger LOG = LogManager.getLogger(NPDUTest.class);
 
-	/**
-	 * <pre>
-	 * 01 20 ff ff 00 ff - Building Automation and Control Network NPDU
-	 * 01    - Version: 0x01 (ASHRAE 135-1995)
-	 * 20    - Control: 0x20, Destination Specifier
-	 * ff ff - Destination Network Address: 65535
-	 * 00    - Destination MAC Layer Address Length: 0 indicates Broadcast on Destination Network
-	 * ff    - Hop Count: 255
-	 * </pre>
-	 */
-	@Test
-	public void testDeserialize() {
+    public static final int DEVICE_MAC_ADDRESS = 0x001268;
 
-		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("0120ffff00ff");
+    private static final int DEVICE_INSTANCE_NUMBER = 10001;
 
-		final NPDU npdu = new NPDU();
-		npdu.fromBytes(hexStringToByteArray, 0);
+    /**
+     * <pre>
+     * 01 20 ff ff 00 ff - Building Automation and Control Network NPDU
+     * 01    - Version: 0x01 (ASHRAE 135-1995)
+     * 20    - Control: 0x20, Destination Specifier
+     * ff ff - Destination Network Address: 65535
+     * 00    - Destination MAC Layer Address Length: 0 indicates Broadcast on Destination Network
+     * ff    - Hop Count: 255
+     * </pre>
+     */
+    @Test
+    public void testDeserialize() {
 
-		// version is 1
-		assertEquals(0x01, npdu.getVersion());
+        final byte[] hexStringToByteArray = APIUtils.hexStringToByteArray("0120ffff00ff");
 
-		// control byte says that a APDU is present, destination information is present
-		// and priority is normal
-		assertEquals(0x20, npdu.getControl());
-		assertTrue(npdu.isAPDUMessage());
-		assertTrue(npdu.isDestinationSpecifierPresent());
-		assertFalse(npdu.isSourceSpecifierPresent());
-		assertFalse(npdu.isConfirmedRequestPDUPresent());
-		assertEquals(NetworkPriority.NORMAL_MESSAGE, npdu.getNetworkPriority());
+        final NPDU npdu = new NPDU();
+        npdu.fromBytes(hexStringToByteArray, 0);
 
-		// destination network information
-		assertEquals(0xFFFF, npdu.getDestinationNetworkNumber());
-		assertEquals(0x00, npdu.getDestinationMACLayerAddressLength());
-		assertEquals(0xFF, npdu.getDestinationHopCount());
-	}
+        // version is 1
+        assertEquals(0x01, npdu.getVersion());
 
-	@Test
-	public void testDeserializeReadPropertyMultiple() {
+        // control byte says that a APDU is present, destination information is present
+        // and priority is normal
+        assertEquals(0x20, npdu.getControl());
+        assertTrue(npdu.isAPDUMessage());
+        assertTrue(npdu.isDestinationSpecifierPresent());
+        assertFalse(npdu.isSourceSpecifierPresent());
+        assertFalse(npdu.isConfirmedRequestPDUPresent());
+        assertEquals(NetworkPriority.NORMAL_MESSAGE, npdu.getNetworkPriority());
 
-		final byte[] hexStringToByteArray = Utils.hexStringToByteArray("010c012e03001268");
+        // destination network information
+        assertEquals(0xFFFF, npdu.getDestinationNetworkNumber());
+        assertEquals(0x00, npdu.getDestinationMACLayerAddressLength());
+        assertEquals(0xFF, npdu.getDestinationHopCount());
+    }
 
-		final NPDU npdu = new NPDU();
-		npdu.fromBytes(hexStringToByteArray, 0);
+    @Test
+    public void testDeserializeReadPropertyMultiple() {
 
-		// version is 1
-		assertEquals(0x01, npdu.getVersion());
+        final byte[] hexStringToByteArray = APIUtils.hexStringToByteArray("010c012e03001268");
 
-		// control byte says that a APDU is present, destination information is present
-		// and priority is normal
-		assertEquals(0x0C, npdu.getControl());
-		assertTrue(npdu.isAPDUMessage());
-		assertFalse(npdu.isDestinationSpecifierPresent());
-		assertTrue(npdu.isSourceSpecifierPresent());
-		assertTrue(npdu.isConfirmedRequestPDUPresent());
-		assertEquals(NetworkPriority.NORMAL_MESSAGE, npdu.getNetworkPriority());
+        final NPDU npdu = new NPDU();
+        npdu.fromBytes(hexStringToByteArray, 0);
 
-		// destination network information
-		assertEquals(0x00, npdu.getDestinationNetworkNumber());
-		assertEquals(0x00, npdu.getDestinationMACLayerAddressLength());
-		assertEquals(0x00, npdu.getDestinationHopCount());
+        // version is 1
+        assertEquals(0x01, npdu.getVersion());
 
-		// source network information
-		assertEquals(0x012E, npdu.getSourceNetworkAddress());
-		assertEquals(0x03, npdu.getSourceMacLayerAddressLength());
-		assertEquals(NetworkUtils.DEVICE_MAC_ADDRESS, npdu.getSourceMac());
-	}
+        // control byte says that a APDU is present, destination information is present
+        // and priority is normal
+        assertEquals(0x0C, npdu.getControl());
+        assertTrue(npdu.isAPDUMessage());
+        assertFalse(npdu.isDestinationSpecifierPresent());
+        assertTrue(npdu.isSourceSpecifierPresent());
+        assertTrue(npdu.isConfirmedRequestPDUPresent());
+        assertEquals(NetworkPriority.NORMAL_MESSAGE, npdu.getNetworkPriority());
 
-	@Test
-	public void testSerialize() {
+        // destination network information
+        assertEquals(0x00, npdu.getDestinationNetworkNumber());
+        assertEquals(0x00, npdu.getDestinationMACLayerAddressLength());
+        assertEquals(0x00, npdu.getDestinationHopCount());
 
-		final NPDU npdu = new NPDU();
-		npdu.setVersion(0x01);
-		npdu.setControl(0x00);
+        // source network information
+        assertEquals(0x012E, npdu.getSourceNetworkAddress());
+        assertEquals(0x03, npdu.getSourceMacLayerAddressLength());
+        assertEquals(DEVICE_MAC_ADDRESS, npdu.getSourceMac());
+    }
 
-		final byte[] data = new byte[10];
+    @Test
+    public void testSerialize() {
 
-		npdu.toBytes(data, 2);
+        final NPDU npdu = new NPDU();
+        npdu.setVersion(0x01);
+        npdu.setControl(0x00);
 
-		// the NPDU Type serializes into a two byte long array
-		assertEquals(2, npdu.getDataLength());
-		assertTrue(Arrays.equals(data,
-				new byte[] { 0x00, 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0x00, 0x00, 0x00, 0x00, 0x00 }));
-	}
+        final byte[] data = new byte[10];
 
-	@Test
-	public void testObjectListSourceInformation() {
+        npdu.toBytes(data, 2);
 
-		final NPDU npdu = new NPDU();
-		npdu.setVersion(0x01);
-		npdu.setControl(0x08);
-		npdu.setSourceNetworkAddress(999);
-		npdu.setSourceMacLayerAddressLength(2);
-		npdu.setSourceMac(NetworkUtils.DEVICE_INSTANCE_NUMBER);
+        // the NPDU Type serializes into a two byte long array
+        assertEquals(2, npdu.getDataLength());
+        assertTrue(Arrays.equals(data,
+                new byte[] { 0x00, 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0x00, 0x00, 0x00, 0x00, 0x00 }));
+    }
 
-		final byte[] data = new byte[10];
+    @Test
+    public void testObjectListSourceInformation() {
 
-		npdu.toBytes(data, 0);
+        final NPDU npdu = new NPDU();
+        npdu.setVersion(0x01);
+        npdu.setControl(0x08);
+        npdu.setSourceNetworkAddress(999);
+        npdu.setSourceMacLayerAddressLength(2);
+        npdu.setSourceMac(DEVICE_INSTANCE_NUMBER);
 
-		LOG.info(Utils.byteArrayToStringNoPrefix(data));
+        final byte[] data = new byte[10];
 
-		assertTrue(Arrays.equals(data,
-				new byte[] { 0x01, 0x08, (byte) 0x03, (byte) 0xE7, (byte) 0x02, (byte) 0x27, 0x11, 0x00, 0x00, 0x00 }));
+        npdu.toBytes(data, 0);
 
-	}
+        LOG.info(APIUtils.byteArrayToStringNoPrefix(data));
+
+        assertTrue(Arrays.equals(data,
+                new byte[] { 0x01, 0x08, (byte) 0x03, (byte) 0xE7, (byte) 0x02, (byte) 0x27, 0x11, 0x00, 0x00, 0x00 }));
+
+    }
 
 }

@@ -11,7 +11,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.bacnetz.common.utils.Utils;
 import de.bacnetz.devices.DevicePropertyType;
 
 /**
@@ -401,7 +400,7 @@ public class APDU {
 
         LOG.trace("Offset: {}", offset);
         LOG.trace("PayloadLength: {}", payloadLength);
-        LOG.trace("data: {}", Utils.byteArrayToStringNoPrefix(data));
+//        LOG.trace("data: {}", Utils.byteArrayToStringNoPrefix(data));
 
         int tempOffset = offset;
 
@@ -471,11 +470,15 @@ public class APDU {
 
     /**
      * Read in data from the incoming byte array into the APDU. The APDU is later
-     * put into a message object.
+     * put into a message object.<br />
+     * <br />
      * 
-     * At this point the APDU structure has been parse up to the Service Choice.
+     * At this point the APDU structure has been parse up to the Service
+     * Choice.<br />
+     * <br />
      * 
-     * TODO: this should be put into a converter.
+     * TODO: this should be put into a converter.<br />
+     * <br />
      * 
      * <pre>
      * ReadPropertyMultiple-Request ::= SEQUENCE {
@@ -505,26 +508,31 @@ public class APDU {
 
         int index = 0;
 
+        // TODO: This entire thing can be contained several times! See image
+        // ReadPropertyMultiple_ExtendedRequest.PNG
+        // and bacnet_active_cov_subscriptions_real_answer.pcapng, message 2694
+
         // bacnet object identifier
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         index += objectIdentifierServiceParameter.fromBytes(data, offset + index);
         serviceParameters.add(objectIdentifierServiceParameter);
 
-        // bracket open
+        // {[1] bracket open
         final ServiceParameter bracketOpenServiceParameter = new ServiceParameter();
         getServiceParameters().add(bracketOpenServiceParameter);
         index += bracketOpenServiceParameter.fromBytes(data, offset + index);
 
+        // TODO: There can be several of these!
         final ServiceParameter serviceParameter = new ServiceParameter();
         getServiceParameters().add(serviceParameter);
         index += serviceParameter.fromBytes(data, offset + index);
 
-        // DEBUG
-        if (serviceParameter.getPayload()[0] == SYSTEM_STATUS) {
-            LOG.info("System Status: 112");
-        }
+//        // DEBUG
+//        if (serviceParameter.getPayload()[0] == SYSTEM_STATUS) {
+//            LOG.info("System Status: 112");
+//        }
 
-        // bracket close
+        // }[1] bracket close
         final ServiceParameter bracketCloseServiceParameter = new ServiceParameter();
         getServiceParameters().add(bracketCloseServiceParameter);
         index += bracketCloseServiceParameter.fromBytes(data, offset + index);

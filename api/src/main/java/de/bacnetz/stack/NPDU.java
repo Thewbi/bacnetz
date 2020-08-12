@@ -3,7 +3,7 @@ package de.bacnetz.stack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.bacnetz.common.utils.Utils;
+import de.bacnet.common.APIUtils;
 
 /**
  * Network Layer Protocol Data Unit
@@ -102,7 +102,7 @@ public class NPDU {
 
         if (isDestinationSpecifierPresent()) {
 
-            destinationNetworkNumber = Utils.bytesToUnsignedShort(data[startIndex + offset++],
+            destinationNetworkNumber = APIUtils.bytesToUnsignedShort(data[startIndex + offset++],
                     data[startIndex + offset++], true);
             structureLength += 2;
 
@@ -123,8 +123,8 @@ public class NPDU {
 
         if (isSourceSpecifierPresent()) {
 
-            sourceNetworkAddress = Utils.bytesToUnsignedShort(data[startIndex + offset++], data[startIndex + offset++],
-                    true);
+            sourceNetworkAddress = APIUtils.bytesToUnsignedShort(data[startIndex + offset++],
+                    data[startIndex + offset++], true);
             structureLength += 2;
 
             sourceMacLayerAddressLength = data[startIndex + offset++] & 0xFF;
@@ -211,7 +211,7 @@ public class NPDU {
         if (isDestinationSpecifierPresent()) {
 
             // 2 byte destination network number
-            Utils.addShortToBuffer(data, offset + index, (short) destinationNetworkNumber);
+            APIUtils.addShortToBuffer(data, offset + index, (short) destinationNetworkNumber);
             index += 2;
 
             data[offset + index++] = (byte) destinationMACLayerAddressLength;
@@ -231,7 +231,7 @@ public class NPDU {
         if (isSourceSpecifierPresent()) {
 
             // 2 byte source network number
-            Utils.addShortToBuffer(data, offset + index, (short) sourceNetworkAddress);
+            APIUtils.addShortToBuffer(data, offset + index, (short) sourceNetworkAddress);
             index += 2;
 
             data[offset + index++] = (byte) sourceMacLayerAddressLength;

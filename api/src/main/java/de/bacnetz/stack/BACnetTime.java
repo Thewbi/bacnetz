@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Date;
 
-import de.bacnetz.common.utils.Utils;
+import de.bacnet.common.APIUtils;
 
 /**
  * The encoding of a time value shall be primitive, with four contents octets.
@@ -74,7 +74,7 @@ public class BACnetTime {
 
     public void fromDate(final Date date) {
 
-        final LocalDateTime dateToLocalDateTime = Utils.dateToLocalDateTime(date);
+        final LocalDateTime dateToLocalDateTime = APIUtils.dateToLocalDateTime(date);
 
         this.hour = dateToLocalDateTime.getHour();
         this.minute = dateToLocalDateTime.getMinute();

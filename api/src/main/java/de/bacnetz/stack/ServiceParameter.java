@@ -2,7 +2,7 @@ package de.bacnetz.stack;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import de.bacnetz.common.utils.Utils;
+import de.bacnet.common.APIUtils;
 import de.bacnetz.factory.MessageType;
 
 public class ServiceParameter {
@@ -199,12 +199,12 @@ public class ServiceParameter {
 
         } else if (payload.length == 1) {
 
-            stringBuffer.append(Utils.byteArrayToStringNoPrefix(payload));
+            stringBuffer.append(APIUtils.byteArrayToStringNoPrefix(payload));
 
         } else if (payload.length == 2) {
 
             final boolean bigEndian = true;
-            stringBuffer.append(Utils.bytesToUnsignedShort(payload[0], payload[1], bigEndian));
+            stringBuffer.append(APIUtils.bytesToUnsignedShort(payload[0], payload[1], bigEndian));
         }
     }
 
@@ -247,19 +247,19 @@ public class ServiceParameter {
 
     public void toBytes(final byte[] data, final int offset) {
 
+        int index = 0;
+
         // the application tag is a byte that encodes the information type of this
         // service parameter, the type of this service parameter (Application or context
         // specific) and the length of the payload inside this service parameter
         final int applicationTag = (tagNumber << 4) | (tagClass.getId() << 3) | (lengthValueType);
-
-        int index = 0;
         data[offset + index++] = (byte) applicationTag;
 
         // copy the payload in
         if (ArrayUtils.isNotEmpty(payload)) {
 
+            // for extended values, preface the actual payload with the payload's length
             if (lengthValueType == ServiceParameter.EXTENDED_VALUE) {
-                // payload length
                 data[offset + index++] = (byte) (payload.length);
             }
 

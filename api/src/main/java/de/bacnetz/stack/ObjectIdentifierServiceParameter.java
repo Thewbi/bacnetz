@@ -3,7 +3,7 @@ package de.bacnetz.stack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.bacnetz.common.utils.Utils;
+import de.bacnet.common.APIUtils;
 import de.bacnetz.devices.ObjectType;
 
 public class ObjectIdentifierServiceParameter extends ServiceParameter {
@@ -35,9 +35,9 @@ public class ObjectIdentifierServiceParameter extends ServiceParameter {
 
         final int result = super.fromBytes(data, offset);
 
-        LOG.trace(Utils.byteArrayToStringNoPrefix(getPayload()));
+        LOG.trace(APIUtils.byteArrayToStringNoPrefix(getPayload()));
 
-        final int bufferToInt = Utils.bufferToInt(getPayload(), 0);
+        final int bufferToInt = APIUtils.bufferToInt(getPayload(), 0);
 
         objectType = ObjectType.getByCode(bufferToInt >> 22);
         instanceNumber = (bufferToInt & 0x3FFFFF);
@@ -71,7 +71,7 @@ public class ObjectIdentifierServiceParameter extends ServiceParameter {
 
         final int payload = encodeObjectTypeAndInstanceNumber(objectType, instanceNumber);
 
-        Utils.intToBuffer(payload, data, offset + index);
+        APIUtils.intToBuffer(payload, data, offset + index);
         index += 4;
     }
 

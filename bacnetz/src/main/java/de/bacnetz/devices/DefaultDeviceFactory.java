@@ -53,9 +53,9 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-        childDevice.setPresentValue(4);
         addPropertiesToModuleTypeDevice(childDevice);
         device.getChildDevices().add(childDevice);
+        childDevice.setPresentValue(4);
 
         // 2
         childDevice = new DefaultDevice();
@@ -66,9 +66,9 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-        childDevice.setPresentValue(1);
         addPropertiesToAlarmStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
+        childDevice.setPresentValue(1);
 
         // 3 binary-input,1 - open/close state
         childDevice = new BinaryInputDevice();
@@ -79,9 +79,10 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
         childDevice.setObjectType(ObjectType.BINARY_INPUT);
-        childDevice.setPresentValue(true);
         addPropertiesToDoorCloseStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
+//      childDevice.setPresentValue(true);
+        childDevice.setPresentValue(new byte[] { 1 });
 
         // 4
         childDevice = new BinaryInputDevice();
@@ -92,9 +93,10 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
         childDevice.setObjectType(ObjectType.BINARY_INPUT);
-        childDevice.setPresentValue(true);
         addPropertiesToDoorCloseStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
+//      childDevice.setPresentValue(true);
+        childDevice.setPresentValue(new byte[] { 1 });
 
         // 5 - multi_state_value,5 - door1_state
         childDevice = new DefaultDevice();
@@ -105,9 +107,9 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-        childDevice.setPresentValue(1);
         addPropertiesToDoorStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
+        childDevice.setPresentValue(1);
 
         // 6 - multi_state_value,6 - command
         childDevice = new DefaultDevice();
@@ -118,9 +120,9 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-        childDevice.setPresentValue(1);
         addPropertiesToDoorCommandStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
+        childDevice.setPresentValue(1);
 
         // 7
         childDevice = new DefaultDevice();
@@ -142,10 +144,10 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
-        childDevice.setPresentValue(1);
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
         addPropertiesToDoorStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
+        childDevice.setPresentValue(1);
 
         // 9
         childDevice = new DefaultDevice();
@@ -155,9 +157,9 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-        childDevice.setPresentValue(1);
         addPropertiesToDoorCommandStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
+        childDevice.setPresentValue(1);
 
         // 10
         childDevice = new BinaryInputDevice();
@@ -168,9 +170,10 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
         childDevice.setObjectType(ObjectType.BINARY_INPUT);
-        childDevice.setPresentValue(true);
         addPropertiesToDoorCloseStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
+//        childDevice.setPresentValue(true);
+        childDevice.setPresentValue(new byte[] { 1 });
 
         // 11
         childDevice = new BinaryInputDevice();
@@ -181,9 +184,10 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
         childDevice.setObjectType(ObjectType.BINARY_INPUT);
-        childDevice.setPresentValue(true);
         addPropertiesToDoorCloseStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
+//      childDevice.setPresentValue(true);
+        childDevice.setPresentValue(new byte[] { 1 });
 
         // 12
         childDevice = new DefaultDevice();
@@ -193,10 +197,10 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
-        childDevice.setPresentValue(1);
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
         addPropertiesToDoorStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
+        childDevice.setPresentValue(1);
 
         // 13
         childDevice = new DefaultDevice();
@@ -205,9 +209,9 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setName("door3_command");
         childDevice.setDescription("no entry");
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-        childDevice.setPresentValue(1);
         addPropertiesToDoorCommandStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
+        childDevice.setPresentValue(1);
 
         // 14
         childDevice = new DefaultDevice();
@@ -217,10 +221,10 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
-        childDevice.setPresentValue(1);
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
         addPropertiesToDoorStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
+        childDevice.setPresentValue(1);
 
         // 15
         childDevice = new DefaultDevice();
@@ -231,9 +235,9 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-        childDevice.setPresentValue(1);
         addPropertiesToDoorCommandStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
+        childDevice.setPresentValue(1);
     }
 
     private void addPropertiesToDevice(final Device device) {
@@ -576,6 +580,11 @@ public class DefaultDeviceFactory implements Factory<Device> {
         deviceProperty = new DefaultDeviceProperty<Integer>("restart-notification-recipients",
                 DeviceProperty.RESTART_NOTIFICATION_RECIPIENTS, 0, MessageType.UNSIGNED_INTEGER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
+
+        // 0x98 = 152d - active-cov-subscriptions
+        deviceProperty = new DefaultDeviceProperty<Integer>(DevicePropertyType.ACTIVE_COV_SUBSCRIPTIONS.getName(),
+                DevicePropertyType.ACTIVE_COV_SUBSCRIPTIONS.getCode(), 0, MessageType.UNSIGNED_INTEGER);
+        device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
     }
 
     private void addPropertiesToAlarmStateDevice(final Device device) {
@@ -793,7 +802,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         // 0x55 = 85d - present-value
         deviceProperty = new DefaultDeviceProperty<byte[]>("present-value", DeviceProperty.PRESENT_VALUE,
-                new byte[] { (byte) (((Boolean) device.getPresentValue()) ? 1 : 0) }, MessageType.ENUMERATED);
+                new byte[] { (byte) (((Integer) device.getPresentValue())).intValue() }, MessageType.ENUMERATED);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x6F = 111d - status-flags
@@ -864,9 +873,14 @@ public class DefaultDeviceFactory implements Factory<Device> {
         // multi-state-input (13)
         // multi-state-output (14)
         // multi-state-value (19)
-        deviceProperty = new DefaultDeviceProperty<byte[]>("object-type", DeviceProperty.OBJECT_TYPE,
-                new byte[] { (byte) device.getObjectType().getCode() }, MessageType.ENUMERATED);
+        // @formatter:off
+        deviceProperty = new DefaultDeviceProperty<byte[]>(
+                "object-type", 
+                DeviceProperty.OBJECT_TYPE,
+                new byte[] { (byte) device.getObjectType().getCode() }, 
+                MessageType.ENUMERATED);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
+        // @formatter:on
 
         // 0x1C = 28d description
         deviceProperty = new DefaultDeviceProperty<String>("description", DeviceProperty.DESCRIPTION,
@@ -937,22 +951,22 @@ public class DefaultDeviceFactory implements Factory<Device> {
                 new byte[] { (byte) device.getObjectType().getCode() }, MessageType.ENUMERATED);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
-        // 0x51 = 81d out-of-service
+        // 0x51 = 81d - out-of-service
         deviceProperty = new DefaultDeviceProperty<Boolean>("out-of-service", DeviceProperty.OUT_OF_SERVICE,
                 device.isOutOfService(), MessageType.BOOLEAN);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
-        // 0x55 = 85d present-value
+        // 0x55 = 85d - present-value
         deviceProperty = new DefaultDeviceProperty<Integer>("present-value", DeviceProperty.PRESENT_VALUE,
                 (Integer) device.getPresentValue(), MessageType.UNSIGNED_INTEGER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
-        // 0x1C = 28d description
+        // 0x1C = 28d - description
         deviceProperty = new DefaultDeviceProperty<String>("description", DeviceProperty.DESCRIPTION,
                 device.getDescription(), MessageType.CHARACTER_STRING);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
-        // 0x6E = 110d state-text
+        // 0x6E = 110d - state-text
         // composite
         final CompositeDeviceProperty stateTextCompositeDeviceProperty = new CompositeDeviceProperty("state-text",
                 DeviceProperty.STATE_TEXT, objectIdentifier, MessageType.UNSIGNED_INTEGER);
@@ -1053,6 +1067,29 @@ public class DefaultDeviceFactory implements Factory<Device> {
         deviceProperty = new DefaultDeviceProperty<Integer>("property-list", DeviceProperty.PROPERTY_LIST, 0,
                 MessageType.UNSIGNED_INTEGER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
+
+        // 0x4F = 79 object-type
+        //
+        // BACnetObjectType
+        // ENUMERATED:
+        // analog-input (0)
+        // analog-output (1)
+        // analog-value (2)
+        // binary-input (3)
+        // binary-output (4)
+        // binary-value (5)
+        // device (8)
+        // multi-state-input (13)
+        // multi-state-output (14)
+        // multi-state-value (19)
+        // @formatter:off
+        deviceProperty = new DefaultDeviceProperty<byte[]>(
+                "object-type", 
+                DeviceProperty.OBJECT_TYPE,
+                new byte[] { (byte) device.getObjectType().getCode() }, 
+                MessageType.ENUMERATED);
+        device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
+        // @formatter:on
     }
 
 }
