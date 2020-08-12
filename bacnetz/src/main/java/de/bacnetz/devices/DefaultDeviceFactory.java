@@ -248,7 +248,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         final int objectIdentifier = ObjectIdentifierServiceParameter
                 .encodeObjectTypeAndInstanceNumber(device.getObjectType(), device.getId());
         deviceProperty = new DefaultDeviceProperty<Integer>("object-identifier", DeviceProperty.OBJECT_IDENTIFIER,
-                objectIdentifier, MessageType.UNSIGNED_INTEGER);
+                objectIdentifier, MessageType.BACNET_OBJECT_IDENTIFIER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x3A = 58d - location
@@ -595,7 +595,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         final int objectIdentifier = ObjectIdentifierServiceParameter
                 .encodeObjectTypeAndInstanceNumber(device.getObjectType(), device.getId());
         deviceProperty = new DefaultDeviceProperty<Integer>("object-identifier", DeviceProperty.OBJECT_IDENTIFIER,
-                objectIdentifier, MessageType.UNSIGNED_INTEGER);
+                objectIdentifier, MessageType.BACNET_OBJECT_IDENTIFIER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x4d = 77d object-name
@@ -689,7 +689,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         final int objectIdentifier = ObjectIdentifierServiceParameter
                 .encodeObjectTypeAndInstanceNumber(device.getObjectType(), device.getId());
         deviceProperty = new DefaultDeviceProperty<Integer>("object-identifier", DeviceProperty.OBJECT_IDENTIFIER,
-                objectIdentifier, MessageType.UNSIGNED_INTEGER);
+                objectIdentifier, MessageType.BACNET_OBJECT_IDENTIFIER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x4d = 77d object-name
@@ -769,7 +769,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         final int objectIdentifier = ObjectIdentifierServiceParameter
                 .encodeObjectTypeAndInstanceNumber(device.getObjectType(), device.getId());
         deviceProperty = new DefaultDeviceProperty<Integer>("object-identifier", DeviceProperty.OBJECT_IDENTIFIER,
-                objectIdentifier, MessageType.UNSIGNED_INTEGER);
+                objectIdentifier, MessageType.BACNET_OBJECT_IDENTIFIER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x4d = 77d - object-name
@@ -851,7 +851,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         final int objectIdentifier = ObjectIdentifierServiceParameter
                 .encodeObjectTypeAndInstanceNumber(device.getObjectType(), device.getId());
         deviceProperty = new DefaultDeviceProperty<Integer>("object-identifier", DeviceProperty.OBJECT_IDENTIFIER,
-                objectIdentifier, MessageType.UNSIGNED_INTEGER);
+                objectIdentifier, MessageType.BACNET_OBJECT_IDENTIFIER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x4d = 77d object-name
@@ -904,12 +904,12 @@ public class DefaultDeviceFactory implements Factory<Device> {
                 MessageType.UNSIGNED_INTEGER);
 
         DefaultDeviceProperty subDeviceProperty = new DefaultDeviceProperty<Integer>(
-                DevicePropertyType.PRIORITY.getName(), DevicePropertyType.PRIORITY.getCode(), 10,
+                DevicePropertyType.PRIORITY.getName(), DevicePropertyType.PRIORITY.getCode(), 20,
                 MessageType.UNSIGNED_INTEGER);
         stateTextCompositeDeviceProperty.getCompositeList().add(subDeviceProperty);
 
         subDeviceProperty = new DefaultDeviceProperty<Integer>(DevicePropertyType.PRIORITY.getName(),
-                DevicePropertyType.PRIORITY.getCode(), 20, MessageType.UNSIGNED_INTEGER);
+                DevicePropertyType.PRIORITY.getCode(), 10, MessageType.UNSIGNED_INTEGER);
         stateTextCompositeDeviceProperty.getCompositeList().add(subDeviceProperty);
 
         subDeviceProperty = new DefaultDeviceProperty<Integer>(DevicePropertyType.PRIORITY.getName(),
@@ -951,7 +951,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         final int objectIdentifier = ObjectIdentifierServiceParameter
                 .encodeObjectTypeAndInstanceNumber(device.getObjectType(), device.getId());
         deviceProperty = new DefaultDeviceProperty<Integer>("object-identifier", DeviceProperty.OBJECT_IDENTIFIER,
-                objectIdentifier, MessageType.UNSIGNED_INTEGER);
+                objectIdentifier, MessageType.BACNET_OBJECT_IDENTIFIER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x4d = 77d object-name
@@ -1035,7 +1035,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         final int objectIdentifier = ObjectIdentifierServiceParameter
                 .encodeObjectTypeAndInstanceNumber(device.getObjectType(), device.getId());
         deviceProperty = new DefaultDeviceProperty<Integer>("object-identifier", DeviceProperty.OBJECT_IDENTIFIER,
-                objectIdentifier, MessageType.UNSIGNED_INTEGER);
+                objectIdentifier, MessageType.BACNET_OBJECT_IDENTIFIER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x4d = 77d object-name

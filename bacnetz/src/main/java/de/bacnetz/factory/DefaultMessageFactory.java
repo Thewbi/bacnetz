@@ -100,6 +100,10 @@ public class DefaultMessageFactory implements MessageFactory {
                 LOG.trace(">>> SUBSCRIBE_COV received!");
                 return processActiveCOVSubscriptions(device, deviceProperty, requestMessage);
 
+            case DeviceProperty.PRIORITY:
+                LOG.trace(">>> PRIORITY received!");
+                return processPriority(device, deviceProperty, requestMessage);
+
 //            case DeviceProperty.PRESENT_VALUE:
 //                return device.processPresentValueProperty(deviceProperty, requestMessage);
             }
@@ -154,6 +158,92 @@ public class DefaultMessageFactory implements MessageFactory {
         final int errorCode = 0x20;
 
         return createErrorMessage(requestMessage, errorClass, errorCode);
+    }
+
+    private Message processPriority(final Device device, final DeviceProperty<?> deviceProperty,
+            final Message requestMessage) {
+
+        final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
+        virtualLinkControl.setType(0x81);
+        virtualLinkControl.setFunction(0x0A);
+        virtualLinkControl.setLength(0x00);
+
+        final NPDU npdu = new NPDU();
+        npdu.setVersion(0x01);
+
+        // no additional information
+        // this works, if the cp is connected to the device directly via 192.168.2.1
+        npdu.setControl(0x00);
+
+        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+
+            // destination network information
+            npdu.setControl(0x20);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+            npdu.setDestinationMACLayerAddressLength(3);
+            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+
+            npdu.setDestinationHopCount(255);
+        }
+
+        final ObjectIdentifierServiceParameter outwardObjectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+        outwardObjectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+        outwardObjectIdentifierServiceParameter.setTagNumber(0x00);
+        outwardObjectIdentifierServiceParameter.setLengthValueType(4);
+        outwardObjectIdentifierServiceParameter.setObjectType(device.getObjectType());
+        outwardObjectIdentifierServiceParameter.setInstanceNumber(device.getId());
+
+        final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
+        propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+        propertyIdentifierServiceParameter.setTagNumber(0x01);
+        propertyIdentifierServiceParameter.setLengthValueType(0x01);
+        propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) deviceProperty.getPropertyKey() });
+
+        final APDU apdu = new APDU();
+        apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
+        apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
+        apdu.setVendorMap(vendorMap);
+        apdu.getServiceParameters().add(outwardObjectIdentifierServiceParameter);
+        apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
+
+        // {[4]
+        final ServiceParameter openingTagServiceParameter = new ServiceParameter();
+        openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+        openingTagServiceParameter.setTagNumber(0x04);
+        openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
+        apdu.getServiceParameters().add(openingTagServiceParameter);
+
+        for (final DeviceProperty<?> childDeviceProperty : ((CompositeDeviceProperty) deviceProperty)
+                .getCompositeList()) {
+
+            final ServiceParameter childServiceParameter = new ServiceParameter();
+            childServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+            childServiceParameter.setTagNumber(ServiceParameter.UNSIGNED_INTEGER_CODE);
+            childServiceParameter.setLengthValueType(1);
+            childServiceParameter
+                    .setPayload(new byte[] { (byte) ((Integer) childDeviceProperty.getValue()).intValue() });
+            apdu.getServiceParameters().add(childServiceParameter);
+        }
+
+        // }[4]
+        final ServiceParameter closingTagServiceParameter = new ServiceParameter();
+        closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+        closingTagServiceParameter.setTagNumber(0x04);
+        closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
+        apdu.getServiceParameters().add(closingTagServiceParameter);
+
+        final DefaultMessage result = new DefaultMessage();
+        result.setVirtualLinkControl(virtualLinkControl);
+        result.setNpdu(npdu);
+        result.setApdu(apdu);
+
+        virtualLinkControl.setLength(result.getDataLength());
+
+//      final byte[] bytes = result.getBytes();
+//      LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
+
+        return result;
     }
 
     /**

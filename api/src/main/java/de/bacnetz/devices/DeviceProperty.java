@@ -134,6 +134,9 @@ public interface DeviceProperty<T> {
     /** 0x98 = 152d - active-cov-subscriptions */
     public static final int ACTIVE_COV_SUBSCRIPTION = 0x98;
 
+    /** 0x56 = 86d - priority */
+    public static final int PRIORITY = 0x56;
+
     int getPropertyKey();
 
     void setPropertyKey(int propertyKey);
