@@ -35,6 +35,37 @@ public class APDUTest {
     }
 
     @Test
+    public void testDeserialize_addListElement() {
+
+        final byte[] hexStringToByteArray = APIUtils
+                .hexStringToByteArray("02156f080c0200271119ca3e1e22012d6506c0a800eabac01f3f");
+
+        final APDU apdu = new APDU();
+        apdu.fromBytes(hexStringToByteArray, 0, hexStringToByteArray.length);
+
+        assertEquals(PDUType.CONFIRMED_SERVICE_REQUEST_PDU, apdu.getPduType());
+        assertFalse(apdu.isSegmentation());
+        assertFalse(apdu.isMoreSegmentsFollow());
+        assertTrue(apdu.isSegmentedResponseAccepted());
+
+        assertEquals(ConfirmedServiceChoice.ADD_LIST_ELEMENT, apdu.getConfirmedServiceChoice());
+
+        final List<ServiceParameter> serviceParameters = apdu.getServiceParameters();
+        assertEquals(8, serviceParameters.size());
+
+        // There are 8 service parameters
+        //
+        // object identifier
+        // property identifier restart-notification-recipients 202d
+        // opening bracket 3
+        // opening bracket 1
+        // network-number
+        // MAC-Address
+        // closing bracket 1
+        // closing bracket 3
+    }
+
+    @Test
     public void testDeserializeReadPropertyMultiple() {
 
         final byte[] hexStringToByteArray = APIUtils.hexStringToByteArray("0243990e0c020027101e09701f");
@@ -50,7 +81,80 @@ public class APDUTest {
         assertEquals(ConfirmedServiceChoice.READ_PROPERTY_MULTIPLE, apdu.getConfirmedServiceChoice());
 
         final List<ServiceParameter> serviceParameters = apdu.getServiceParameters();
-        assertEquals(3, serviceParameters.size());
+        assertEquals(4, serviceParameters.size());
+    }
+
+    @Test
+    public void testDeserializeReadPropertyMultiple_2() {
+
+        final byte[] hexStringToByteArray = APIUtils.hexStringToByteArray("0245680e0c020027111e096b093e09a7090b090a1f");
+
+        final APDU apdu = new APDU();
+        apdu.fromBytes(hexStringToByteArray, 0, hexStringToByteArray.length);
+
+        assertEquals(PDUType.CONFIRMED_SERVICE_REQUEST_PDU, apdu.getPduType());
+        assertFalse(apdu.isSegmentation());
+        assertFalse(apdu.isMoreSegmentsFollow());
+        assertTrue(apdu.isSegmentedResponseAccepted());
+
+        assertEquals(ConfirmedServiceChoice.READ_PROPERTY_MULTIPLE, apdu.getConfirmedServiceChoice());
+
+        final List<ServiceParameter> serviceParameters = apdu.getServiceParameters();
+        assertEquals(8, serviceParameters.size());
+
+        // service parameter 0 is the object identifier
+        ServiceParameter serviceParameter = serviceParameters.get(0);
+        assertTrue(serviceParameter instanceof ObjectIdentifierServiceParameter);
+        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = (ObjectIdentifierServiceParameter) serviceParameter;
+        assertEquals(objectIdentifierServiceParameter.getObjectType(), ObjectType.DEVICE);
+        assertEquals(objectIdentifierServiceParameter.getInstanceNumber(), 10001);
+
+        // opening tag
+        serviceParameter = serviceParameters.get(1);
+        assertEquals(serviceParameter.getTagClass(), TagClass.CONTEXT_SPECIFIC_TAG);
+        assertEquals(serviceParameter.getTagNumber(), 1);
+        assertEquals(serviceParameter.getLengthValueType(), 6);
+
+        // 107d - segmentation-supported
+        serviceParameter = serviceParameters.get(2);
+        assertEquals(serviceParameter.getTagClass(), TagClass.CONTEXT_SPECIFIC_TAG);
+        assertEquals(serviceParameter.getTagNumber(), 0);
+        assertEquals(serviceParameter.getLengthValueType(), 1);
+        assertEquals((serviceParameter.getPayload()[0]) & 0xFF, 107);
+
+        // 62d - max-apdu-length-accepted
+        serviceParameter = serviceParameters.get(3);
+        assertEquals(serviceParameter.getTagClass(), TagClass.CONTEXT_SPECIFIC_TAG);
+        assertEquals(serviceParameter.getTagNumber(), 0);
+        assertEquals(serviceParameter.getLengthValueType(), 1);
+        assertEquals((serviceParameter.getPayload()[0]) & 0xFF, 62);
+
+        // 167d - max-segments-accepted
+        serviceParameter = serviceParameters.get(4);
+        assertEquals(serviceParameter.getTagClass(), TagClass.CONTEXT_SPECIFIC_TAG);
+        assertEquals(serviceParameter.getTagNumber(), 0);
+        assertEquals(serviceParameter.getLengthValueType(), 1);
+        assertEquals((serviceParameter.getPayload()[0]) & 0xFF, 167);
+
+        // 11d - apdu-timeout
+        serviceParameter = serviceParameters.get(5);
+        assertEquals(serviceParameter.getTagClass(), TagClass.CONTEXT_SPECIFIC_TAG);
+        assertEquals(serviceParameter.getTagNumber(), 0);
+        assertEquals(serviceParameter.getLengthValueType(), 1);
+        assertEquals((serviceParameter.getPayload()[0]) & 0xFF, 11);
+
+        // 10d - apdu-segment-timeout
+        serviceParameter = serviceParameters.get(6);
+        assertEquals(serviceParameter.getTagClass(), TagClass.CONTEXT_SPECIFIC_TAG);
+        assertEquals(serviceParameter.getTagNumber(), 0);
+        assertEquals(serviceParameter.getLengthValueType(), 1);
+        assertEquals((serviceParameter.getPayload()[0]) & 0xFF, 10);
+
+        // closing tag
+        serviceParameter = serviceParameters.get(7);
+        assertEquals(serviceParameter.getTagClass(), TagClass.CONTEXT_SPECIFIC_TAG);
+        assertEquals(serviceParameter.getTagNumber(), 1);
+        assertEquals(serviceParameter.getLengthValueType(), 7);
     }
 
     @Test

@@ -106,9 +106,11 @@ public class App {
         final CommandLine commandLine = commandLineParser.parse(options, args);
 
         if (commandLine.getOptions().length == 0) {
+
             // automatically generate the help statement
             final HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp("app -local_ip <IP Address>", options);
+
             return;
         }
 

@@ -11,6 +11,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.bacnet.common.APIUtils;
 import de.bacnetz.devices.DevicePropertyType;
 
 /**
@@ -330,6 +331,10 @@ public class APDU {
                 structureLength += processSubscribeCOV(startIndex + offset, data);
                 break;
 
+            case ADD_LIST_ELEMENT:
+                structureLength += processAddListElement(startIndex + offset, data);
+                break;
+
             default:
                 LOG.warn("Not implemented: " + confirmedServiceChoice.name());
 
@@ -338,9 +343,71 @@ public class APDU {
         }
     }
 
+    private int processAddListElement(final int offset, final byte[] data) {
+
+        int tempOffset = offset;
+
+        // objectIdentifier
+        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+        tempOffset += objectIdentifierServiceParameter.fromBytes(data, tempOffset);
+        serviceParameters.add(objectIdentifierServiceParameter);
+
+        // property identifier service parameter
+        final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
+        tempOffset += propertyIdentifierServiceParameter.fromBytes(data, tempOffset);
+        serviceParameters.add(propertyIdentifierServiceParameter);
+
+        // {[?] bracket open
+        final ServiceParameter bracketOpenServiceParameter = new ServiceParameter();
+        serviceParameters.add(bracketOpenServiceParameter);
+        tempOffset += bracketOpenServiceParameter.fromBytes(data, tempOffset);
+//        serviceParameters.add(bracketOpenServiceParameter);
+
+        ServiceParameter serviceParameter = null;
+        while (true) {
+
+            // {[?] bracket open
+            final ServiceParameter tempBracketOpenServiceParameter = new ServiceParameter();
+            serviceParameters.add(tempBracketOpenServiceParameter);
+            tempOffset += tempBracketOpenServiceParameter.fromBytes(data, tempOffset);
+//            serviceParameters.add(tempBracketOpenServiceParameter);
+
+            // if the outer closing bracket was read, abort
+            if (APIUtils.isClosingServiceParameter(tempBracketOpenServiceParameter)) {
+                break;
+            }
+
+            // network number
+            serviceParameter = new ServiceParameter();
+            serviceParameters.add(serviceParameter);
+            tempOffset += serviceParameter.fromBytes(data, tempOffset);
+//            serviceParameters.add(serviceParameter);
+
+            // mac address
+            serviceParameter = new ServiceParameter();
+            serviceParameters.add(serviceParameter);
+            tempOffset += serviceParameter.fromBytes(data, tempOffset);
+//            serviceParameters.add(serviceParameter);
+
+            // }[?] bracket close
+            final ServiceParameter tempBracketCloseServiceParameter = new ServiceParameter();
+            serviceParameters.add(tempBracketCloseServiceParameter);
+            tempOffset += tempBracketCloseServiceParameter.fromBytes(data, tempOffset);
+//            serviceParameters.add(tempBracketCloseServiceParameter);
+        }
+
+//        // }[?] bracket close
+//        final ServiceParameter tempBracketCloseServiceParameter = new ServiceParameter();
+//        getServiceParameters().add(tempBracketCloseServiceParameter);
+//        tempOffset += tempBracketCloseServiceParameter.fromBytes(data, offset + tempOffset);
+
+        return tempOffset - offset;
+    }
+
     /**
      * Read in data from the incoming byte array into the APDU. The APDU is later
-     * put into a message object.
+     * put into a message object.<br />
+     * <br />
      * 
      * At this point the APDU structure has been parsed up to the Service Choice.
      * 
@@ -436,9 +503,12 @@ public class APDU {
 
     /**
      * Read in data from the incoming byte array into the APDU. The APDU is later
-     * put into a message object.
+     * put into a message object.<br />
+     * <br />
      * 
-     * At this point the APDU structure has been parsed up to the Service Choice.
+     * At this point the APDU structure has been parsed up to the Service
+     * Choice.<br />
+     * <br />
      * 
      * TODO: this should be put into a converter.
      * 
@@ -522,20 +592,15 @@ public class APDU {
         getServiceParameters().add(bracketOpenServiceParameter);
         index += bracketOpenServiceParameter.fromBytes(data, offset + index);
 
-        // TODO: There can be several of these!
-        final ServiceParameter serviceParameter = new ServiceParameter();
-        getServiceParameters().add(serviceParameter);
-        index += serviceParameter.fromBytes(data, offset + index);
+        ServiceParameter serviceParameter = null;
+        do {
 
-//        // DEBUG
-//        if (serviceParameter.getPayload()[0] == SYSTEM_STATUS) {
-//            LOG.info("System Status: 112");
-//        }
+            // read all requested device property identifiers
+            serviceParameter = new ServiceParameter();
+            getServiceParameters().add(serviceParameter);
+            index += serviceParameter.fromBytes(data, offset + index);
 
-        // }[1] bracket close
-        final ServiceParameter bracketCloseServiceParameter = new ServiceParameter();
-        getServiceParameters().add(bracketCloseServiceParameter);
-        index += bracketCloseServiceParameter.fromBytes(data, offset + index);
+        } while (!APIUtils.isClosingServiceParameter(serviceParameter));
 
         return index;
     }

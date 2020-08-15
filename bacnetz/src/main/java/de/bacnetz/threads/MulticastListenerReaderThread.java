@@ -231,11 +231,13 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
         }
 
         final int port = configurationManager.getPropertyAsInt(ConfigurationManager.PORT_CONFIG_KEY);
+        final String multicastIP = configurationManager
+                .getPropertyAsString(ConfigurationManager.MULTICAST_IP_CONFIG_KEY);
 
-        LOG.trace(">>> Broadcast Sending to " + NetworkUtils.BACNET_MULTICAST_IP + ":" + port + ": "
-                + Utils.byteArrayToStringNoPrefix(bytes));
+        LOG.trace(
+                ">>> Broadcast Sending to " + multicastIP + ":" + port + ": " + Utils.byteArrayToStringNoPrefix(bytes));
 
-        final SocketAddress socketAddress = new InetSocketAddress(NetworkUtils.BACNET_MULTICAST_IP, port);
+        final SocketAddress socketAddress = new InetSocketAddress(multicastIP, port);
         final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, socketAddress);
 
         broadcastDatagramSocket.send(responseDatagramPacket);

@@ -8,6 +8,9 @@ import java.util.Locale;
 
 import org.apache.commons.lang3.StringUtils;
 
+import de.bacnetz.stack.ServiceParameter;
+import de.bacnetz.stack.TagClass;
+
 public class APIUtils {
 
     /**
@@ -173,6 +176,14 @@ public class APIUtils {
         result[0] = 0;
 
         return result;
+    }
+
+    public static boolean isClosingServiceParameter(final ServiceParameter serviceParameter) {
+
+        final boolean isContextSpecificTag = serviceParameter.getTagClass() == TagClass.CONTEXT_SPECIFIC_TAG;
+        final boolean isNamedTagClosingTag = serviceParameter.getLengthValueType() == 0x07;
+
+        return isContextSpecificTag && isNamedTagClosingTag;
     }
 
 }

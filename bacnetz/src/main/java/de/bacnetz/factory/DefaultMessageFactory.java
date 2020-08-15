@@ -125,7 +125,7 @@ public class DefaultMessageFactory implements MessageFactory {
 
             case BOOLEAN:
                 return returnBooleanProperty(device, requestMessage.getApdu().getInvokeId(),
-                        deviceProperty.getPropertyKey(), (boolean) deviceProperty.getValue());
+                        deviceProperty.getPropertyKey(), (Boolean) deviceProperty.getValue());
 
             case ENUMERATED:
                 return createEnumeratedProperty(device, requestMessage.getApdu().getInvokeId(),
@@ -1248,7 +1248,8 @@ public class DefaultMessageFactory implements MessageFactory {
         }
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-        objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+//        objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+        objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
         objectIdentifierServiceParameter.setObjectType(device.getObjectType());
@@ -1587,7 +1588,6 @@ public class DefaultMessageFactory implements MessageFactory {
         dateServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         dateServiceParameter.setTagNumber(ServiceParameter.DATE);
         dateServiceParameter.setLengthValueType(0x04);
-//        dateServiceParameter.setPayload(new byte[] { (byte) 0x78, (byte) 0x07, (byte) 0x09, (byte) 0x04 });
         dateServiceParameter.setPayload(bacnetDateAsByteArray);
 
         // encode the time parameter here!
@@ -1600,7 +1600,6 @@ public class DefaultMessageFactory implements MessageFactory {
         timeServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         timeServiceParameter.setTagNumber(ServiceParameter.TIME);
         timeServiceParameter.setLengthValueType(0x04);
-//        timeServiceParameter.setPayload(new byte[] { (byte) 0x12, (byte) 0x0e, (byte) 0x16, (byte) 0x15 });
         timeServiceParameter.setPayload(bacnetTimeAsByteArray);
 
         // }[2]

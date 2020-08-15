@@ -70,7 +70,7 @@ public enum ConfirmedServiceChoice {
     atomicWriteFile (7),
     
     //  Object Access Services
-    addListElement (8),
+    ADD_LIST_ELEMENT (8),
     removeListElement (9),
     createObject (10),
     deleteObject (11),
@@ -132,7 +132,7 @@ public enum ConfirmedServiceChoice {
             return atomicWriteFile;
 
         case (8):
-            return addListElement;
+            return ADD_LIST_ELEMENT;
 
         case (9):
             return removeListElement;
