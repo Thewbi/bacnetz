@@ -168,8 +168,9 @@ public class ToogleDoorOpenStateThread implements Runnable {
         presentValueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         presentValueServiceParameter.setTagNumber(MessageType.ENUMERATED.getValue());
         presentValueServiceParameter.setLengthValueType(0x01);
-        presentValueServiceParameter
-                .setPayload(new byte[] { (byte) ((Boolean) childDevice.getPresentValue() ? 1 : 0) });
+//        presentValueServiceParameter
+//                .setPayload(new byte[] { (byte) ((Boolean) childDevice.getPresentValue() ? 1 : 0) });
+        presentValueServiceParameter.setPayload((byte[]) childDevice.getPresentValue());
         apdu.getServiceParameters().add(presentValueServiceParameter);
 
         // closing }[2]
