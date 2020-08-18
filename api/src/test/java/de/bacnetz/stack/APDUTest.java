@@ -11,6 +11,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import de.bacnet.common.APIUtils;
+import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.devices.ObjectType;
 
 public class APDUTest {
@@ -155,6 +156,262 @@ public class APDUTest {
         assertEquals(serviceParameter.getTagClass(), TagClass.CONTEXT_SPECIFIC_TAG);
         assertEquals(serviceParameter.getTagNumber(), 1);
         assertEquals(serviceParameter.getLengthValueType(), 7);
+    }
+
+    /**
+     * See bacnet_virtual_device_10001_it_works_almost.pcapng - message no. 98
+     */
+    @Test
+    public void testDeserializeReadPropertyMultiple_3() {
+
+        final byte[] hexStringToByteArray = APIUtils
+                .hexStringToByteArray("0215640e0c00c000011e0955096f1f0c00c000021e0955096f1f0c00c000031e0955096f1f");
+
+        final APDU apdu = new APDU();
+        apdu.fromBytes(hexStringToByteArray, 0, hexStringToByteArray.length);
+
+        assertEquals(PDUType.CONFIRMED_SERVICE_REQUEST_PDU, apdu.getPduType());
+        assertFalse(apdu.isSegmentation());
+        assertFalse(apdu.isMoreSegmentsFollow());
+        assertTrue(apdu.isSegmentedResponseAccepted());
+
+        assertEquals(ConfirmedServiceChoice.READ_PROPERTY_MULTIPLE, apdu.getConfirmedServiceChoice());
+
+        final List<ServiceParameter> serviceParameters = apdu.getServiceParameters();
+        assertEquals(15, serviceParameters.size());
+
+        int index = -1;
+
+        // object identifier service parameter
+        index++;
+        ObjectIdentifierServiceParameter objectIdentifier = (ObjectIdentifierServiceParameter) serviceParameters
+                .get(index);
+        assertEquals(ObjectType.BINARY_INPUT, objectIdentifier.getObjectType());
+        assertEquals(1, objectIdentifier.getInstanceNumber());
+
+        // opening
+        index++;
+        ServiceParameter serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(1, serviceParameter.getTagNumber());
+        assertEquals(ServiceParameter.OPENING_TAG_CODE, serviceParameter.getLengthValueType());
+
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(0, serviceParameter.getTagNumber());
+        assertEquals(1, serviceParameter.getLengthValueType());
+        assertEquals(DevicePropertyType.PRESENT_VALUE.getCode(), serviceParameter.getPayload()[0]);
+
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(0, serviceParameter.getTagNumber());
+        assertEquals(1, serviceParameter.getLengthValueType());
+        assertEquals(DevicePropertyType.STATUS_FLAGS.getCode(), serviceParameter.getPayload()[0]);
+
+        // opening
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(1, serviceParameter.getTagNumber());
+        assertEquals(ServiceParameter.CLOSING_TAG_CODE, serviceParameter.getLengthValueType());
+
+        // object identifier service parameter
+        index++;
+        objectIdentifier = (ObjectIdentifierServiceParameter) serviceParameters.get(index);
+        assertEquals(ObjectType.BINARY_INPUT, objectIdentifier.getObjectType());
+        assertEquals(2, objectIdentifier.getInstanceNumber());
+
+        // opening
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(1, serviceParameter.getTagNumber());
+        assertEquals(ServiceParameter.OPENING_TAG_CODE, serviceParameter.getLengthValueType());
+
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(0, serviceParameter.getTagNumber());
+        assertEquals(1, serviceParameter.getLengthValueType());
+        assertEquals(DevicePropertyType.PRESENT_VALUE.getCode(), serviceParameter.getPayload()[0]);
+
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(0, serviceParameter.getTagNumber());
+        assertEquals(1, serviceParameter.getLengthValueType());
+        assertEquals(DevicePropertyType.STATUS_FLAGS.getCode(), serviceParameter.getPayload()[0]);
+
+        // opening
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(1, serviceParameter.getTagNumber());
+        assertEquals(ServiceParameter.CLOSING_TAG_CODE, serviceParameter.getLengthValueType());
+
+        // object identifier service parameter
+        index++;
+        objectIdentifier = (ObjectIdentifierServiceParameter) serviceParameters.get(index);
+        assertEquals(ObjectType.BINARY_INPUT, objectIdentifier.getObjectType());
+        assertEquals(3, objectIdentifier.getInstanceNumber());
+
+        // opening
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(1, serviceParameter.getTagNumber());
+        assertEquals(ServiceParameter.OPENING_TAG_CODE, serviceParameter.getLengthValueType());
+
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(0, serviceParameter.getTagNumber());
+        assertEquals(1, serviceParameter.getLengthValueType());
+        assertEquals(DevicePropertyType.PRESENT_VALUE.getCode(), serviceParameter.getPayload()[0]);
+
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(0, serviceParameter.getTagNumber());
+        assertEquals(1, serviceParameter.getLengthValueType());
+        assertEquals(DevicePropertyType.STATUS_FLAGS.getCode(), serviceParameter.getPayload()[0]);
+
+        // opening
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(1, serviceParameter.getTagNumber());
+        assertEquals(ServiceParameter.CLOSING_TAG_CODE, serviceParameter.getLengthValueType());
+    }
+
+    /**
+     * See bacnet_active_cov_subscriptions_real_answer.pcapng - message no. 2694
+     */
+    @Test
+    public void testDeserializeReadPropertyMultiple_4() {
+
+        final byte[] hexStringToByteArray = APIUtils
+                .hexStringToByteArray("0233530e0c020000191e0955096f1f0c03c000321e0955096f1f0c04c000051e096f09551f");
+
+        final APDU apdu = new APDU();
+        apdu.fromBytes(hexStringToByteArray, 0, hexStringToByteArray.length);
+
+        assertEquals(PDUType.CONFIRMED_SERVICE_REQUEST_PDU, apdu.getPduType());
+        assertFalse(apdu.isSegmentation());
+        assertFalse(apdu.isMoreSegmentsFollow());
+        assertTrue(apdu.isSegmentedResponseAccepted());
+
+        assertEquals(ConfirmedServiceChoice.READ_PROPERTY_MULTIPLE, apdu.getConfirmedServiceChoice());
+
+        final List<ServiceParameter> serviceParameters = apdu.getServiceParameters();
+        assertEquals(15, serviceParameters.size());
+
+        int index = -1;
+
+        // object identifier service parameter
+        index++;
+        ObjectIdentifierServiceParameter objectIdentifier = (ObjectIdentifierServiceParameter) serviceParameters
+                .get(index);
+        assertEquals(ObjectType.DEVICE, objectIdentifier.getObjectType());
+        assertEquals(25, objectIdentifier.getInstanceNumber());
+
+        // opening
+        index++;
+        ServiceParameter serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(1, serviceParameter.getTagNumber());
+        assertEquals(ServiceParameter.OPENING_TAG_CODE, serviceParameter.getLengthValueType());
+
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(0, serviceParameter.getTagNumber());
+        assertEquals(1, serviceParameter.getLengthValueType());
+        assertEquals(DevicePropertyType.PRESENT_VALUE.getCode(), serviceParameter.getPayload()[0]);
+
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(0, serviceParameter.getTagNumber());
+        assertEquals(1, serviceParameter.getLengthValueType());
+        assertEquals(DevicePropertyType.STATUS_FLAGS.getCode(), serviceParameter.getPayload()[0]);
+
+        // opening
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(1, serviceParameter.getTagNumber());
+        assertEquals(ServiceParameter.CLOSING_TAG_CODE, serviceParameter.getLengthValueType());
+
+        // object identifier service parameter
+        index++;
+        objectIdentifier = (ObjectIdentifierServiceParameter) serviceParameters.get(index);
+        assertEquals(ObjectType.NOTIFICATION_CLASS, objectIdentifier.getObjectType());
+        assertEquals(50, objectIdentifier.getInstanceNumber());
+
+        // opening
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(1, serviceParameter.getTagNumber());
+        assertEquals(ServiceParameter.OPENING_TAG_CODE, serviceParameter.getLengthValueType());
+
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(0, serviceParameter.getTagNumber());
+        assertEquals(1, serviceParameter.getLengthValueType());
+        assertEquals(DevicePropertyType.PRESENT_VALUE.getCode(), serviceParameter.getPayload()[0]);
+
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(0, serviceParameter.getTagNumber());
+        assertEquals(1, serviceParameter.getLengthValueType());
+        assertEquals(DevicePropertyType.STATUS_FLAGS.getCode(), serviceParameter.getPayload()[0]);
+
+        // opening
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(1, serviceParameter.getTagNumber());
+        assertEquals(ServiceParameter.CLOSING_TAG_CODE, serviceParameter.getLengthValueType());
+
+        // object identifier service parameter
+        index++;
+        objectIdentifier = (ObjectIdentifierServiceParameter) serviceParameters.get(index);
+        assertEquals(ObjectType.MULTI_STATE_VALUE, objectIdentifier.getObjectType());
+        assertEquals(5, objectIdentifier.getInstanceNumber());
+
+        // opening
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(1, serviceParameter.getTagNumber());
+        assertEquals(ServiceParameter.OPENING_TAG_CODE, serviceParameter.getLengthValueType());
+
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(0, serviceParameter.getTagNumber());
+        assertEquals(1, serviceParameter.getLengthValueType());
+        assertEquals(DevicePropertyType.STATUS_FLAGS.getCode(), serviceParameter.getPayload()[0]);
+
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(0, serviceParameter.getTagNumber());
+        assertEquals(1, serviceParameter.getLengthValueType());
+        assertEquals(DevicePropertyType.PRESENT_VALUE.getCode(), serviceParameter.getPayload()[0]);
+
+        // opening
+        index++;
+        serviceParameter = serviceParameters.get(index);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(1, serviceParameter.getTagNumber());
+        assertEquals(ServiceParameter.CLOSING_TAG_CODE, serviceParameter.getLengthValueType());
     }
 
     @Test

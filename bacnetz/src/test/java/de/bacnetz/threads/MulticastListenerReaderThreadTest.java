@@ -17,8 +17,12 @@ import de.bacnetz.controller.DefaultMessageController;
 import de.bacnetz.controller.Message;
 import de.bacnetz.controller.MessageController;
 import de.bacnetz.devices.DefaultDevice;
+import de.bacnetz.devices.DefaultDeviceProperty;
 import de.bacnetz.devices.Device;
+import de.bacnetz.devices.DeviceProperty;
+import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.devices.ObjectType;
+import de.bacnetz.factory.MessageType;
 import de.bacnetz.stack.PDUType;
 import de.bacnetz.stack.ServiceParameter;
 
@@ -321,6 +325,54 @@ public class MulticastListenerReaderThreadTest {
         final Device device = new DefaultDevice();
         device.setId(10001);
         device.setObjectType(ObjectType.DEVICE);
+
+        final DefaultMessageController messageController = new DefaultMessageController();
+        messageController.setDevice(device);
+
+        final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
+        multicastListenerReaderThread.getMessageControllers().add(messageController);
+
+        final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
+                hexStringToByteArray.length);
+        final Message response = multicastListenerReaderThread.sendMessageToController(request);
+
+        LOG.info(response);
+    }
+
+    /**
+     * See bacnet_active_cov_subscriptions_real_answer.pcapng - message no. 2694
+     */
+    @Test
+    public void testParseBuffer_ReadPropertyMultiple_MultipleDevices() {
+
+        final byte[] hexStringToByteArray = Utils.hexStringToByteArray(
+                "810a0030012403e70119ff0233530e0c020000191e0955096f1f0c03c000321e0955096f1f0c04c000051e096f09551f");
+
+        final Device device = new DefaultDevice();
+        device.setId(25);
+        device.setObjectType(ObjectType.DEVICE);
+
+        final Device notificationClassDevice = new DefaultDevice();
+        notificationClassDevice.setId(50);
+        notificationClassDevice.setObjectType(ObjectType.NOTIFICATION_CLASS);
+        device.getChildDevices().add(notificationClassDevice);
+
+        final Device multiStateValueDevice = new DefaultDevice();
+        multiStateValueDevice.setId(5);
+        multiStateValueDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+        device.getChildDevices().add(multiStateValueDevice);
+
+        // present value
+        final DeviceProperty<Integer> presentValueDeviceProperty = new DefaultDeviceProperty<Integer>("present-value",
+                DevicePropertyType.PRESENT_VALUE.getCode(), (Integer) device.getPresentValue(),
+                MessageType.UNSIGNED_INTEGER);
+        multiStateValueDevice.getProperties().put(DevicePropertyType.PRESENT_VALUE.getCode(),
+                presentValueDeviceProperty);
+
+        // 0x6F = 111d - status-flags
+        final DeviceProperty<Integer> statusFlagsDeviceProperty = new DefaultDeviceProperty<Integer>("status-flags",
+                DeviceProperty.STATUS_FLAGS, 0x00, MessageType.UNSIGNED_INTEGER);
+        multiStateValueDevice.getProperties().put(DevicePropertyType.STATUS_FLAGS.getCode(), statusFlagsDeviceProperty);
 
         final DefaultMessageController messageController = new DefaultMessageController();
         messageController.setDevice(device);

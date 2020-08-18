@@ -5,53 +5,61 @@ import java.util.Map;
 
 public enum ObjectType {
 
-	// @formatter:off
+    // @formatter:off
 
-	BINARY_INPUT(3, "BINARY_INPUT"),
+	BINARY_INPUT(0x03, "BINARY_INPUT"),
 	
-	DEVICE(8, "DEVICE"),
+	DEVICE(0x08, "DEVICE"),
 	
-	NOTIFICATION_CLASS(15, "NOTIFICATION_CLASS"),
+	NOTIFICATION_CLASS(0x0F, "NOTIFICATION_CLASS"),
 	
-	MULTI_STATE_VALUE(19, "MULTI_STATE_VALUE");
+	MULTI_STATE_VALUE(0x13, "MULTI_STATE_VALUE");
 
 	// @formatter:on
 
-	private int code;
+    public static final int BINARY_INPUT_CODE = 0x03;
 
-	private String name;
+    public static final int DEVICE_CODE = 0x08;
 
-	private static Map<Integer, ObjectType> codeMap = new HashMap<Integer, ObjectType>();
+    public static final int NOTIFICATION_CLASS_CODE = 0x0F;
 
-	private ObjectType(final int code, final String name) {
-		this.code = code;
-		this.name = name;
-	}
+    public static final int MULTI_STATE_VALUE_CODE = 0x13;
 
-	static {
-		for (final ObjectType objectType : values()) {
-			codeMap.put(objectType.getCode(), objectType);
-		}
-	}
+    private int code;
 
-	public static ObjectType getByCode(final int code) {
-		return codeMap.get(code);
-	}
+    private String name;
 
-	public int getCode() {
-		return code;
-	}
+    private static Map<Integer, ObjectType> codeMap = new HashMap<Integer, ObjectType>();
 
-	public void setCode(final int code) {
-		this.code = code;
-	}
+    private ObjectType(final int code, final String name) {
+        this.code = code;
+        this.name = name;
+    }
 
-	public String getName() {
-		return name;
-	}
+    static {
+        for (final ObjectType objectType : values()) {
+            codeMap.put(objectType.getCode(), objectType);
+        }
+    }
 
-	public void setName(final String name) {
-		this.name = name;
-	}
+    public static ObjectType getByCode(final int code) {
+        return codeMap.get(code);
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(final int code) {
+        this.code = code;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(final String name) {
+        this.name = name;
+    }
 
 }

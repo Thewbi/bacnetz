@@ -27,6 +27,8 @@ import de.bacnetz.stack.BACnetDate;
 import de.bacnetz.stack.BACnetTime;
 import de.bacnetz.stack.ConfirmedServiceChoice;
 import de.bacnetz.stack.DefaultCOVSubscription;
+import de.bacnetz.stack.ErrorClass;
+import de.bacnetz.stack.ErrorCode;
 import de.bacnetz.stack.NPDU;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.PDUType;
@@ -262,7 +264,7 @@ public class DefaultMessageController implements MessageController {
     private Message processSubscribeCov(final Message requestMessage) {
 
         ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()
-                .getObjectIdentifierServiceParameter();
+                .getFirstObjectIdentifierServiceParameter();
         final Device findDevice = device.findDevice(objectIdentifierServiceParameter);
 
         // @formatter:off
@@ -332,7 +334,7 @@ public class DefaultMessageController implements MessageController {
     private Message processReinitializeDevice(final Message requestMessage) {
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()
-                .getObjectIdentifierServiceParameter();
+                .getFirstObjectIdentifierServiceParameter();
         final Device findDevice = device.findDevice(objectIdentifierServiceParameter);
 
         // update the restart date
@@ -522,7 +524,7 @@ public class DefaultMessageController implements MessageController {
         final int propertyIdentifierCode = propertyIdentifier;
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()
-                .getObjectIdentifierServiceParameter();
+                .getFirstObjectIdentifierServiceParameter();
         LOG.info(">>> Write Identifier: {} ({}) Object Identifier: {}", propertyIdentifierCode,
                 DevicePropertyType.getByCode(propertyIdentifierCode).getName(),
                 objectIdentifierServiceParameter.toString());
@@ -608,7 +610,7 @@ public class DefaultMessageController implements MessageController {
         LOG.trace("Property Identifier: {}", propertyIdentifierCode);
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()
-                .getObjectIdentifierServiceParameter();
+                .getFirstObjectIdentifierServiceParameter();
 
         LOG.trace(">>> Property Identifier: {} ({}) Object Identifier: {}", propertyIdentifierCode,
                 DevicePropertyType.getByCode(propertyIdentifierCode).getName(),
@@ -622,72 +624,117 @@ public class DefaultMessageController implements MessageController {
 
     private Message processReadPropertyMultiple(final Message requestMessage) {
 
-        final ObjectIdentifierServiceParameter targetObjectIdentifierServiceParameter = requestMessage.getApdu()
-                .getObjectIdentifierServiceParameter();
-
-        // find device
-        final Device targetDevice = device.findDevice(targetObjectIdentifierServiceParameter);
-
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
         virtualLinkControl.setType(0x81);
         virtualLinkControl.setFunction(0x0A);
         virtualLinkControl.setLength(0x00);
 
+        final APDU targetApdu = new APDU();
+        targetApdu.setPduType(PDUType.COMPLEX_ACK_PDU);
+        targetApdu.setInvokeId(requestMessage.getApdu().getInvokeId());
+        targetApdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY_MULTIPLE);
+        targetApdu.setVendorMap(vendorMap);
+
+        final APDU sourceApdu = requestMessage.getApdu();
+
+        int index = 0;
+
+        for (final ServiceParameter serviceParameter : sourceApdu.getServiceParameters()) {
+
+            if (serviceParameter instanceof ObjectIdentifierServiceParameter) {
+
+                final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = (ObjectIdentifierServiceParameter) serviceParameter;
+                index = processDevice(objectIdentifierServiceParameter, index, sourceApdu.getServiceParameters(),
+                        targetApdu);
+            }
+
+//            index++;
+        }
+
         final NPDU npdu = new NPDU();
         npdu.setVersion(0x01);
-
         // no additional information
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
-
         if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
             // destination network information
             npdu.setControl(0x20);
             npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
             npdu.setDestinationHopCount(255);
         }
 
+        final DefaultMessage result = new DefaultMessage();
+        result.setVirtualLinkControl(virtualLinkControl);
+        result.setNpdu(npdu);
+        result.setApdu(targetApdu);
+
+//        // DEBUG
+//        LOG.trace("All service parameters ...");
+//        if (CollectionUtils.isNotEmpty(targetApdu.getServiceParameters())) {
+//            for (final ServiceParameter serviceParameter : targetApdu.getServiceParameters()) {
+//                final byte[] temp = new byte[100];
+//                serviceParameter.toBytes(temp, 0);
+//
+//                LOG.trace(serviceParameter + " - " + Utils.byteArrayToStringNoPrefix(temp));
+//            }
+//        }
+//        LOG.trace("All service parameters done.");
+
+        virtualLinkControl.setLength(result.getDataLength());
+
+//		final byte[] bytes = result.getBytes();
+//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
+
+        return result;
+    }
+
+    private int processDevice(final ObjectIdentifierServiceParameter targetObjectIdentifierServiceParameter,
+            final int sourceServiceParameterIndex, final List<ServiceParameter> serviceParameters,
+            final APDU targetApdu) {
+
+        // find device
+        final Device targetDevice = device.findDevice(targetObjectIdentifierServiceParameter);
+
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-//        objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
         objectIdentifierServiceParameter.setObjectType(ObjectType.DEVICE);
-        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
-
-        final APDU apdu = new APDU();
-        apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
-        apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY_MULTIPLE);
-        apdu.setVendorMap(vendorMap);
-        apdu.getServiceParameters().add(objectIdentifierServiceParameter);
+        objectIdentifierServiceParameter.setInstanceNumber(targetDevice.getId());
+        targetApdu.getServiceParameters().add(objectIdentifierServiceParameter);
 
         // opening {[1]
         final ServiceParameter openingTagServiceParameter1 = new ServiceParameter();
         openingTagServiceParameter1.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         openingTagServiceParameter1.setTagNumber(0x01);
         openingTagServiceParameter1.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
-        apdu.getServiceParameters().add(openingTagServiceParameter1);
-
+        targetApdu.getServiceParameters().add(openingTagServiceParameter1);
         LOG.trace(openingTagServiceParameter1);
 
         // read the service parameters to find out which properties where requested or
         // if the 'all' keyword was sent for all properties
-        final List<ServiceParameter> serviceParameters = requestMessage.getApdu().getServiceParameters();
         if (CollectionUtils.isEmpty(serviceParameters)) {
             LOG.warn("No service parameters in readPropertyMultiple request");
         } else {
             LOG.info("serviceParameters.length(): {} ", serviceParameters.size());
         }
 
+        int index = sourceServiceParameterIndex + 1;
         boolean withinRequestedProperties = false;
-        for (final ServiceParameter serviceParameter : serviceParameters) {
+        while (index < serviceParameters.size()) {
 
-            LOG.info(serviceParameter);
+            final ServiceParameter serviceParameter = serviceParameters.get(index);
+
+            if (serviceParameter instanceof ObjectIdentifierServiceParameter) {
+                break;
+            }
+
+            index++;
+
+            // DEBUG
+            LOG.trace(serviceParameter);
 
             // opening tag
             if (serviceParameter.getLengthValueType() == 0x06) {
@@ -713,13 +760,14 @@ public class DefaultMessageController implements MessageController {
             // 'all' service property
             if (devicePropertyKey == DeviceProperty.ALL) {
 
-                int index = 0;
+                int debugOutputIndex = 0;
 
                 for (final DeviceProperty<?> deviceProperty : targetDevice.getProperties().values()) {
 
-                    index++;
+                    debugOutputIndex++;
 
-                    LOG.info("Adding ServiceParameter for DeviceProperty " + index + ") " + deviceProperty + " ...");
+                    LOG.info("Adding ServiceParameter for DeviceProperty " + debugOutputIndex + ") " + deviceProperty
+                            + " ...");
 
                     // add the property identifier
                     final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
@@ -728,21 +776,21 @@ public class DefaultMessageController implements MessageController {
                     propertyIdentifierServiceParameter.setLengthValueType(1);
                     propertyIdentifierServiceParameter
                             .setPayload(new byte[] { (byte) deviceProperty.getPropertyKey() });
-                    apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
+                    targetApdu.getServiceParameters().add(propertyIdentifierServiceParameter);
 
                     LOG.trace(propertyIdentifierServiceParameter);
 
                     // add the property value
-                    addPropertyValue(apdu, deviceProperty);
+                    addPropertyValue(targetApdu, deviceProperty);
 
                     LOG.trace("Adding ServiceParameter for DeviceProperty: " + deviceProperty + " done.");
                 }
 
             } else if (devicePropertyKey == DevicePropertyType.TIME_OF_DEVICE_RESTART.getCode()) {
 
-                if (device.getProperties().containsKey(devicePropertyKey)) {
+                if (targetDevice.getProperties().containsKey(devicePropertyKey)) {
 
-                    final DeviceProperty<?> deviceProperty = device.getProperties().get(devicePropertyKey);
+                    final DeviceProperty<?> deviceProperty = targetDevice.getProperties().get(devicePropertyKey);
 
                     // add the property identifier
                     final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
@@ -751,21 +799,21 @@ public class DefaultMessageController implements MessageController {
                     propertyIdentifierServiceParameter.setLengthValueType(1);
                     propertyIdentifierServiceParameter
                             .setPayload(new byte[] { (byte) deviceProperty.getPropertyKey() });
-                    apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
+                    targetApdu.getServiceParameters().add(propertyIdentifierServiceParameter);
 
                     // opening tag {[4]
                     final ServiceParameter openingTagServiceParameter4 = new ServiceParameter();
                     openingTagServiceParameter4.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
                     openingTagServiceParameter4.setTagNumber(0x04);
                     openingTagServiceParameter4.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
-                    apdu.getServiceParameters().add(openingTagServiceParameter4);
+                    targetApdu.getServiceParameters().add(openingTagServiceParameter4);
 
                     // opening tag {[2]
                     final ServiceParameter openingTagServiceParameter2 = new ServiceParameter();
                     openingTagServiceParameter2.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
                     openingTagServiceParameter2.setTagNumber(0x02);
                     openingTagServiceParameter2.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
-                    apdu.getServiceParameters().add(openingTagServiceParameter2);
+                    targetApdu.getServiceParameters().add(openingTagServiceParameter2);
 
                     // see
                     // de.bacnetz.factory.DefaultMessageFactory.processTimeOfDeviceRestartProperty(Device,
@@ -773,47 +821,47 @@ public class DefaultMessageController implements MessageController {
 
                     // encode the date parameter
                     final BACnetDate bacnetDate = new BACnetDate();
-                    bacnetDate.fromLocalDateTime(device.getTimeOfDeviceRestart());
+                    bacnetDate.fromLocalDateTime(targetDevice.getTimeOfDeviceRestart());
                     final byte[] bacnetDateAsByteArray = bacnetDateToByteConverter.convert(bacnetDate);
                     final ServiceParameter dateServiceParameter = new ServiceParameter();
                     dateServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
                     dateServiceParameter.setTagNumber(ServiceParameter.DATE);
                     dateServiceParameter.setLengthValueType(0x04);
                     dateServiceParameter.setPayload(bacnetDateAsByteArray);
-                    apdu.getServiceParameters().add(dateServiceParameter);
+                    targetApdu.getServiceParameters().add(dateServiceParameter);
 
                     // encode the time parameter
                     final BACnetTime bacnetTime = new BACnetTime();
-                    bacnetTime.fromLocalDateTime(device.getTimeOfDeviceRestart());
+                    bacnetTime.fromLocalDateTime(targetDevice.getTimeOfDeviceRestart());
                     final byte[] bacnetTimeAsByteArray = bacnetTimeToByteConverter.convert(bacnetTime);
                     final ServiceParameter timeServiceParameter = new ServiceParameter();
                     timeServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
                     timeServiceParameter.setTagNumber(ServiceParameter.TIME);
                     timeServiceParameter.setLengthValueType(0x04);
                     timeServiceParameter.setPayload(bacnetTimeAsByteArray);
-                    apdu.getServiceParameters().add(timeServiceParameter);
+                    targetApdu.getServiceParameters().add(timeServiceParameter);
 
                     // closing tag }[2]
                     final ServiceParameter closingTagServiceParameter2 = new ServiceParameter();
                     closingTagServiceParameter2.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
                     closingTagServiceParameter2.setTagNumber(0x02);
                     closingTagServiceParameter2.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
-                    apdu.getServiceParameters().add(closingTagServiceParameter2);
+                    targetApdu.getServiceParameters().add(closingTagServiceParameter2);
 
                     // closing tag }[4]
                     final ServiceParameter closingTagServiceParameter4 = new ServiceParameter();
                     closingTagServiceParameter4.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
                     closingTagServiceParameter4.setTagNumber(0x04);
                     closingTagServiceParameter4.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
-                    apdu.getServiceParameters().add(closingTagServiceParameter4);
+                    targetApdu.getServiceParameters().add(closingTagServiceParameter4);
                 }
 
             } else {
 
                 // add a property value service parameter for the deviceProperty
-                if (device.getProperties().containsKey(devicePropertyKey)) {
+                if (targetDevice.getProperties().containsKey(devicePropertyKey)) {
 
-                    final DeviceProperty<?> deviceProperty = device.getProperties().get(devicePropertyKey);
+                    final DeviceProperty<?> deviceProperty = targetDevice.getProperties().get(devicePropertyKey);
 
                     // add the property identifier
                     final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
@@ -822,33 +870,54 @@ public class DefaultMessageController implements MessageController {
                     propertyIdentifierServiceParameter.setLengthValueType(1);
                     propertyIdentifierServiceParameter
                             .setPayload(new byte[] { (byte) deviceProperty.getPropertyKey() });
-                    apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
+                    targetApdu.getServiceParameters().add(propertyIdentifierServiceParameter);
 
                     // add the property value
-                    addPropertyValue(apdu, deviceProperty);
+                    addPropertyValue(targetApdu, deviceProperty);
 
                 } else {
 
                     LOG.info("devicePropertyKey not present! devicePropertyKey: {}", devicePropertyKey);
 
-                    final String msg = "NotImplemented! " + devicePropertyKey + " "
-                            + DevicePropertyType.getByCode(devicePropertyKey).getName();
-                    LOG.error(msg);
+                    // output property error, unknown property
 
-                    throw new RuntimeException(msg);
+                    // add the property identifier
+                    final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
+                    propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+                    propertyIdentifierServiceParameter.setTagNumber(2);
+                    propertyIdentifierServiceParameter.setLengthValueType(1);
+                    propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) devicePropertyKey });
+                    targetApdu.getServiceParameters().add(propertyIdentifierServiceParameter);
+
+                    // opening tag {[5]
+                    final ServiceParameter openingTagServiceParameter5 = new ServiceParameter();
+                    openingTagServiceParameter5.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+                    openingTagServiceParameter5.setTagNumber(0x05);
+                    openingTagServiceParameter5.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
+                    targetApdu.getServiceParameters().add(openingTagServiceParameter5);
+
+                    final ServiceParameter errorClassServiceParameter = new ServiceParameter();
+                    errorClassServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+                    errorClassServiceParameter.setTagNumber(ServiceParameter.ENUMERATED_CODE);
+                    errorClassServiceParameter.setLengthValueType(0x01);
+                    errorClassServiceParameter.setPayload(new byte[] { (byte) ErrorClass.PROPERTY.getCode() });
+                    targetApdu.getServiceParameters().add(errorClassServiceParameter);
+
+                    final ServiceParameter errorCodeServiceParameter = new ServiceParameter();
+                    errorCodeServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+                    errorCodeServiceParameter.setTagNumber(ServiceParameter.ENUMERATED_CODE);
+                    errorCodeServiceParameter.setLengthValueType(0x01);
+                    errorCodeServiceParameter.setPayload(new byte[] { (byte) ErrorCode.UNKNOWN_PROPERTY.getCode() });
+                    targetApdu.getServiceParameters().add(errorCodeServiceParameter);
+
+                    // closing tag }[5]
+                    final ServiceParameter closingTagServiceParameter5 = new ServiceParameter();
+                    closingTagServiceParameter5.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+                    closingTagServiceParameter5.setTagNumber(0x05);
+                    closingTagServiceParameter5.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
+                    targetApdu.getServiceParameters().add(closingTagServiceParameter5);
                 }
             }
-//            else if (devicePropertyKey == DeviceProperty.SYSTEM_STATUS) {
-//
-//                // add the service property identifier
-//                apdu.getServiceParameters().add(serviceParameter);
-//                addPropertyValue(apdu, device.getProperties().get(DeviceProperty.SYSTEM_STATUS));
-//
-//            } else {
-//
-//                throw new RuntimeException("NotImplemented! " + serviceParameter.getPayload()[0]);
-//
-//            }
         }
 
         // closing }[1]
@@ -856,31 +925,10 @@ public class DefaultMessageController implements MessageController {
         closingTagServiceParameter1.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         closingTagServiceParameter1.setTagNumber(0x01);
         closingTagServiceParameter1.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
-        apdu.getServiceParameters().add(closingTagServiceParameter1);
+        targetApdu.getServiceParameters().add(closingTagServiceParameter1);
         LOG.trace(closingTagServiceParameter1);
 
-        final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
-        result.setNpdu(npdu);
-        result.setApdu(apdu);
-
-        LOG.trace("All service parameters ...");
-        if (CollectionUtils.isNotEmpty(apdu.getServiceParameters())) {
-            for (final ServiceParameter serviceParameter : apdu.getServiceParameters()) {
-                final byte[] temp = new byte[100];
-                serviceParameter.toBytes(temp, 0);
-
-                LOG.trace(serviceParameter + " - " + Utils.byteArrayToStringNoPrefix(temp));
-            }
-        }
-        LOG.trace("All service parameters done.");
-
-        virtualLinkControl.setLength(result.getDataLength());
-
-//		final byte[] bytes = result.getBytes();
-//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
-
-        return result;
+        return index;
     }
 
     private void addPropertyValue(final APDU apdu, final DeviceProperty<?> deviceProperty) {

@@ -503,7 +503,6 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.ERROR_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-//        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(errorClassServiceParameter);
@@ -1329,7 +1328,8 @@ public class DefaultMessageFactory implements MessageFactory {
         }
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-        objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+//        objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+        objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
         objectIdentifierServiceParameter.setObjectType(device.getObjectType());
@@ -1341,6 +1341,7 @@ public class DefaultMessageFactory implements MessageFactory {
         protocolServicesSupportedServiceParameter.setLengthValueType(1);
         protocolServicesSupportedServiceParameter.setPayload(new byte[] { (byte) deviceProperty.getPropertyKey() });
 
+        // {[3]
         final ServiceParameter openingTagServiceParameter = new ServiceParameter();
         openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         openingTagServiceParameter.setTagNumber(0x03);
@@ -1348,6 +1349,7 @@ public class DefaultMessageFactory implements MessageFactory {
 
         final ServiceParameter statusFlagsBitStringServiceParameter = device.getStatusFlagsServiceParameter();
 
+        // }[3]
         final ServiceParameter closingTagServiceParameter = new ServiceParameter();
         closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         closingTagServiceParameter.setTagNumber(0x03);

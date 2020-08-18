@@ -3,6 +3,8 @@ package de.bacnetz.stack;
 import org.apache.commons.lang3.ArrayUtils;
 
 import de.bacnet.common.APIUtils;
+import de.bacnetz.devices.DevicePropertyType;
+import de.bacnetz.devices.ObjectType;
 import de.bacnetz.factory.MessageType;
 
 public class ServiceParameter {
@@ -118,8 +120,27 @@ public class ServiceParameter {
 
         final StringBuffer stringBuffer = new StringBuffer();
 
+//        // application or context
+//        switch (tagClass) {
+//        case APPLICATION_TAG:
+//            stringBuffer.append("[APPLICATION_TAG]");
+//            break;
+//
+//        case CONTEXT_SPECIFIC_TAG:
+//            stringBuffer.append("[CONTEXT_SPECIFIC_TAG]");
+//            break;
+//
+//        default:
+//            stringBuffer.append("[UNKNOWN_TAG_CLASS:").append(tagClass).append("]");
+//        }
+//
+//        // device property
+//        stringBuffer.append("[DeviceProperty:").append(DevicePropertyType.getByCode(tagNumber).getName()).append("]");
+
         switch (tagClass) {
         case APPLICATION_TAG:
+
+            stringBuffer.append("[APPLICATION_TAG]");
 
             switch (tagNumber) {
 
@@ -139,19 +160,19 @@ public class ServiceParameter {
 
                 switch (objectType) {
 
-                case 0x03:
+                case ObjectType.BINARY_INPUT_CODE:
                     stringBuffer.append(", ObjectType: binary-input");
                     break;
 
-                case 0x08:
+                case ObjectType.DEVICE_CODE:
                     stringBuffer.append(", ObjectType: device");
                     break;
 
-                case 0x0F:
+                case ObjectType.NOTIFICATION_CLASS_CODE:
                     stringBuffer.append(", ObjectType: notification-class");
                     break;
 
-                case 0x13:
+                case ObjectType.MULTI_STATE_VALUE_CODE:
                     stringBuffer.append(", ObjectType: multi-state-value");
                     break;
 
@@ -164,13 +185,20 @@ public class ServiceParameter {
                 break;
 
             default:
-                stringBuffer.append("Unknown Application Tag: " + tagNumber);
+                stringBuffer.append("Unknown Application Tag: ").append(tagNumber).append("]");
             }
             break;
 
         case CONTEXT_SPECIFIC_TAG:
 
+            stringBuffer.append("[CONTEXT_SPECIFIC_TAG]");
+
             switch (lengthValueType) {
+
+            case 1:
+                stringBuffer.append("[DeviceProperty:").append(DevicePropertyType.getByCode(payload[0]).getName())
+                        .append("]");
+                break;
 
             case ServiceParameter.OPENING_TAG_CODE:
                 stringBuffer.append("{[").append(tagNumber).append("]");
@@ -181,9 +209,13 @@ public class ServiceParameter {
                 break;
 
             default:
-                stringBuffer.append("Unknown Context Specific Tag: " + lengthValueType);
+                stringBuffer.append("[Unknown Context Specific Tag: ").append(lengthValueType).append("]");
             }
 
+            break;
+
+        default:
+            stringBuffer.append("[UNKNOWN_TAG_CLASS:").append(tagClass).append("]");
             break;
         }
 

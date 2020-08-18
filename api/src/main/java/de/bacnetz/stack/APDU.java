@@ -247,8 +247,8 @@ public class APDU {
         offset++;
         structureLength++;
 
-        //
         // Response Information
+        //
         // The ReadProperty request for max-apdu-length-accepted does not set the bit 2
         // but still contains segmentation information
         if (segmentedResponseAccepted || pduType == PDUType.CONFIRMED_SERVICE_REQUEST_PDU) {
@@ -264,7 +264,6 @@ public class APDU {
 
             // unconfirmed service choice
             final int serviceChoiceCode = data[startIndex + offset] & 0xFF;
-//            unconfirmedServiceChoice = UnconfirmedServiceChoice.fromInt(serviceChoiceCode);
             confirmedServiceChoice = ConfirmedServiceChoice.fromInt(serviceChoiceCode);
 
         } else if (pduType == PDUType.SIMPLE_ACK_PDU) {
@@ -316,7 +315,7 @@ public class APDU {
                 break;
 
             case READ_PROPERTY_MULTIPLE:
-                structureLength += processReadPropertyMultiple(startIndex + offset, data);
+                structureLength += processReadPropertyMultiple(startIndex + offset, data, payloadLength);
                 break;
 
             case WRITE_PROPERTY:
@@ -339,7 +338,6 @@ public class APDU {
                 LOG.warn("Not implemented: " + confirmedServiceChoice.name());
 
             }
-
         }
     }
 
@@ -574,7 +572,7 @@ public class APDU {
      * 
      * @return the length of the parsed structure
      */
-    private int processReadPropertyMultiple(final int offset, final byte[] data) {
+    private int processReadPropertyMultiple(final int offset, final byte[] data, final int payloadLength) {
 
         int index = 0;
 
@@ -582,25 +580,28 @@ public class APDU {
         // ReadPropertyMultiple_ExtendedRequest.PNG
         // and bacnet_active_cov_subscriptions_real_answer.pcapng, message 2694
 
-        // bacnet object identifier
-        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-        index += objectIdentifierServiceParameter.fromBytes(data, offset + index);
-        serviceParameters.add(objectIdentifierServiceParameter);
+        while ((offset + index) < payloadLength) {
 
-        // {[1] bracket open
-        final ServiceParameter bracketOpenServiceParameter = new ServiceParameter();
-        getServiceParameters().add(bracketOpenServiceParameter);
-        index += bracketOpenServiceParameter.fromBytes(data, offset + index);
+            // bacnet object identifier
+            final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+            index += objectIdentifierServiceParameter.fromBytes(data, offset + index);
+            serviceParameters.add(objectIdentifierServiceParameter);
 
-        ServiceParameter serviceParameter = null;
-        do {
+            // {[1] bracket open
+            final ServiceParameter bracketOpenServiceParameter = new ServiceParameter();
+            getServiceParameters().add(bracketOpenServiceParameter);
+            index += bracketOpenServiceParameter.fromBytes(data, offset + index);
 
-            // read all requested device property identifiers
-            serviceParameter = new ServiceParameter();
-            getServiceParameters().add(serviceParameter);
-            index += serviceParameter.fromBytes(data, offset + index);
+            ServiceParameter serviceParameter = null;
+            do {
 
-        } while (!APIUtils.isClosingServiceParameter(serviceParameter));
+                // read all requested device property identifiers
+                serviceParameter = new ServiceParameter();
+                getServiceParameters().add(serviceParameter);
+                index += serviceParameter.fromBytes(data, offset + index);
+
+            } while (!APIUtils.isClosingServiceParameter(serviceParameter));
+        }
 
         return index;
     }
@@ -795,7 +796,7 @@ public class APDU {
         this.vendorMap = vendorMap;
     }
 
-    public ObjectIdentifierServiceParameter getObjectIdentifierServiceParameter() {
+    public ObjectIdentifierServiceParameter getFirstObjectIdentifierServiceParameter() {
 
         final Optional<ServiceParameter> findFirstOptional = serviceParameters.stream()
                 .filter(sp -> sp instanceof ObjectIdentifierServiceParameter).findFirst();
