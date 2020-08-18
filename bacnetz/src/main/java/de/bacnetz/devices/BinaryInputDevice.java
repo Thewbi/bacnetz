@@ -53,7 +53,7 @@ public class BinaryInputDevice extends DefaultDevice {
 
             // send message to all subscribers
             getCovSubscriptions().stream().forEach(s -> {
-                s.vaueChanged(newPresentValue);
+                s.valueChanged(newPresentValue);
             });
         }
     }

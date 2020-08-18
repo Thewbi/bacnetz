@@ -26,9 +26,6 @@ import de.bacnetz.stack.VirtualLinkControl;
 
 public class ToogleDoorOpenStateThread implements Runnable {
 
-//	private static final String TARGET_IP = "192.168.2.2";
-    private static final String TARGET_IP = "192.168.0.108";
-
     private static final int SLEEP_TIME = 10000;
 
     private static final Logger LOG = LogManager.getLogger(ToogleDoorOpenStateThread.class);
@@ -65,7 +62,7 @@ public class ToogleDoorOpenStateThread implements Runnable {
             // toggle
             binaryInputDevice.setPresentValue(!(Boolean) binaryInputDevice.getPresentValue());
 
-            sendCOV(parentDevice, binaryInputDevice, vendorMap, TARGET_IP, communicationService);
+            sendCOV(parentDevice, binaryInputDevice, vendorMap, NetworkUtils.TARGET_IP, communicationService);
 
             try {
                 Thread.sleep(SLEEP_TIME);
@@ -76,7 +73,7 @@ public class ToogleDoorOpenStateThread implements Runnable {
     }
 
     public static void sendCOV(final Device parentDevice, final Device childDevice,
-            final Map<Integer, String> vendorMap, final String clientIp,
+            final Map<Integer, String> vendorMap, final String targetIp,
             final CommunicationService communicationService) {
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
@@ -221,7 +218,7 @@ public class ToogleDoorOpenStateThread implements Runnable {
         virtualLinkControl.setLength(responseMessage.getDataLength());
 
         try {
-            final InetAddress datagramPacketAddress = InetAddress.getByName(TARGET_IP);
+            final InetAddress datagramPacketAddress = InetAddress.getByName(targetIp);
             communicationService.pointToPointMessage(responseMessage, datagramPacketAddress);
         } catch (final UnknownHostException e) {
             LOG.error(e.getMessage(), e);

@@ -20,6 +20,6 @@ public interface COVSubscription {
 
     void setCommunicationService(CommunicationService communicationService);
 
-    void vaueChanged(Object newValue);
+    void valueChanged(Object newValue);
 
 }

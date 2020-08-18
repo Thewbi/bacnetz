@@ -26,7 +26,7 @@ public class DefaultCOVSubscription implements COVSubscription {
     private Map<Integer, String> vendorMap;
 
     @Override
-    public void vaueChanged(final Object newValue) {
+    public void valueChanged(final Object newValue) {
         ToogleDoorOpenStateThread.sendCOV(parentDevice, device, vendorMap, clientIp, communicationService);
     }
 

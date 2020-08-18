@@ -185,7 +185,7 @@ public class DefaultDevice implements Device {
         final DeviceProperty<?> deviceProperty = getProperties().get(propertyIdentifierCode);
         if (deviceProperty == null) {
 
-            LOG.info("Property {} ({}) not available in device {}! Sending error!",
+            LOG.error("Property {} ({}) not available in device {}! Sending error!",
                     DevicePropertyType.getByCode(propertyIdentifierCode).name(), propertyIdentifierCode,
                     getObjectIdentifierServiceParameter().toString());
 
@@ -1847,7 +1847,7 @@ public class DefaultDevice implements Device {
             presentValueDeviceProperty.setValue(newPresentValue);
 
             covSubscriptions.stream().forEach(s -> {
-                s.vaueChanged(newPresentValue);
+                s.valueChanged(newPresentValue);
             });
         }
     }

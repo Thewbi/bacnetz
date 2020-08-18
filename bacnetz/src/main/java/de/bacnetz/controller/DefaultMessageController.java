@@ -18,7 +18,6 @@ import de.bacnetz.conversion.Converter;
 import de.bacnetz.devices.Device;
 import de.bacnetz.devices.DeviceProperty;
 import de.bacnetz.devices.DevicePropertyType;
-import de.bacnetz.devices.ObjectType;
 import de.bacnetz.factory.DefaultMessageFactory;
 import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.services.CommunicationService;
@@ -449,7 +448,6 @@ public class DefaultMessageController implements MessageController {
         LOG.info("WHO_IS is not ignored!");
 
         // return Unconfirmed request i-Am device,10001
-        final int deviceInstanceNumber = NetworkUtils.DEVICE_INSTANCE_NUMBER;
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
         virtualLinkControl.setType(0x81);
@@ -469,8 +467,8 @@ public class DefaultMessageController implements MessageController {
         objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
         objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(ObjectType.DEVICE);
-        objectIdentifierServiceParameter.setInstanceNumber(deviceInstanceNumber);
+        objectIdentifierServiceParameter.setObjectType(device.getObjectType());
+        objectIdentifierServiceParameter.setInstanceNumber(device.getId());
 
         final ServiceParameter maximumAPDUServiceParameter = new ServiceParameter();
         maximumAPDUServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
@@ -566,21 +564,6 @@ public class DefaultMessageController implements MessageController {
 
             npdu.setDestinationHopCount(255);
         }
-
-        // TODO this object is not used!
-        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-        objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        objectIdentifierServiceParameter.setTagNumber(0x00);
-        objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(ObjectType.DEVICE);
-        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
-
-        // TODO this object is not used!
-        final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
-        propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        propertyIdentifierServiceParameter.setTagNumber(0x01);
-        propertyIdentifierServiceParameter.setLengthValueType(0x01);
-        propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) propertyIdentifierCode });
 
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.SIMPLE_ACK_PDU);
@@ -701,7 +684,7 @@ public class DefaultMessageController implements MessageController {
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(ObjectType.DEVICE);
+        objectIdentifierServiceParameter.setObjectType(targetDevice.getObjectType());
         objectIdentifierServiceParameter.setInstanceNumber(targetDevice.getId());
         targetApdu.getServiceParameters().add(objectIdentifierServiceParameter);
 
@@ -718,7 +701,7 @@ public class DefaultMessageController implements MessageController {
         if (CollectionUtils.isEmpty(serviceParameters)) {
             LOG.warn("No service parameters in readPropertyMultiple request");
         } else {
-            LOG.info("serviceParameters.length(): {} ", serviceParameters.size());
+            LOG.trace("serviceParameters.length(): {} ", serviceParameters.size());
         }
 
         int index = sourceServiceParameterIndex + 1;
@@ -755,7 +738,7 @@ public class DefaultMessageController implements MessageController {
             final byte temp = serviceParameter.getPayload()[0];
             LOG.trace("temp: {}", temp);
             final int devicePropertyKey = temp & 0xFF;
-            LOG.info("devicePropertyKey: {}", devicePropertyKey);
+            LOG.trace("devicePropertyKey: {}", devicePropertyKey);
 
             // 'all' service property
             if (devicePropertyKey == DeviceProperty.ALL) {

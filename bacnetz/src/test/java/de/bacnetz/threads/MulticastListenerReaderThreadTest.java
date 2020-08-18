@@ -345,6 +345,8 @@ public class MulticastListenerReaderThreadTest {
     @Test
     public void testParseBuffer_ReadPropertyMultiple_MultipleDevices() {
 
+        // 810a004101040215610e0c00c000011e0955096f1f0c00c000021e0955096f1f0c00c000031e0955096f1f0c00c000041e0955096f1f0c04c000011e096f09551f
+
         final byte[] hexStringToByteArray = Utils.hexStringToByteArray(
                 "810a0030012403e70119ff0233530e0c020000191e0955096f1f0c03c000321e0955096f1f0c04c000051e096f09551f");
 

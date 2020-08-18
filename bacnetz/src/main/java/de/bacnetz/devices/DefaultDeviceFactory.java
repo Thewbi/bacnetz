@@ -81,7 +81,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setObjectType(ObjectType.BINARY_INPUT);
         addPropertiesToDoorCloseStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
-//      childDevice.setPresentValue(true);
         childDevice.setPresentValue(new byte[] { 1 });
 
         // 4
@@ -95,7 +94,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setObjectType(ObjectType.BINARY_INPUT);
         addPropertiesToDoorCloseStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
-//      childDevice.setPresentValue(true);
         childDevice.setPresentValue(new byte[] { 1 });
 
         // 5 - multi_state_value,5 - door1_state
@@ -172,7 +170,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setObjectType(ObjectType.BINARY_INPUT);
         addPropertiesToDoorCloseStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
-//        childDevice.setPresentValue(true);
         childDevice.setPresentValue(new byte[] { 1 });
 
         // 11
@@ -186,7 +183,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setObjectType(ObjectType.BINARY_INPUT);
         addPropertiesToDoorCloseStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
-//      childDevice.setPresentValue(true);
         childDevice.setPresentValue(new byte[] { 1 });
 
         // 12

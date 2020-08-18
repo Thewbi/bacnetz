@@ -794,7 +794,7 @@ public class DefaultMessageFactory implements MessageFactory {
         objectListLengthServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         objectListLengthServiceParameter.setTagNumber(0x02);
         objectListLengthServiceParameter.setLengthValueType(0x01);
-        objectListLengthServiceParameter.setPayload(new byte[] { (byte) device.getChildDevices().size() });
+        objectListLengthServiceParameter.setPayload(new byte[] { (byte) (device.getChildDevices().size() + 1) });
 
         final ServiceParameter closingTagServiceParameter = new ServiceParameter();
         closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -804,18 +804,14 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
 
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
         apdu.getServiceParameters().add(propertyArrayIndexServiceParameter);
-
         apdu.getServiceParameters().add(openingTagServiceParameter);
-
         apdu.getServiceParameters().add(objectListLengthServiceParameter);
-
         apdu.getServiceParameters().add(closingTagServiceParameter);
 
         final DefaultMessage result = new DefaultMessage();

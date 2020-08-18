@@ -322,9 +322,11 @@ public class App {
 //                LOG.info(msg);
 //                System.out.println(msg);
 
-//				// send a bacnet message
-//				ToogleDoorOpenStateThread.sendCOV(device, door1CloseStateBinaryInput, vendorMap,
-//						multicastListenerReaderThread);
+//                // send a bacnet message
+//                // not needed any more, because a BinaryInputDevice send cov messages over all existing subscriptions on
+//                // value change
+//                ToogleDoorOpenStateThread.sendCOV(device, door1CloseStateBinaryInput, vendorMap, NetworkUtils.TARGET_IP,
+//                        multicastListenerReaderThread);
 
                 // DEBUG
                 LOG.info("Sending message done.");
