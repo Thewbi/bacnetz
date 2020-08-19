@@ -195,10 +195,6 @@ public class DefaultDevice implements Device {
             return messageFactory.createErrorMessage(requestMessage, errorClass, errorCode);
         }
 
-        if ((propertyIdentifierCode == DevicePropertyType.PRESENT_VALUE.getCode()) && (getId() == 1)) {
-            LOG.trace("DEBUG");
-        }
-
         return messageFactory.create(deviceProperty, this, requestMessage);
     }
 

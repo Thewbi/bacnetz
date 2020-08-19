@@ -51,12 +51,14 @@ import de.bacnetz.threads.MulticastListenerReaderThread;
 import de.bacnetz.threads.ToogleDoorOpenStateThread;
 
 /**
+ * <h1>Wireshark Filter</h1>
+ * 
  * <pre>
  * bacnet and ((ip.dst == 192.168.2.1) or (ip.src == 192.168.2.1))
  * bacnet and ((ip.dst == 192.168.2.255) or (ip.dst == 192.168.2.1) or (ip.src == 192.168.2.1))
  * </pre>
  * 
- * TODO
+ * <h1>TODO</h1>
  * <ol>
  * <li />Model a DevicePropertyType with value and meta information about the
  * value's data type. when a device property is queried, retrieve that
@@ -68,6 +70,20 @@ import de.bacnetz.threads.ToogleDoorOpenStateThread;
  * <li />Add scripting language with debugging functionality via the UI.
  * <li />Only send value changes (COV) when COV subscription is there.
  * </ol>
+ * 
+ * <h1>Export to runnable jar from eclipse</h1>
+ * <ol>
+ * <li />Select the project 'bacnetz'
+ * <li />Open Context Menu > Export > Runnable Jar file
+ * <li />Extract required libraries into generated JAR
+ * </ol>
+ * 
+ * <h1>Running from command line</h1>
+ * 
+ * <pre>
+ * java -jar bacnetz.jar -local_ip 192.168.2.1 -multicast_ip 192.168.2.255
+ * </pre>
+ * 
  */
 public class App {
 
@@ -279,6 +295,12 @@ public class App {
 
         final Device door1CloseStateBinaryInput = device.findDevice(
                 ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 1));
+        final Device door2CloseStateBinaryInput = device.findDevice(
+                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 2));
+        final Device door3CloseStateBinaryInput = device.findDevice(
+                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 3));
+        final Device door4CloseStateBinaryInput = device.findDevice(
+                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 4));
 
         final ToogleDoorOpenStateThread toggleDoorOpenStateThread = new ToogleDoorOpenStateThread();
         toggleDoorOpenStateThread.setParentDevice(device);
@@ -312,9 +334,14 @@ public class App {
                 System.out.println(msg);
 
                 // toggle, which sends a value to all COV subscribers
-                final byte[] byteArray = (byte[]) door1CloseStateBinaryInput.getPresentValue();
-//                final Integer currentValue = (Integer) ;
-                door1CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray[0]) });
+                final byte[] byteArray1 = (byte[]) door1CloseStateBinaryInput.getPresentValue();
+                door1CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray1[0]) });
+                final byte[] byteArray2 = (byte[]) door2CloseStateBinaryInput.getPresentValue();
+                door2CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray2[0]) });
+                final byte[] byteArray3 = (byte[]) door3CloseStateBinaryInput.getPresentValue();
+                door3CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray3[0]) });
+                final byte[] byteArray4 = (byte[]) door4CloseStateBinaryInput.getPresentValue();
+                door4CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray4[0]) });
 
                 // DEBUG
 //                msg = "Door is now "

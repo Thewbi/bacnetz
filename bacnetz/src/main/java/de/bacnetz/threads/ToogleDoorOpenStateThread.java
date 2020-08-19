@@ -76,6 +76,10 @@ public class ToogleDoorOpenStateThread implements Runnable {
             final Map<Integer, String> vendorMap, final String targetIp,
             final CommunicationService communicationService) {
 
+        final String msg = "Sending COV update to targetIp:" + targetIp;
+        System.out.println(msg);
+        LOG.info(msg);
+
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
         virtualLinkControl.setType(0x81);
         virtualLinkControl.setFunction(0x0A);

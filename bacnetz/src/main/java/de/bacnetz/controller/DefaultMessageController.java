@@ -266,6 +266,12 @@ public class DefaultMessageController implements MessageController {
                 .getFirstObjectIdentifierServiceParameter();
         final Device findDevice = device.findDevice(objectIdentifierServiceParameter);
 
+        // DEBUG
+        final String msg = "processSubscribeCov() - COV subscription received! Object: "
+                + objectIdentifierServiceParameter.toString();
+        System.out.println(msg);
+        LOG.info(msg);
+
         // @formatter:off
 		
 		final ServiceParameter subscriberProcessIdServiceParameter = requestMessage.getApdu().getServiceParameters().get(0);
@@ -445,7 +451,7 @@ public class DefaultMessageController implements MessageController {
             }
         }
 
-        LOG.info("WHO_IS is not ignored!");
+        LOG.trace("WHO_IS is not ignored!");
 
         // return Unconfirmed request i-Am device,10001
 
@@ -463,45 +469,45 @@ public class DefaultMessageController implements MessageController {
         npdu.setDestinationMACLayerAddressLength(0);
         npdu.setDestinationHopCount(255);
 
+        final APDU apdu = new APDU();
+        apdu.setPduType(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU);
+        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.I_AM);
+        apdu.setVendorMap(vendorMap);
+
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         objectIdentifierServiceParameter.setTagNumber(ServiceParameter.BACNET_OBJECT_IDENTIFIER);
         objectIdentifierServiceParameter.setLengthValueType(4);
         objectIdentifierServiceParameter.setObjectType(device.getObjectType());
         objectIdentifierServiceParameter.setInstanceNumber(device.getId());
+        apdu.getServiceParameters().add(objectIdentifierServiceParameter);
 
         final ServiceParameter maximumAPDUServiceParameter = new ServiceParameter();
         maximumAPDUServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         maximumAPDUServiceParameter.setTagNumber(ServiceParameter.UNSIGNED_INTEGER_CODE);
         maximumAPDUServiceParameter.setLengthValueType(2);
-        maximumAPDUServiceParameter.setPayload(new byte[] { (byte) 0x01, (byte) 0xE0 }); // 0x01E0 = 480
+//        maximumAPDUServiceParameter.setPayload(new byte[] { (byte) 0x01, (byte) 0xE0 }); // 0x01E0 = 480
+        maximumAPDUServiceParameter.setPayload(new byte[] { (byte) 0x05, (byte) 0xC4 }); // 0x05C4 = 1476
+        apdu.getServiceParameters().add(maximumAPDUServiceParameter);
 
         final ServiceParameter segmentationSupportedServiceParameter = new ServiceParameter();
         segmentationSupportedServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         segmentationSupportedServiceParameter.setTagNumber(ServiceParameter.ENUMERATED_CODE);
         segmentationSupportedServiceParameter.setLengthValueType(1);
         segmentationSupportedServiceParameter.setPayload(new byte[] { (byte) 0x00 }); // segmented-both
-
-        final ServiceParameter vendorIdServiceParameter = new ServiceParameter();
-        vendorIdServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-        vendorIdServiceParameter.setTagNumber(ServiceParameter.UNSIGNED_INTEGER_CODE);
+        apdu.getServiceParameters().add(segmentationSupportedServiceParameter);
 
         // 0xB2 = 178d = loytec
-//		byte[] vendorIdBuffer = new byte[] { (byte) 0xB2 };
+//      byte[] vendorIdBuffer = new byte[] { (byte) 0xB2 };
 
         // 0x021A = 538d = GEZE
         final byte[] vendorIdBuffer = new byte[] { (byte) 0x02, (byte) 0x1A };
 
+        final ServiceParameter vendorIdServiceParameter = new ServiceParameter();
+        vendorIdServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+        vendorIdServiceParameter.setTagNumber(ServiceParameter.UNSIGNED_INTEGER_CODE);
         vendorIdServiceParameter.setLengthValueType(vendorIdBuffer.length);
         vendorIdServiceParameter.setPayload(vendorIdBuffer);
-
-        final APDU apdu = new APDU();
-        apdu.setPduType(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU);
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.I_AM);
-        apdu.setVendorMap(vendorMap);
-        apdu.getServiceParameters().add(objectIdentifierServiceParameter);
-        apdu.getServiceParameters().add(maximumAPDUServiceParameter);
-        apdu.getServiceParameters().add(segmentationSupportedServiceParameter);
         apdu.getServiceParameters().add(vendorIdServiceParameter);
 
         final DefaultMessage result = new DefaultMessage();
@@ -510,6 +516,9 @@ public class DefaultMessageController implements MessageController {
         result.setApdu(apdu);
 
         virtualLinkControl.setLength(virtualLinkControl.getDataLength() + npdu.getDataLength() + apdu.getDataLength());
+
+//        final byte[] bytes = result.getBytes();
+//        LOG.trace(Utils.byteArrayToStringNoPrefix(bytes));
 
         return result;
     }

@@ -240,11 +240,11 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         DefaultDeviceProperty<?> deviceProperty = null;
 
-        // 0x4B = 75d object-identifier
+        // 0x4B = 75d - object-identifier
         final int objectIdentifier = ObjectIdentifierServiceParameter
                 .encodeObjectTypeAndInstanceNumber(device.getObjectType(), device.getId());
-        deviceProperty = new DefaultDeviceProperty<Integer>("object-identifier", DeviceProperty.OBJECT_IDENTIFIER,
-                objectIdentifier, MessageType.BACNET_OBJECT_IDENTIFIER);
+        deviceProperty = new DefaultDeviceProperty<Integer>(DevicePropertyType.OBJECT_IDENTIFIER.getName(),
+                DevicePropertyType.OBJECT_IDENTIFIER.getCode(), objectIdentifier, MessageType.BACNET_OBJECT_IDENTIFIER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x3A = 58d - location
@@ -410,13 +410,10 @@ public class DefaultDeviceFactory implements Factory<Device> {
             final int childObjectIdentifier = ObjectIdentifierServiceParameter
                     .encodeObjectTypeAndInstanceNumber(childDevice.getObjectType(), childDevice.getId());
 
+            // object identifier for each device
             final DefaultDeviceProperty<Integer> childObjectIdentifierDeviceProperty = new DefaultDeviceProperty<>(
-                    "object-identifier", DeviceProperty.OBJECT_IDENTIFIER, childObjectIdentifier,
-                    MessageType.BACNET_OBJECT_IDENTIFIER);
-
-//          // object identifier for each device
-//          subDeviceProperty = new DefaultDeviceProperty<String>(childObjectIdentifierDeviceProperty, DeviceProperty.STATE_TEXT, childObjectIdentifierDeviceProperty,
-//                  MessageType.CHARACTER_STRING);
+                    DevicePropertyType.OBJECT_IDENTIFIER.getName(), DevicePropertyType.OBJECT_IDENTIFIER.getCode(),
+                    childObjectIdentifier, MessageType.BACNET_OBJECT_IDENTIFIER);
 
             objectListCompositeDeviceProperty.getCompositeList().add(childObjectIdentifierDeviceProperty);
         }
@@ -1104,13 +1101,16 @@ public class DefaultDeviceFactory implements Factory<Device> {
         // multi-state-input (13)
         // multi-state-output (14)
         // multi-state-value (19)
+
         // @formatter:off
+        
         deviceProperty = new DefaultDeviceProperty<byte[]>(
                 "object-type", 
                 DeviceProperty.OBJECT_TYPE,
                 new byte[] { (byte) device.getObjectType().getCode() }, 
                 MessageType.ENUMERATED);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
+        
         // @formatter:on
     }
 

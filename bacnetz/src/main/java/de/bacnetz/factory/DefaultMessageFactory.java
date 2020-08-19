@@ -26,6 +26,8 @@ import de.bacnetz.stack.BACnetDate;
 import de.bacnetz.stack.BACnetServicesSupportedBitString;
 import de.bacnetz.stack.BACnetTime;
 import de.bacnetz.stack.ConfirmedServiceChoice;
+import de.bacnetz.stack.ErrorClass;
+import de.bacnetz.stack.ErrorCode;
 import de.bacnetz.stack.NPDU;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.PDUType;
@@ -62,6 +64,9 @@ public class DefaultMessageFactory implements MessageFactory {
             requestMessage = (Message) args[index++];
 
             switch (deviceProperty.getPropertyKey()) {
+
+            case DeviceProperty.OBJECT_IDENTIFIER:
+                return processObjectIdentifier(device, deviceProperty, requestMessage);
 
             case DeviceProperty.OBJECT_LIST:
                 return processObjectListRequest(device, deviceProperty, requestMessage);
@@ -146,9 +151,8 @@ public class DefaultMessageFactory implements MessageFactory {
                 LOG.trace(msg);
 
                 // return error message
-                final int errorClass = 0x02;
-                final int errorCode = 0x20;
-                return createErrorMessage(requestMessage, errorClass, errorCode);
+                return createErrorMessage(requestMessage, ErrorClass.PROPERTY.getCode(),
+                        ErrorCode.UNKNOWN_PROPERTY.getCode());
             }
         }
 
@@ -158,6 +162,90 @@ public class DefaultMessageFactory implements MessageFactory {
         final int errorCode = 0x20;
 
         return createErrorMessage(requestMessage, errorClass, errorCode);
+    }
+
+    private Message processObjectIdentifier(final Device device, final DeviceProperty<?> deviceProperty,
+            final Message requestMessage) {
+
+        final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
+        virtualLinkControl.setType(0x81);
+        virtualLinkControl.setFunction(0x0A);
+        virtualLinkControl.setLength(0x00);
+
+        // NPDU including destination network information
+        final NPDU npdu = new NPDU();
+        npdu.setVersion(0x01);
+
+        // no additional information
+        // this works, if the cp is connected to the device directly via 192.168.2.1
+        npdu.setControl(0x00);
+
+        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+
+            // destination network information
+            npdu.setControl(0x20);
+            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+            npdu.setDestinationMACLayerAddressLength(3);
+            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+
+            npdu.setDestinationHopCount(255);
+        }
+
+        final APDU apdu = new APDU();
+        apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
+        apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
+        apdu.setVendorMap(vendorMap);
+
+        // this object identifier has to be context specific. I do not know why
+        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+        objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+        objectIdentifierServiceParameter.setTagNumber(0x00);
+        objectIdentifierServiceParameter.setLengthValueType(4);
+        objectIdentifierServiceParameter.setObjectType(device.getObjectType());
+        objectIdentifierServiceParameter.setInstanceNumber(device.getId());
+        apdu.getServiceParameters().add(objectIdentifierServiceParameter);
+
+        final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
+        propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+        propertyIdentifierServiceParameter.setTagNumber(0x01);
+        propertyIdentifierServiceParameter.setLengthValueType(0x01);
+        propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) deviceProperty.getPropertyKey() });
+        apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
+
+        // {[3]
+        final ServiceParameter openingTagServiceParameter = new ServiceParameter();
+        openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+        openingTagServiceParameter.setTagNumber(0x03);
+        openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
+        apdu.getServiceParameters().add(openingTagServiceParameter);
+
+        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter2 = new ObjectIdentifierServiceParameter();
+        objectIdentifierServiceParameter2.setTagClass(TagClass.APPLICATION_TAG);
+        objectIdentifierServiceParameter2.setTagNumber(MessageType.BACNET_OBJECT_IDENTIFIER.getId());
+        objectIdentifierServiceParameter2.setLengthValueType(4);
+        objectIdentifierServiceParameter2.setObjectType(device.getObjectType());
+        objectIdentifierServiceParameter2.setInstanceNumber(device.getId());
+        apdu.getServiceParameters().add(objectIdentifierServiceParameter2);
+
+        // }[3]
+        final ServiceParameter closingTagServiceParameter = new ServiceParameter();
+        closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+        closingTagServiceParameter.setTagNumber(0x03);
+        closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
+        apdu.getServiceParameters().add(closingTagServiceParameter);
+
+        final DefaultMessage result = new DefaultMessage();
+        result.setVirtualLinkControl(virtualLinkControl);
+        result.setNpdu(npdu);
+        result.setApdu(apdu);
+
+        virtualLinkControl.setLength(result.getDataLength());
+
+//      final byte[] bytes = result.getBytes();
+//      LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
+
+        return result;
     }
 
     private Message processPriority(final Device device, final DeviceProperty<?> deviceProperty,

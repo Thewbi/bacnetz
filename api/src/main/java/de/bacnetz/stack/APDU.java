@@ -15,14 +15,17 @@ import de.bacnet.common.APIUtils;
 import de.bacnetz.devices.DevicePropertyType;
 
 /**
- * Application Layer Protocol Data Unit (APDU)
+ * Application Layer Protocol Data Unit (APDU)<br />
+ * <br />
  * 
- * 20.1.2.11 Format of the BACnet-Confirmed-Request-PDU (page 617)
+ * 20.1.2.11 Format of the BACnet-Confirmed-Request-PDU (page 617)<br />
+ * <br />
  * 
- * The encoding of the payload within a APDU is given in
+ * The encoding of the payload within a APDU is given in<br />
+ * <br />
  * 
- * 20.2 Encoding the Variable Part of BACnet APDUs (page 625)
- * 
+ * 20.2 Encoding the Variable Part of BACnet APDUs (page 625)<br />
+ * <br />
  */
 public class APDU {
 
@@ -63,7 +66,7 @@ public class APDU {
      * requests which caused them. The invokeID will increment in each example which
      * follows.
      */
-    private int invokeId;
+    private int invokeId = -1;
 
     private Map<Integer, String> vendorMap = new HashMap<>();
 
@@ -102,7 +105,7 @@ public class APDU {
         }
 
         // invoke id
-        if (invokeId > 0) {
+        if (invokeId >= 0) {
             dataLength++;
         }
 
@@ -186,7 +189,7 @@ public class APDU {
         }
 
         // 1 Byte: invoke ID
-        if (invokeId > 0) {
+        if (invokeId >= 0) {
             data[offset + index++] = (byte) invokeId;
         }
 

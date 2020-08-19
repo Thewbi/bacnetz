@@ -101,4 +101,8 @@ public enum MessageType {
         return id;
     }
 
+    public int getId() {
+        return id;
+    }
+
 }
