@@ -2,9 +2,11 @@ package de.bacnetz.controller;
 
 import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
@@ -40,7 +42,11 @@ public class DefaultMessageController implements MessageController {
 
     private static final Logger LOG = LogManager.getLogger(DefaultMessageController.class);
 
-    private Device device;
+//    private Device device;
+
+    private final List<Device> devices = new ArrayList<>();
+
+    final Map<ObjectIdentifierServiceParameter, Device> deviceMap = new HashMap<>();
 
     private Map<Integer, String> vendorMap = new HashMap<>();
 
@@ -53,7 +59,7 @@ public class DefaultMessageController implements MessageController {
     private final Converter<BACnetTime, byte[]> bacnetTimeToByteConverter = new BACnetTimeToByteConverter();
 
     @Override
-    public Message processMessage(final Message message) {
+    public List<Message> processMessage(final Message message) {
         if (message.getApdu() == null) {
             return processNonAPDUMessage(message);
         } else {
@@ -61,7 +67,7 @@ public class DefaultMessageController implements MessageController {
         }
     }
 
-    private Message processNonAPDUMessage(final Message message) {
+    private List<Message> processNonAPDUMessage(final Message message) {
 
         LOG.warn("<<< Not handling: " + message.getNpdu().getNetworkLayerMessageType().name());
 
@@ -94,7 +100,7 @@ public class DefaultMessageController implements MessageController {
         }
     }
 
-    private Message processAPDUMessage(final Message message) {
+    private List<Message> processAPDUMessage(final Message message) {
 
         final ConfirmedServiceChoice confirmedServiceChoice = message.getApdu().getConfirmedServiceChoice();
         if (confirmedServiceChoice != null) {
@@ -134,6 +140,7 @@ public class DefaultMessageController implements MessageController {
 
         final UnconfirmedServiceChoice unconfirmedServiceChoice = message.getApdu().getUnconfirmedServiceChoice();
         if (unconfirmedServiceChoice != null) {
+
             switch (unconfirmedServiceChoice) {
 
             case I_AM:
@@ -143,50 +150,36 @@ public class DefaultMessageController implements MessageController {
             /** 20.1.3 BACnet-Unconfirmed-Request-PDU */
             case I_HAVE:
                 LOG.info(">>> I_HAVE received!");
-                // throw new RuntimeException(">>> Not implemented yet! Message: " +
-                // message.getApdu().getServiceChoice());
                 return null;
 
             /** 20.1.4 BACnet-SimpleACK-PDU */
             case UNCONFIRMED_COV_NOTIFICATION:
                 LOG.info(">>> UNCONFIRMED_COV_NOTIFICATION received!");
-                // throw new RuntimeException(">>> Not implemented yet! Message: " +
-                // message.getApdu().getServiceChoice());
                 return null;
 
             /** 20.1.5 BACnet-ComplexACK-PDU */
             case UNCONFIRMED_EVENT_NOTIFICATION:
                 LOG.info(">>> UNCONFIRMED_EVENT_NOTIFICATION received!");
-                // throw new RuntimeException(">>> Not implemented yet! Message: " +
-                // message.getApdu().getServiceChoice());
                 return null;
 
             /** 20.1.6 BACnet-SegmentACK-PDU */
             case UNCONFIRMED_PRIVATE_TRANSFER:
                 LOG.info(">>> UNCONFIRMED_PRIVATE_TRANSFER received!");
-                // throw new RuntimeException(">>> Not implemented yet! Message: " +
-                // message.getApdu().getServiceChoice());
                 return null;
 
             /** 20.1.7 BACnet-Error-PDU */
             case UNCONFIRMED_TEXT_MESSAGE:
                 LOG.info(">>> UNCONFIRMED_TEXT_MESSAGE received!");
-                // throw new RuntimeException(">>> Not implemented yet! Message: " +
-                // message.getApdu().getServiceChoice());
                 return null;
 
             /** 20.1.8 BACnet-Reject-PDU */
             case TIME_SYNCHRONIZATION:
                 LOG.info(">>> TIME_SYNCHRONIZATION received!");
-                // throw new RuntimeException(">>> Not implemented yet! Message: " +
-                // message.getApdu().getServiceChoice());
                 return null;
 
             /** 20.1.9 BACnet-Abort-PDU */
             case WHO_HAS:
                 LOG.info(">>> WHO_HAS received!");
-                // throw new RuntimeException(">>> Not implemented yet! Message: " +
-                // message.getApdu().getServiceChoice());
                 return null;
 
             /** 20.1.2 BACnet-Confirmed-Request-PDU */
@@ -196,19 +189,15 @@ public class DefaultMessageController implements MessageController {
 
             case UTC_TIME_SYNCHRONIZATION:
                 LOG.info(">>> UTC_TIME_SYNCHRONIZATION received!");
-                // throw new RuntimeException(">>> Not implemented yet! Message: " +
-                // message.getApdu().getServiceChoice());
                 return null;
 
             case WRITE_GROUP:
                 LOG.info(">>> WRITE_GROUP received!");
-                // throw new RuntimeException(">>> Not implemented yet! Message: " +
-                // message.getApdu().getServiceChoice());
                 return null;
 
-            case DEVICE_COMMUNICATION_CONTROL:
-                LOG.trace(">>> DEVICE_COMMUNICATION_CONTROL received!");
-                return processDeviceCommunicationControl(message);
+//            case DEVICE_COMMUNICATION_CONTROL:
+//                LOG.trace(">>> DEVICE_COMMUNICATION_CONTROL received!");
+//                return processDeviceCommunicationControl(message);
 
             default:
                 LOG.warn(">>> Unknown message: " + message.getApdu().getUnconfirmedServiceChoice());
@@ -219,7 +208,7 @@ public class DefaultMessageController implements MessageController {
         return null;
     }
 
-    private Message processAddListElement(final Message requestMessage) {
+    private List<Message> processAddListElement(final Message requestMessage) {
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
         virtualLinkControl.setType(0x81);
@@ -250,21 +239,25 @@ public class DefaultMessageController implements MessageController {
         apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.ADD_LIST_ELEMENT);
         apdu.setVendorMap(vendorMap);
 
-        final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
-        result.setNpdu(npdu);
-        result.setApdu(apdu);
+        final DefaultMessage message = new DefaultMessage();
+        message.setVirtualLinkControl(virtualLinkControl);
+        message.setNpdu(npdu);
+        message.setApdu(apdu);
 
-        virtualLinkControl.setLength(result.getDataLength());
+        virtualLinkControl.setLength(message.getDataLength());
+
+        final List<Message> result = new ArrayList<>();
+        result.add(message);
 
         return result;
     }
 
-    private Message processSubscribeCov(final Message requestMessage) {
+    private List<Message> processSubscribeCov(final Message requestMessage) {
 
         ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()
                 .getFirstObjectIdentifierServiceParameter();
-        final Device findDevice = device.findDevice(objectIdentifierServiceParameter);
+//        final Device findDevice = device.findDevice(objectIdentifierServiceParameter);
+        final Device findDevice = deviceMap.get(objectIdentifierServiceParameter);
 
         // DEBUG
         final String msg = "processSubscribeCov() - COV subscription received! Object: "
@@ -326,21 +319,25 @@ public class DefaultMessageController implements MessageController {
         apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.SUBSCRIBE_COV);
         apdu.setVendorMap(vendorMap);
 
-        final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
-        result.setNpdu(npdu);
-        result.setApdu(apdu);
+        final DefaultMessage message = new DefaultMessage();
+        message.setVirtualLinkControl(virtualLinkControl);
+        message.setNpdu(npdu);
+        message.setApdu(apdu);
 
-        virtualLinkControl.setLength(result.getDataLength());
+        virtualLinkControl.setLength(message.getDataLength());
+
+        final List<Message> result = new ArrayList<>();
+        result.add(message);
 
         return result;
     }
 
-    private Message processReinitializeDevice(final Message requestMessage) {
+    private List<Message> processReinitializeDevice(final Message requestMessage) {
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()
                 .getFirstObjectIdentifierServiceParameter();
-        final Device findDevice = device.findDevice(objectIdentifierServiceParameter);
+//        final Device findDevice = device.findDevice(objectIdentifierServiceParameter);
+        final Device findDevice = deviceMap.get(objectIdentifierServiceParameter);
 
         // update the restart date
         findDevice.setTimeOfDeviceRestart(LocalDateTime.now());
@@ -385,22 +382,25 @@ public class DefaultMessageController implements MessageController {
         apdu.setVendorMap(vendorMap);
 //        apdu.getServiceParameters().add(resultObjectIdentifierServiceParameter);
 
-        final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
-        result.setNpdu(npdu);
-        result.setApdu(apdu);
+        final DefaultMessage message = new DefaultMessage();
+        message.setVirtualLinkControl(virtualLinkControl);
+        message.setNpdu(npdu);
+        message.setApdu(apdu);
 
-        virtualLinkControl.setLength(result.getDataLength());
+        virtualLinkControl.setLength(message.getDataLength());
 
 //		final byte[] bytes = result.getBytes();
 //		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
+        final List<Message> result = new ArrayList<>();
+        result.add(message);
+
         return result;
     }
 
-    private Message processDeviceCommunicationControl(final Message requestMessage) {
-        throw new RuntimeException("Not implemented!");
-    }
+//    private Message processDeviceCommunicationControl(final Message requestMessage) {
+//        throw new RuntimeException("Not implemented!");
+//    }
 
     /**
      * Answer Who-Is with I-Am.
@@ -408,50 +408,58 @@ public class DefaultMessageController implements MessageController {
      * @param message
      * @return
      */
-    private Message processWhoIsMessage(final Message message) {
+    private List<Message> processWhoIsMessage(final Message message) {
+
+        final List<Device> filteredDevices = filterDevices(message);
+
+        return filteredDevices.stream().map(d -> retrieveIamMessage(d))
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    private List<Device> filterDevices(final Message message) {
 
         final List<ServiceParameter> serviceParameters = message.getApdu().getServiceParameters();
-        if (CollectionUtils.isNotEmpty(serviceParameters) && serviceParameters.size() == 2) {
-
-            final ServiceParameter lowerBoundServiceParameter = serviceParameters.get(0);
-            final ServiceParameter upperBoundServiceParameter = serviceParameters.get(1);
-
-            final boolean bigEndian = true;
-
-            // find lower bound as integer
-            int lowerBound = 0;
-            if (lowerBoundServiceParameter.getPayload().length == 1) {
-                lowerBound = lowerBoundServiceParameter.getPayload()[0];
-            } else {
-                lowerBound = Utils.bytesToUnsignedShort(lowerBoundServiceParameter.getPayload()[0],
-                        lowerBoundServiceParameter.getPayload()[1], bigEndian);
-            }
-
-            // find upper bound as integer
-            int upperBound = 0;
-            if (upperBoundServiceParameter.getPayload().length == 1) {
-                upperBound = upperBoundServiceParameter.getPayload()[0];
-            } else {
-                upperBound = Utils.bytesToUnsignedShort(upperBoundServiceParameter.getPayload()[0],
-                        upperBoundServiceParameter.getPayload()[1], bigEndian);
-            }
-
-            LOG.trace("Who-Is lower-bound: {} ({})",
-                    Utils.byteArrayToStringNoPrefix(lowerBoundServiceParameter.getPayload()), lowerBound);
-            LOG.trace("Who-Is upper-bound: {} ({})",
-                    Utils.byteArrayToStringNoPrefix(upperBoundServiceParameter.getPayload()), upperBound);
-
-            // do not process message if it is bounded and the device's id is out of bounds!
-            if ((lowerBound > NetworkUtils.DEVICE_INSTANCE_NUMBER)
-                    || (NetworkUtils.DEVICE_INSTANCE_NUMBER > upperBound)) {
-
-                LOG.info("Ignoring Who-Is! DeviceID: {}, [{} - {}]", NetworkUtils.DEVICE_INSTANCE_NUMBER, lowerBound,
-                        upperBound);
-                return null;
-            }
+        if (CollectionUtils.isEmpty(serviceParameters)) {
+            return devices;
         }
 
-        LOG.trace("WHO_IS is not ignored!");
+        final ServiceParameter lowerBoundServiceParameter = serviceParameters.get(0);
+        final ServiceParameter upperBoundServiceParameter = serviceParameters.get(1);
+
+        final boolean bigEndian = true;
+
+        // find lower bound as integer
+        final int lowerBound = (lowerBoundServiceParameter.getPayload().length == 1)
+                ? lowerBoundServiceParameter.getPayload()[0]
+                : Utils.bytesToUnsignedShort(lowerBoundServiceParameter.getPayload()[0],
+                        lowerBoundServiceParameter.getPayload()[1], bigEndian);
+
+        // find upper bound as integer
+        int upperBound = (upperBoundServiceParameter.getPayload().length == 1)
+                ? upperBound = upperBoundServiceParameter.getPayload()[0]
+                : Utils.bytesToUnsignedShort(upperBoundServiceParameter.getPayload()[0],
+                        upperBoundServiceParameter.getPayload()[1], bigEndian);
+
+        LOG.trace("Who-Is lower-bound: {} ({})",
+                Utils.byteArrayToStringNoPrefix(lowerBoundServiceParameter.getPayload()), lowerBound);
+        LOG.trace("Who-Is upper-bound: {} ({})",
+                Utils.byteArrayToStringNoPrefix(upperBoundServiceParameter.getPayload()), upperBound);
+
+//        // do not process message if it is bounded and the device's id is out of bounds!
+//        if ((lowerBound > NetworkUtils.DEVICE_INSTANCE_NUMBER)
+//                || (NetworkUtils.DEVICE_INSTANCE_NUMBER > upperBound)) {
+//
+//            // TODO: wrong instance number used!
+//            LOG.info("Ignoring Who-Is! DeviceID: {}, [{} - {}]", NetworkUtils.DEVICE_INSTANCE_NUMBER, lowerBound,
+//                    upperBound);
+//            return null;
+//        }
+
+        return devices.stream().filter(d -> (lowerBound <= d.getId() && d.getId() <= upperBound))
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    private Message retrieveIamMessage(final Device device) {
 
         // return Unconfirmed request i-Am device,10001
 
@@ -523,7 +531,7 @@ public class DefaultMessageController implements MessageController {
         return result;
     }
 
-    private Message processWriteProperty(final Message requestMessage) {
+    private List<Message> processWriteProperty(final Message requestMessage) {
 
         LOG.trace("processWriteProperty()");
         final int propertyIdentifier = requestMessage.getApdu().getPropertyIdentifier();
@@ -548,7 +556,7 @@ public class DefaultMessageController implements MessageController {
         }
     }
 
-    private Message processWriteRestartNotificationRecipientsProperty(final int propertyIdentifierCode,
+    private List<Message> processWriteRestartNotificationRecipientsProperty(final int propertyIdentifierCode,
             final Message requestMessage) {
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
@@ -580,20 +588,23 @@ public class DefaultMessageController implements MessageController {
         apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.WRITE_PROPERTY);
         apdu.setVendorMap(vendorMap);
 
-        final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
-        result.setNpdu(npdu);
-        result.setApdu(apdu);
+        final DefaultMessage message = new DefaultMessage();
+        message.setVirtualLinkControl(virtualLinkControl);
+        message.setNpdu(npdu);
+        message.setApdu(apdu);
 
-        virtualLinkControl.setLength(result.getDataLength());
+        virtualLinkControl.setLength(message.getDataLength());
 
 //		final byte[] bytes = result.getBytes();
 //		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
+        final List<Message> result = new ArrayList<>();
+        result.add(message);
+
         return result;
     }
 
-    private Message processReadProperty(final Message requestMessage) {
+    private List<Message> processReadProperty(final Message requestMessage) {
 
         LOG.trace("processReadProperty()");
 
@@ -609,12 +620,16 @@ public class DefaultMessageController implements MessageController {
                 objectIdentifierServiceParameter.toString());
 
         // find device
-        final Device targetDevice = device.findDevice(objectIdentifierServiceParameter);
+//        final Device targetDevice = device.findDevice(objectIdentifierServiceParameter);
+        final Device targetDevice = deviceMap.get(objectIdentifierServiceParameter);
 
-        return targetDevice.getPropertyValue(requestMessage, propertyIdentifierCode);
+        final List<Message> result = new ArrayList<>();
+        result.add(targetDevice.getPropertyValue(requestMessage, propertyIdentifierCode));
+
+        return result;
     }
 
-    private Message processReadPropertyMultiple(final Message requestMessage) {
+    private List<Message> processReadPropertyMultiple(final Message requestMessage) {
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
         virtualLinkControl.setType(0x81);
@@ -639,8 +654,6 @@ public class DefaultMessageController implements MessageController {
                 index = processDevice(objectIdentifierServiceParameter, index, sourceApdu.getServiceParameters(),
                         targetApdu);
             }
-
-//            index++;
         }
 
         final NPDU npdu = new NPDU();
@@ -657,10 +670,10 @@ public class DefaultMessageController implements MessageController {
             npdu.setDestinationHopCount(255);
         }
 
-        final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
-        result.setNpdu(npdu);
-        result.setApdu(targetApdu);
+        final DefaultMessage message = new DefaultMessage();
+        message.setVirtualLinkControl(virtualLinkControl);
+        message.setNpdu(npdu);
+        message.setApdu(targetApdu);
 
 //        // DEBUG
 //        LOG.trace("All service parameters ...");
@@ -674,10 +687,13 @@ public class DefaultMessageController implements MessageController {
 //        }
 //        LOG.trace("All service parameters done.");
 
-        virtualLinkControl.setLength(result.getDataLength());
+        virtualLinkControl.setLength(message.getDataLength());
 
 //		final byte[] bytes = result.getBytes();
 //		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
+
+        final List<Message> result = new ArrayList<>();
+        result.add(message);
 
         return result;
     }
@@ -687,7 +703,8 @@ public class DefaultMessageController implements MessageController {
             final APDU targetApdu) {
 
         // find device
-        final Device targetDevice = device.findDevice(targetObjectIdentifierServiceParameter);
+//        final Device targetDevice = device.findDevice(targetObjectIdentifierServiceParameter);
+        final Device targetDevice = deviceMap.get(targetObjectIdentifierServiceParameter);
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -949,24 +966,24 @@ public class DefaultMessageController implements MessageController {
         LOG.trace(closingTagServiceParameter);
     }
 
-    private Message processSystemStatusMessage(final Message message) {
+    private List<Message> processSystemStatusMessage(final Message message) {
 
-        final DefaultMessage defaultMessage = new DefaultMessage(message);
+        final DefaultMessage resultMessage = new DefaultMessage(message);
 
         // TODO: copy message.VirtualLinkControl
 
         // TODO: copy message.NPDU including all service parameters
         // TODO: change NPDU.control to contain a destination specifier
-        defaultMessage.getNpdu().setControl(0x20);
-        defaultMessage.getNpdu().setDestinationNetworkNumber(302);
-        defaultMessage.getNpdu().setDestinationMACLayerAddressLength(3);
-        defaultMessage.getNpdu().setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+        resultMessage.getNpdu().setControl(0x20);
+        resultMessage.getNpdu().setDestinationNetworkNumber(302);
+        resultMessage.getNpdu().setDestinationMACLayerAddressLength(3);
+        resultMessage.getNpdu().setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
         // TODO: copy NPDU
         // TODO: add hopCount, set it to 255 0xFF
-        defaultMessage.getNpdu().setDestinationHopCount(0xFF);
+        resultMessage.getNpdu().setDestinationHopCount(0xFF);
 
         // APDU
-        defaultMessage.getApdu().setPduType(PDUType.COMPLEX_ACK_PDU);
+        resultMessage.getApdu().setPduType(PDUType.COMPLEX_ACK_PDU);
 
         // TODO: add new service parameters into the APDU
         // opening bracket
@@ -976,7 +993,7 @@ public class DefaultMessageController implements MessageController {
         openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         openingTagServiceParameter.setTagNumber(0x04);
         openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
-        defaultMessage.getApdu().getServiceParameters().add(2, openingTagServiceParameter);
+        resultMessage.getApdu().getServiceParameters().add(2, openingTagServiceParameter);
 
         final ServiceParameter segmentationSupportedServiceParameter = new ServiceParameter();
         segmentationSupportedServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
@@ -984,24 +1001,27 @@ public class DefaultMessageController implements MessageController {
         segmentationSupportedServiceParameter.setLengthValueType(1);
         // 0x00 == system-status: operational
         segmentationSupportedServiceParameter.setPayload(new byte[] { (byte) 0x00 });
-        defaultMessage.getApdu().getServiceParameters().add(3, segmentationSupportedServiceParameter);
+        resultMessage.getApdu().getServiceParameters().add(3, segmentationSupportedServiceParameter);
 
         final ServiceParameter closingTagServiceParameter = new ServiceParameter();
         closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         closingTagServiceParameter.setTagNumber(0x04);
         closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
-        defaultMessage.getApdu().getServiceParameters().add(4, closingTagServiceParameter);
+        resultMessage.getApdu().getServiceParameters().add(4, closingTagServiceParameter);
 
         // TODO: set message.VirtualLinkControl.size to the size of the entire message
-        defaultMessage.getVirtualLinkControl().setLength(defaultMessage.getDataLength());
+        resultMessage.getVirtualLinkControl().setLength(resultMessage.getDataLength());
 
-        LOG.info(Utils.byteArrayToStringNoPrefix(defaultMessage.getVirtualLinkControl().getBytes()));
-        LOG.info(Utils.byteArrayToStringNoPrefix(defaultMessage.getNpdu().getBytes()));
-        LOG.info(Utils.byteArrayToStringNoPrefix(defaultMessage.getApdu().getBytes()));
+        LOG.info(Utils.byteArrayToStringNoPrefix(resultMessage.getVirtualLinkControl().getBytes()));
+        LOG.info(Utils.byteArrayToStringNoPrefix(resultMessage.getNpdu().getBytes()));
+        LOG.info(Utils.byteArrayToStringNoPrefix(resultMessage.getApdu().getBytes()));
 
-        LOG.info(Utils.byteArrayToStringNoPrefix(defaultMessage.getBytes()));
+        LOG.info(Utils.byteArrayToStringNoPrefix(resultMessage.getBytes()));
 
-        return defaultMessage;
+        final List<Message> result = new ArrayList<>();
+        result.add(resultMessage);
+
+        return result;
     }
 
     /**
@@ -1010,7 +1030,7 @@ public class DefaultMessageController implements MessageController {
      * @param message
      * @return
      */
-    private Message processIAMMessage(final Message message) {
+    private List<Message> processIAMMessage(final Message message) {
 
         final APDU apdu = message.getApdu();
 
@@ -1045,13 +1065,13 @@ public class DefaultMessageController implements MessageController {
         messageFactory.setVendorMap(vendorMap);
     }
 
-    public Device getDevice() {
-        return device;
-    }
-
-    public void setDevice(final Device device) {
-        this.device = device;
-    }
+//    public Device getDevice() {
+//        return device;
+//    }
+//
+//    public void setDevice(final Device device) {
+//        this.device = device;
+//    }
 
     public CommunicationService getCommunicationService() {
         return communicationService;
@@ -1059,6 +1079,14 @@ public class DefaultMessageController implements MessageController {
 
     public void setCommunicationService(final CommunicationService communicationService) {
         this.communicationService = communicationService;
+    }
+
+    public List<Device> getDevices() {
+        return devices;
+    }
+
+    public Map<ObjectIdentifierServiceParameter, Device> getDeviceMap() {
+        return deviceMap;
     }
 
 }

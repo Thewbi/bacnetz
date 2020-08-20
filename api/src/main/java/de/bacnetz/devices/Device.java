@@ -8,11 +8,12 @@ import java.util.Map;
 import de.bacnetz.controller.Message;
 import de.bacnetz.stack.BACnetServicesSupportedBitString;
 import de.bacnetz.stack.COVSubscription;
+import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.ServiceParameter;
 
 public interface Device {
 
-    ServiceParameter getObjectIdentifierServiceParameter();
+    ObjectIdentifierServiceParameter getObjectIdentifierServiceParameter();
 
     Map<Integer, DeviceProperty<?>> getProperties();
 
@@ -77,5 +78,11 @@ public interface Device {
     Device getParentDevice();
 
     void setParentDevice(Device parentDevice);
+
+    void executeAction();
+
+    int getVendorId();
+
+    void setVendorId(int vendorId);
 
 }

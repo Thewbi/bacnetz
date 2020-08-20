@@ -47,6 +47,7 @@ import de.bacnetz.factory.MessageType;
 import de.bacnetz.stack.IPv4Packet;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.UDPPacket;
+import de.bacnetz.stack.VendorType;
 import de.bacnetz.threads.MulticastListenerReaderThread;
 import de.bacnetz.threads.ToogleDoorOpenStateThread;
 
@@ -87,8 +88,8 @@ import de.bacnetz.threads.ToogleDoorOpenStateThread;
  */
 public class App {
 
-//    private static final boolean RUN_TOGGLE_DOOR_THREAD = false;
-    private static final boolean RUN_TOGGLE_DOOR_THREAD = true;
+    private static final boolean RUN_TOGGLE_DOOR_THREAD = false;
+//    private static final boolean RUN_TOGGLE_DOOR_THREAD = true;
 
     private static final Logger LOG = LogManager.getLogger(App.class);
 
@@ -262,12 +263,6 @@ public class App {
 
         BufferedReader bufferedReader = null;
 
-//        // from jar
-//        final String path = "/BACnetVendors.csv";
-//        System.out.println("Trying to read " + path);
-//        final InputStream inputStream = App.class.getResourceAsStream(path);
-//        bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-
         // from file from eclipse
         final String filename = "src/main/resources/BACnetVendors.csv";
 //        final String filename = "BACnetVendors.csv";
@@ -278,8 +273,6 @@ public class App {
 
         final Map<Integer, String> vendorMap = readVendorMap(bufferedReader);
 
-        final Device device = defaultDeviceFactory.create(vendorMap);
-
         final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
         multicastListenerReaderThread.setConfigurationManager(configurationManager);
         multicastListenerReaderThread.setVendorMap(vendorMap);
@@ -287,77 +280,84 @@ public class App {
                 .setBindPort(configurationManager.getPropertyAsInt(ConfigurationManager.PORT_CONFIG_KEY));
 
         final DefaultMessageController defaultMessageController = new DefaultMessageController();
-        defaultMessageController.setDevice(device);
+
+        final List<Device> devices = new ArrayList<Device>();
+
+        // device 10100
+        final Device device = defaultDeviceFactory.create(defaultMessageController.getDeviceMap(), vendorMap, 10100,
+                NetworkUtils.OBJECT_NAME, VendorType.GEZE_GMBH.getCode());
+        devices.add(device);
+
+//        // device 10200
+//        device = defaultDeviceFactory.create(defaultMessageController.getDeviceMap(), vendorMap, 10200,
+//                NetworkUtils.OBJECT_NAME, VendorType.GEZE_GMBH.getCode());
+//        devices.add(device);
+
+//        defaultMessageController.setDevice(device);
+        defaultMessageController.getDevices().addAll(devices);
         defaultMessageController.setVendorMap(vendorMap);
         defaultMessageController.setCommunicationService(multicastListenerReaderThread);
 
         multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
-
-        final Device door1CloseStateBinaryInput = device.findDevice(
-                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 1));
-        final Device door2CloseStateBinaryInput = device.findDevice(
-                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 2));
-        final Device door3CloseStateBinaryInput = device.findDevice(
-                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 3));
-        final Device door4CloseStateBinaryInput = device.findDevice(
-                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 4));
-
-        final ToogleDoorOpenStateThread toggleDoorOpenStateThread = new ToogleDoorOpenStateThread();
-        toggleDoorOpenStateThread.setParentDevice(device);
-        toggleDoorOpenStateThread.setChildDevice(door1CloseStateBinaryInput);
-        toggleDoorOpenStateThread.setVendorMap(vendorMap);
-        toggleDoorOpenStateThread.setCommunicationService(multicastListenerReaderThread);
-
         multicastListenerReaderThread.openBroadCastSocket();
+
+//        final Device door1CloseStateBinaryInput = device.findDevice(
+//                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 1));
+//        final Device door2CloseStateBinaryInput = device.findDevice(
+//                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 2));
+//        final Device door3CloseStateBinaryInput = device.findDevice(
+//                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 3));
+//        final Device door4CloseStateBinaryInput = device.findDevice(
+//                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 4));
 
         new Thread(multicastListenerReaderThread).start();
 
-        String msg = "";
-
         if (RUN_TOGGLE_DOOR_THREAD) {
-//            new Thread(toggleDoorOpenStateThread).start();
+            final Device door1CloseStateBinaryInput = device.findDevice(
+                    ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 1));
 
-            while (true) {
+            final ToogleDoorOpenStateThread toggleDoorOpenStateThread = new ToogleDoorOpenStateThread();
+            toggleDoorOpenStateThread.setParentDevice(device);
+            toggleDoorOpenStateThread.setChildDevice(door1CloseStateBinaryInput);
+            toggleDoorOpenStateThread.setVendorMap(vendorMap);
+            toggleDoorOpenStateThread.setCommunicationService(multicastListenerReaderThread);
+            new Thread(toggleDoorOpenStateThread).start();
+        }
 
-                // DEBUG
-                msg = "Hit Enter to send message";
-                LOG.info(msg);
-                System.out.println(msg);
+        while (true) {
 
-                // read input from the user
-                final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-                final String s = br.readLine();
+            String msg = "";
 
-                // send message
-                msg = "Sending message ...";
-                LOG.info(msg);
-                System.out.println(msg);
+            // DEBUG
+            msg = "Hit Enter to send message";
+            LOG.info(msg);
+            System.out.println(msg);
 
-                // toggle, which sends a value to all COV subscribers
-                final byte[] byteArray1 = (byte[]) door1CloseStateBinaryInput.getPresentValue();
-                door1CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray1[0]) });
-                final byte[] byteArray2 = (byte[]) door2CloseStateBinaryInput.getPresentValue();
-                door2CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray2[0]) });
-                final byte[] byteArray3 = (byte[]) door3CloseStateBinaryInput.getPresentValue();
-                door3CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray3[0]) });
-                final byte[] byteArray4 = (byte[]) door4CloseStateBinaryInput.getPresentValue();
-                door4CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray4[0]) });
+            // read input from the user
+            final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            final String s = br.readLine();
 
-                // DEBUG
-//                msg = "Door is now "
-//                        + (((Boolean) door1CloseStateBinaryInput.getPresentValue()) ? "locked" : "unlocked");
-//                LOG.info(msg);
-//                System.out.println(msg);
+            // send message
+            msg = "Sending message ...";
+            LOG.info(msg);
+            System.out.println(msg);
 
-//                // send a bacnet message
-//                // not needed any more, because a BinaryInputDevice send cov messages over all existing subscriptions on
-//                // value change
-//                ToogleDoorOpenStateThread.sendCOV(device, door1CloseStateBinaryInput, vendorMap, NetworkUtils.TARGET_IP,
-//                        multicastListenerReaderThread);
+            device.executeAction();
 
-                // DEBUG
-                LOG.info("Sending message done.");
-            }
+            // DEBUG
+//            msg = "Door is now "
+//                    + (((Boolean) door1CloseStateBinaryInput.getPresentValue()) ? "locked" : "unlocked");
+//            LOG.info(msg);
+//            System.out.println(msg);
+
+//            // send a bacnet message
+//            // not needed any more, because a BinaryInputDevice send cov messages over all existing subscriptions on
+//            // value change
+//            ToogleDoorOpenStateThread.sendCOV(device, door1CloseStateBinaryInput, vendorMap, NetworkUtils.TARGET_IP,
+//                    multicastListenerReaderThread);
+
+            // DEBUG
+            LOG.info("Sending message done.");
         }
     }
 

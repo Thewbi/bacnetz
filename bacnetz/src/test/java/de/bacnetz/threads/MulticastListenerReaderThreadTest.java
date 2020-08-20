@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,6 +24,7 @@ import de.bacnetz.devices.DeviceProperty;
 import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.devices.ObjectType;
 import de.bacnetz.factory.MessageType;
+import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.PDUType;
 import de.bacnetz.stack.ServiceParameter;
 
@@ -43,7 +45,7 @@ public class MulticastListenerReaderThreadTest {
 
         final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
                 hexStringToByteArray.length);
-        final Message response = multicastListenerReaderThread.sendMessageToController(request);
+        final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
     }
 
     @Test
@@ -55,7 +57,7 @@ public class MulticastListenerReaderThreadTest {
 
         final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
                 hexStringToByteArray.length);
-        final Message response = multicastListenerReaderThread.sendMessageToController(request);
+        final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
     }
 
     /**
@@ -71,7 +73,7 @@ public class MulticastListenerReaderThreadTest {
 
         final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
                 hexStringToByteArray.length);
-        final Message response = multicastListenerReaderThread.sendMessageToController(request);
+        final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
     }
 
     /**
@@ -87,7 +89,7 @@ public class MulticastListenerReaderThreadTest {
 
         final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
                 hexStringToByteArray.length);
-        final Message response = multicastListenerReaderThread.sendMessageToController(request);
+        final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
     }
 
     @Test
@@ -99,7 +101,7 @@ public class MulticastListenerReaderThreadTest {
 
         final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
                 hexStringToByteArray.length);
-        final Message response = multicastListenerReaderThread.sendMessageToController(request);
+        final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
     }
 
     @Test
@@ -115,27 +117,33 @@ public class MulticastListenerReaderThreadTest {
 
         final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
                 hexStringToByteArray.length);
-        final Message response = multicastListenerReaderThread.sendMessageToController(request);
+        final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
     }
 
     @Test
     public void testConfirmedREQ_ReadPropertyMultiple_2() {
 
+        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+        objectIdentifierServiceParameter.setInstanceNumber(10001);
+        objectIdentifierServiceParameter.setObjectType(ObjectType.DEVICE);
+
         final Device device = mock(DefaultDevice.class);
         when(device.findDevice(anyObject())).thenReturn(device);
+        when(device.getObjectIdentifierServiceParameter()).thenReturn(objectIdentifierServiceParameter);
 
         final byte[] hexStringToByteArray = Utils
                 .hexStringToByteArray("810a001b01040245680e0c020027111e096b093e09a7090b090a1f");
 
         final DefaultMessageController defaultMessageController = new DefaultMessageController();
-        defaultMessageController.setDevice(device);
+        defaultMessageController.getDevices().add(device);
+        defaultMessageController.getDeviceMap().put(device.getObjectIdentifierServiceParameter(), device);
 
         final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
         multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
 
         final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
                 hexStringToByteArray.length);
-        final Message response = multicastListenerReaderThread.sendMessageToController(request);
+        final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
 
         LOG.info("Response: " + response);
     }
@@ -152,7 +160,7 @@ public class MulticastListenerReaderThreadTest {
 
         final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
                 hexStringToByteArray.length);
-        final Message response = multicastListenerReaderThread.sendMessageToController(request);
+        final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
     }
 
     @Test
@@ -168,7 +176,7 @@ public class MulticastListenerReaderThreadTest {
 
         final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
                 hexStringToByteArray.length);
-        final Message response = multicastListenerReaderThread.sendMessageToController(request);
+        final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
     }
 
     @Test
@@ -184,7 +192,7 @@ public class MulticastListenerReaderThreadTest {
 
         final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
                 hexStringToByteArray.length);
-        final Message response = multicastListenerReaderThread.sendMessageToController(request);
+        final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
     }
 
     @Test
@@ -199,7 +207,7 @@ public class MulticastListenerReaderThreadTest {
 
         final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
                 hexStringToByteArray.length);
-        final Message response = multicastListenerReaderThread.sendMessageToController(request);
+        final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
     }
 
     @Test
@@ -311,9 +319,9 @@ public class MulticastListenerReaderThreadTest {
 
         final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
                 hexStringToByteArray.length);
-        final Message response = multicastListenerReaderThread.sendMessageToController(request);
+        final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
 
-        assertEquals(PDUType.SIMPLE_ACK_PDU, response.getApdu().getPduType());
+        assertEquals(PDUType.SIMPLE_ACK_PDU, response.get(0).getApdu().getPduType());
     }
 
     @Test
@@ -326,15 +334,20 @@ public class MulticastListenerReaderThreadTest {
         device.setId(10001);
         device.setObjectType(ObjectType.DEVICE);
 
+        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+        objectIdentifierServiceParameter.setInstanceNumber(10001);
+        objectIdentifierServiceParameter.setObjectType(ObjectType.DEVICE);
+
         final DefaultMessageController messageController = new DefaultMessageController();
-        messageController.setDevice(device);
+        when(device.findDevice(anyObject())).thenReturn(device);
+        when(device.getObjectIdentifierServiceParameter()).thenReturn(objectIdentifierServiceParameter);
 
         final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
         multicastListenerReaderThread.getMessageControllers().add(messageController);
 
         final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
                 hexStringToByteArray.length);
-        final Message response = multicastListenerReaderThread.sendMessageToController(request);
+        final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
 
         LOG.info(response);
     }
@@ -376,15 +389,20 @@ public class MulticastListenerReaderThreadTest {
                 DeviceProperty.STATUS_FLAGS, 0x00, MessageType.UNSIGNED_INTEGER);
         multiStateValueDevice.getProperties().put(DevicePropertyType.STATUS_FLAGS.getCode(), statusFlagsDeviceProperty);
 
+        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+        objectIdentifierServiceParameter.setInstanceNumber(10001);
+        objectIdentifierServiceParameter.setObjectType(ObjectType.DEVICE);
+
         final DefaultMessageController messageController = new DefaultMessageController();
-        messageController.setDevice(device);
+        when(device.findDevice(anyObject())).thenReturn(device);
+        when(device.getObjectIdentifierServiceParameter()).thenReturn(objectIdentifierServiceParameter);
 
         final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
         multicastListenerReaderThread.getMessageControllers().add(messageController);
 
         final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
                 hexStringToByteArray.length);
-        final Message response = multicastListenerReaderThread.sendMessageToController(request);
+        final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
 
         LOG.info(response);
     }

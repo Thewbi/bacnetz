@@ -113,7 +113,7 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
                     + Utils.byteArrayToStringNoPrefix(datagramPacket.getData()));
             LOG.trace("<<< " + Utils.byteArrayToStringNoPrefix(data));
 
-            Message response = null;
+            List<Message> response = null;
             Message request = null;
 
             // parse and process the request message and return a response message
@@ -131,9 +131,9 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
                 LOG.error(e.getMessage(), e);
             }
 
-            if (response != null) {
+            if (CollectionUtils.isNotEmpty(response)) {
                 // send answer to the network
-                sendMessage(datagramPacketAddress, response, request);
+                response.stream().forEach(m -> sendMessage(datagramPacketAddress, m));
             } else {
                 LOG.trace("Controller returned a null message!");
             }
@@ -164,42 +164,47 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
         broadcastDatagramSocket = null;
     }
 
-    private void sendMessage(final InetAddress datagramPacketAddress, final Message responseMessage,
-            final Message requestMessage) throws IOException {
+    private void sendMessage(final InetAddress datagramPacketAddress, final Message responseMessage) {
 
-        final UnconfirmedServiceChoice unconfirmedServiceChoice = responseMessage.getApdu()
-                .getUnconfirmedServiceChoice();
-        final ConfirmedServiceChoice confirmedServiceChoice = responseMessage.getApdu().getConfirmedServiceChoice();
+        try {
 
-        boolean broadcast = false;
+            final UnconfirmedServiceChoice unconfirmedServiceChoice = responseMessage.getApdu()
+                    .getUnconfirmedServiceChoice();
+            final ConfirmedServiceChoice confirmedServiceChoice = responseMessage.getApdu().getConfirmedServiceChoice();
 
-        if (unconfirmedServiceChoice != null) {
-            LOG.trace(">>> ServiceChoice: {}", responseMessage.getApdu().getUnconfirmedServiceChoice().name());
+            boolean broadcast = false;
 
-            broadcast = responseMessage.getApdu().getUnconfirmedServiceChoice() == UnconfirmedServiceChoice.I_AM;
-            broadcast |= responseMessage.getApdu().getUnconfirmedServiceChoice() == UnconfirmedServiceChoice.WHO_IS;
-        }
-        if (confirmedServiceChoice != null) {
-            LOG.trace(">>> ServiceChoice: {}", responseMessage.getApdu().getConfirmedServiceChoice().name());
-        }
+            if (unconfirmedServiceChoice != null) {
+                LOG.trace(">>> ServiceChoice: {}", responseMessage.getApdu().getUnconfirmedServiceChoice().name());
+
+                broadcast = responseMessage.getApdu().getUnconfirmedServiceChoice() == UnconfirmedServiceChoice.I_AM;
+                broadcast |= responseMessage.getApdu().getUnconfirmedServiceChoice() == UnconfirmedServiceChoice.WHO_IS;
+            }
+            if (confirmedServiceChoice != null) {
+                LOG.trace(">>> ServiceChoice: {}", responseMessage.getApdu().getConfirmedServiceChoice().name());
+            }
 
 //		final byte[] bytes = responseMessage.getBytes();
 //		LOG.trace(">>> " + Utils.byteArrayToStringNoPrefix(bytes));
 
-        if (broadcast) {
+            if (broadcast) {
 
-            LOG.trace(">>> BroadCast");
+                LOG.trace(">>> BroadCast");
 
-            // broadcast response to the bacnet default port
-            broadcastMessage(responseMessage);
+                // broadcast response to the bacnet default port
+                broadcastMessage(responseMessage);
 
-        } else {
+            } else {
 
-            LOG.trace(">>> PointToPoint");
+                LOG.trace(">>> PointToPoint");
 
-            // point to point response
-            pointToPointMessage(responseMessage, datagramPacketAddress);
+                // point to point response
+                pointToPointMessage(responseMessage, datagramPacketAddress);
 
+            }
+
+        } catch (final IOException e) {
+            LOG.info(e.getMessage(), e);
         }
     }
 
@@ -288,7 +293,7 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
         return converter.convert(data);
     }
 
-    public Message sendMessageToController(final Message message) {
+    public List<Message> sendMessageToController(final Message message) {
 
         // find a controller that is able to create a response matching the request
         if (CollectionUtils.isNotEmpty(messageControllers)) {

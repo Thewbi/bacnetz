@@ -1,7 +1,9 @@
 package de.bacnetz.controller;
 
+import java.util.List;
+
 public interface MessageController {
 
-	Message processMessage(Message message);
+    List<Message> processMessage(Message message);
 
 }

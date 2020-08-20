@@ -8,18 +8,20 @@ import de.bacnetz.stack.VirtualLinkControl;
 
 public interface Message {
 
-	VirtualLinkControl getVirtualLinkControl();
+    VirtualLinkControl getVirtualLinkControl();
 
-	NPDU getNpdu();
+    NPDU getNpdu();
 
-	APDU getApdu();
+    APDU getApdu();
 
-	byte[] getBytes();
+    byte[] getBytes();
 
-	void recomputeLength();
+    void recomputeLength();
 
-	InetSocketAddress getSourceInetSocketAddress();
+    InetSocketAddress getSourceInetSocketAddress();
 
-	void setSourceInetSocketAddress(final InetSocketAddress sourceInetSocketAddress);
+    void setSourceInetSocketAddress(final InetSocketAddress sourceInetSocketAddress);
+
+    int getDataLength();
 
 }

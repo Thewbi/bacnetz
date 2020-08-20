@@ -29,6 +29,8 @@ import de.bacnetz.stack.BACnetServicesSupportedBitString;
 import de.bacnetz.stack.BaseBitString;
 import de.bacnetz.stack.COVSubscription;
 import de.bacnetz.stack.ConfirmedServiceChoice;
+import de.bacnetz.stack.ErrorClass;
+import de.bacnetz.stack.ErrorCode;
 import de.bacnetz.stack.NPDU;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.PDUType;
@@ -61,9 +63,9 @@ public class DefaultDevice implements Device {
 
     private Map<Integer, String> vendorMap = new HashMap<>();
 
-    private final AtomicInteger invokeId = new AtomicInteger(0);
+    private int vendorId;
 
-//    private Object presentValue;
+    private final AtomicInteger invokeId = new AtomicInteger(0);
 
     private boolean outOfService;
 
@@ -107,7 +109,7 @@ public class DefaultDevice implements Device {
     }
 
     @Override
-    public ServiceParameter getObjectIdentifierServiceParameter() {
+    public ObjectIdentifierServiceParameter getObjectIdentifierServiceParameter() {
 
         switch (objectType) {
 
@@ -128,7 +130,7 @@ public class DefaultDevice implements Device {
         }
     }
 
-    private ServiceParameter createDeviceServiceParameter() {
+    private ObjectIdentifierServiceParameter createDeviceServiceParameter() {
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
@@ -140,7 +142,7 @@ public class DefaultDevice implements Device {
         return objectIdentifierServiceParameter;
     }
 
-    private ServiceParameter createNotificationClassServiceParameter() {
+    private ObjectIdentifierServiceParameter createNotificationClassServiceParameter() {
 
         final ObjectIdentifierServiceParameter notificationServiceParameter = new ObjectIdentifierServiceParameter();
         notificationServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
@@ -152,7 +154,7 @@ public class DefaultDevice implements Device {
         return notificationServiceParameter;
     }
 
-    private ServiceParameter createBinaryInputServiceParameter() {
+    private ObjectIdentifierServiceParameter createBinaryInputServiceParameter() {
 
         final ObjectIdentifierServiceParameter binaryInputServiceParameter = new ObjectIdentifierServiceParameter();
         binaryInputServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
@@ -164,7 +166,7 @@ public class DefaultDevice implements Device {
         return binaryInputServiceParameter;
     }
 
-    private ServiceParameter createMultiStateValueServiceParameter() {
+    private ObjectIdentifierServiceParameter createMultiStateValueServiceParameter() {
 
         final ObjectIdentifierServiceParameter multiStateValueServiceParameter = new ObjectIdentifierServiceParameter();
         multiStateValueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
@@ -189,10 +191,8 @@ public class DefaultDevice implements Device {
                     DevicePropertyType.getByCode(propertyIdentifierCode).name(), propertyIdentifierCode,
                     getObjectIdentifierServiceParameter().toString());
 
-            final int errorClass = 0x02;
-            final int errorCode = 0x20;
-
-            return messageFactory.createErrorMessage(requestMessage, errorClass, errorCode);
+            return messageFactory.createErrorMessage(requestMessage, ErrorClass.PROPERTY.getCode(),
+                    ErrorCode.UNKNOWN_PROPERTY.getCode());
         }
 
         return messageFactory.create(deviceProperty, this, requestMessage);
@@ -1849,6 +1849,29 @@ public class DefaultDevice implements Device {
     }
 
     @Override
+    public void executeAction() {
+
+        final Device door1CloseStateBinaryInput = findDevice(
+                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 1));
+        final Device door2CloseStateBinaryInput = findDevice(
+                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 2));
+        final Device door3CloseStateBinaryInput = findDevice(
+                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 3));
+        final Device door4CloseStateBinaryInput = findDevice(
+                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 4));
+
+        // toggle, which sends a value to all COV subscribers
+        final byte[] byteArray1 = (byte[]) door1CloseStateBinaryInput.getPresentValue();
+        door1CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray1[0]) });
+        final byte[] byteArray2 = (byte[]) door2CloseStateBinaryInput.getPresentValue();
+        door2CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray2[0]) });
+        final byte[] byteArray3 = (byte[]) door3CloseStateBinaryInput.getPresentValue();
+        door3CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray3[0]) });
+        final byte[] byteArray4 = (byte[]) door4CloseStateBinaryInput.getPresentValue();
+        door4CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray4[0]) });
+    }
+
+    @Override
     public boolean isOutOfService() {
         return outOfService;
     }
@@ -1916,6 +1939,16 @@ public class DefaultDevice implements Device {
     @Override
     public void setParentDevice(final Device parentDevice) {
         this.parentDevice = parentDevice;
+    }
+
+    @Override
+    public int getVendorId() {
+        return vendorId;
+    }
+
+    @Override
+    public void setVendorId(final int vendorId) {
+        this.vendorId = vendorId;
     }
 
 }

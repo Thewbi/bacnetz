@@ -27,9 +27,9 @@ public class NetworkUtils {
 
     public static final String OBJECT_LOCATION = "Batcave";
 
-    public static final String VENDOR_NAME = "GEZE GmbH";
+//    public static final String VENDOR_NAME = "GEZE GmbH";
 
-    public static final String MODEL_NAME = "IO 420";
+//    public static final String MODEL_NAME = "IO 420";
 
     public static final String OBJECT_IDENTIFIER = "OBJECT_DEVICE:10001";
 

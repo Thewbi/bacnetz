@@ -102,6 +102,31 @@ public class ObjectIdentifierServiceParameter extends ServiceParameter {
         return stringBuilder.toString();
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + instanceNumber;
+        result = prime * result + ((objectType == null) ? 0 : objectType.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        final ObjectIdentifierServiceParameter other = (ObjectIdentifierServiceParameter) obj;
+        if (instanceNumber != other.instanceNumber)
+            return false;
+        if (objectType != other.objectType)
+            return false;
+        return true;
+    }
+
     public ObjectType getObjectType() {
         return objectType;
     }
