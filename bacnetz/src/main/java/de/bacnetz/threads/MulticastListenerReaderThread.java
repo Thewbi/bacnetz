@@ -67,12 +67,14 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
 
         try {
             openBroadCastSocket();
+
 //            LOG.info("Broadcast listener on " + NetworkUtils.LOCAL_BIND_IP + ":" + NetworkUtils.DEFAULT_PORT
 //                    + " started.");
 
-            LOG.info("Broadcast listener on "
-                    + configurationManager.getPropertyAsString(ConfigurationManager.LOCAL_IP_CONFIG_KEY) + ":"
-                    + configurationManager.getPropertyAsString(ConfigurationManager.PORT_CONFIG_KEY) + " started.");
+//            LOG.info("Broadcast listener on "
+//                    + configurationManager.getPropertyAsString(ConfigurationManager.LOCAL_IP_CONFIG_KEY) + ":"
+//                    + configurationManager.getPropertyAsString(ConfigurationManager.PORT_CONFIG_KEY) + " started.");
+
         } catch (final SocketException e) {
             LOG.error(e.getMessage(), e);
 
@@ -328,6 +330,10 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
         }
     }
 
+    public void stopBroadCastListener() {
+        running = false;
+    }
+
     public int getBindPort() {
         return bindPort;
     }
@@ -350,6 +356,10 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
 
     public void setConfigurationManager(final ConfigurationManager configurationManager) {
         this.configurationManager = configurationManager;
+    }
+
+    public void setBroadcastDatagramSocket(final DatagramSocket broadcastDatagramSocket) {
+        this.broadcastDatagramSocket = broadcastDatagramSocket;
     }
 
 }

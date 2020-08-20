@@ -1,5 +1,6 @@
 package de.bacnetz.controller;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -412,8 +413,18 @@ public class DefaultMessageController implements MessageController {
 
         final List<Device> filteredDevices = filterDevices(message);
 
-        return filteredDevices.stream().map(d -> retrieveIamMessage(d))
-                .collect(Collectors.toCollection(ArrayList::new));
+//        return filteredDevices.stream().map(d -> retrieveIamMessage(d))
+//                .collect(Collectors.toCollection(ArrayList::new));
+
+        filteredDevices.stream().forEach(d -> {
+            try {
+                d.sendIamMessage();
+            } catch (final IOException e) {
+                LOG.error(e.getMessage(), e);
+            }
+        });
+
+        return null;
     }
 
     private List<Device> filterDevices(final Message message) {
@@ -459,7 +470,7 @@ public class DefaultMessageController implements MessageController {
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    private Message retrieveIamMessage(final Device device) {
+    public static Message retrieveIamMessage(final Device device) {
 
         // return Unconfirmed request i-Am device,10001
 
@@ -480,7 +491,7 @@ public class DefaultMessageController implements MessageController {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU);
         apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.I_AM);
-        apdu.setVendorMap(vendorMap);
+//        apdu.setVendorMap(vendorMap);
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
@@ -620,7 +631,6 @@ public class DefaultMessageController implements MessageController {
                 objectIdentifierServiceParameter.toString());
 
         // find device
-//        final Device targetDevice = device.findDevice(objectIdentifierServiceParameter);
         final Device targetDevice = deviceMap.get(objectIdentifierServiceParameter);
 
         final List<Message> result = new ArrayList<>();
@@ -1077,6 +1087,7 @@ public class DefaultMessageController implements MessageController {
         return communicationService;
     }
 
+    @Override
     public void setCommunicationService(final CommunicationService communicationService) {
         this.communicationService = communicationService;
     }

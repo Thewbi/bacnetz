@@ -284,16 +284,17 @@ public class App {
         final List<Device> devices = new ArrayList<Device>();
 
         // device 10100
-        final Device device = defaultDeviceFactory.create(defaultMessageController.getDeviceMap(), vendorMap, 10100,
-                NetworkUtils.OBJECT_NAME, VendorType.GEZE_GMBH.getCode());
+        Device device = defaultDeviceFactory.create(defaultMessageController.getDeviceMap(), vendorMap, 10100,
+                NetworkUtils.OBJECT_NAME, VendorType.GEZE_GMBH.getCode(), configurationManager);
         devices.add(device);
+        device.bindSocket(configurationManager.getPropertyAsString(ConfigurationManager.LOCAL_IP_CONFIG_KEY), 10100);
 
-//        // device 10200
-//        device = defaultDeviceFactory.create(defaultMessageController.getDeviceMap(), vendorMap, 10200,
-//                NetworkUtils.OBJECT_NAME, VendorType.GEZE_GMBH.getCode());
-//        devices.add(device);
+        // device 10200
+        device = defaultDeviceFactory.create(defaultMessageController.getDeviceMap(), vendorMap, 10200,
+                NetworkUtils.OBJECT_NAME, VendorType.GEZE_GMBH.getCode(), configurationManager);
+        devices.add(device);
+        device.bindSocket(configurationManager.getPropertyAsString(ConfigurationManager.LOCAL_IP_CONFIG_KEY), 10200);
 
-//        defaultMessageController.setDevice(device);
         defaultMessageController.getDevices().addAll(devices);
         defaultMessageController.setVendorMap(vendorMap);
         defaultMessageController.setCommunicationService(multicastListenerReaderThread);
@@ -324,18 +325,23 @@ public class App {
             new Thread(toggleDoorOpenStateThread).start();
         }
 
-        while (true) {
+        boolean done = false;
+        while (!done) {
 
             String msg = "";
 
             // DEBUG
-            msg = "Hit Enter to send message";
+            msg = "Hit Enter to send message! q = exit";
             LOG.info(msg);
             System.out.println(msg);
 
             // read input from the user
             final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-            final String s = br.readLine();
+            final String userInput = br.readLine();
+
+            if (StringUtils.equalsIgnoreCase(userInput, msg)) {
+                done = true;
+            }
 
             // send message
             msg = "Sending message ...";
@@ -359,6 +365,8 @@ public class App {
             // DEBUG
             LOG.info("Sending message done.");
         }
+
+        devices.stream().forEach(d -> d.cleanUp());
     }
 
     private static Map<Integer, String> readVendorMap(final BufferedReader bufferedReader) throws IOException {

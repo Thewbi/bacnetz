@@ -1,5 +1,13 @@
 package de.bacnetz.devices;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -18,11 +26,15 @@ import org.apache.logging.log4j.Logger;
 
 import de.bacnetz.common.utils.BACnetUtils;
 import de.bacnetz.common.utils.NetworkUtils;
+import de.bacnetz.common.utils.Utils;
+import de.bacnetz.configuration.ConfigurationManager;
 import de.bacnetz.controller.DefaultMessage;
+import de.bacnetz.controller.DefaultMessageController;
 import de.bacnetz.controller.Message;
 import de.bacnetz.factory.DefaultMessageFactory;
 import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.factory.MessageType;
+import de.bacnetz.services.CommunicationService;
 import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.BACnetProtocolObjectTypesSupportedBitString;
 import de.bacnetz.stack.BACnetServicesSupportedBitString;
@@ -38,8 +50,9 @@ import de.bacnetz.stack.ServiceParameter;
 import de.bacnetz.stack.StatusFlagsBitString;
 import de.bacnetz.stack.TagClass;
 import de.bacnetz.stack.VirtualLinkControl;
+import de.bacnetz.threads.MulticastListenerReaderThread;
 
-public class DefaultDevice implements Device {
+public class DefaultDevice implements Device, CommunicationService {
 
     private static final Logger LOG = LogManager.getLogger(DefaultDevice.class);
 
@@ -76,6 +89,14 @@ public class DefaultDevice implements Device {
     private LocalDateTime timeOfDeviceRestart = LocalDateTime.now();
 
     private final List<COVSubscription> covSubscriptions = new ArrayList<>();
+
+    private DatagramSocket datagramSocket;
+
+    private ConfigurationManager configurationManager;
+
+    private DefaultMessageController messageController;
+
+    private MulticastListenerReaderThread multicastListenerReaderThread;
 
     /**
      * ctor
@@ -1872,6 +1893,91 @@ public class DefaultDevice implements Device {
     }
 
     @Override
+    public void bindSocket(final String ip, final int port) throws SocketException, UnknownHostException {
+
+        if (datagramSocket == null) {
+            datagramSocket = new DatagramSocket(port, InetAddress.getByName(ip));
+
+            messageController = new DefaultMessageController();
+            messageController.setCommunicationService(this);
+
+            messageController.getDeviceMap().put(getObjectIdentifierServiceParameter(), this);
+            children.stream()
+                    .forEach(d -> messageController.getDeviceMap().put(d.getObjectIdentifierServiceParameter(), d));
+
+            multicastListenerReaderThread = new MulticastListenerReaderThread();
+            multicastListenerReaderThread.setConfigurationManager(configurationManager);
+            multicastListenerReaderThread.setVendorMap(vendorMap);
+            multicastListenerReaderThread.setBroadcastDatagramSocket(datagramSocket);
+            multicastListenerReaderThread.getMessageControllers().add(messageController);
+
+            new Thread(multicastListenerReaderThread).start();
+        }
+    }
+
+    @Override
+    public void cleanUp() {
+
+        if (multicastListenerReaderThread == null) {
+            multicastListenerReaderThread.stopBroadCastListener();
+            multicastListenerReaderThread = null;
+        }
+
+        if (datagramSocket != null) {
+            datagramSocket.close();
+            datagramSocket = null;
+        }
+
+        messageController = null;
+    }
+
+    @Override
+    public void sendIamMessage() throws IOException {
+        final Message retrieveIamMessage = DefaultMessageController.retrieveIamMessage(this);
+        broadcastMessage(retrieveIamMessage);
+    }
+
+    private void broadcastMessage(final Message message) throws IOException {
+
+        final byte[] bytes = message.getBytes();
+
+        if (message.getVirtualLinkControl().getLength() != bytes.length) {
+            throw new RuntimeException(
+                    "Message is invalid! The length in the virtual link control does not match the real data length!");
+        }
+
+        final int port = configurationManager.getPropertyAsInt(ConfigurationManager.PORT_CONFIG_KEY);
+        final String multicastIP = configurationManager
+                .getPropertyAsString(ConfigurationManager.MULTICAST_IP_CONFIG_KEY);
+
+        LOG.trace(
+                ">>> Broadcast Sending to " + multicastIP + ":" + port + ": " + Utils.byteArrayToStringNoPrefix(bytes));
+
+        final SocketAddress socketAddress = new InetSocketAddress(multicastIP, port);
+        final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, socketAddress);
+
+        datagramSocket.send(responseDatagramPacket);
+    }
+
+    @Override
+    public void pointToPointMessage(final Message responseMessage, final InetAddress datagramPacketAddress)
+            throws IOException {
+
+        final byte[] bytes = responseMessage.getBytes();
+
+        if (responseMessage.getVirtualLinkControl().getLength() != bytes.length) {
+            throw new RuntimeException(
+                    "Message is invalid! The length in the virtual link control does not match the real data length!");
+        }
+
+        final InetAddress destinationAddress = datagramPacketAddress;
+        final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, destinationAddress,
+                NetworkUtils.DEFAULT_PORT);
+
+        datagramSocket.send(responseDatagramPacket);
+    }
+
+    @Override
     public boolean isOutOfService() {
         return outOfService;
     }
@@ -1949,6 +2055,14 @@ public class DefaultDevice implements Device {
     @Override
     public void setVendorId(final int vendorId) {
         this.vendorId = vendorId;
+    }
+
+    public ConfigurationManager getConfigurationManager() {
+        return configurationManager;
+    }
+
+    public void setConfigurationManager(final ConfigurationManager configurationManager) {
+        this.configurationManager = configurationManager;
     }
 
 }

@@ -1,5 +1,8 @@
 package de.bacnetz.devices;
 
+import java.io.IOException;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -84,5 +87,11 @@ public interface Device {
     int getVendorId();
 
     void setVendorId(int vendorId);
+
+    void bindSocket(String ip, int port) throws SocketException, UnknownHostException;
+
+    void cleanUp();
+
+    void sendIamMessage() throws IOException;
 
 }

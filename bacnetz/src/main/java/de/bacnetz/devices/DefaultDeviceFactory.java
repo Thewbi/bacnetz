@@ -2,6 +2,7 @@ package de.bacnetz.devices;
 
 import java.util.Map;
 
+import de.bacnetz.configuration.ConfigurationManager;
 import de.bacnetz.factory.Factory;
 import de.bacnetz.factory.MessageType;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
@@ -19,14 +20,16 @@ public class DefaultDeviceFactory implements Factory<Device> {
         final int deviceId = (int) args[2];
         final String objectName = (String) args[3];
         final int vendorId = (int) args[4];
+        final ConfigurationManager configurationManager = (ConfigurationManager) args[5];
 
-        return createIO420FourDoorSolution(deviceMap, vendorMap, deviceId, objectName, vendorId);
+        return createIO420FourDoorSolution(deviceMap, vendorMap, deviceId, objectName, vendorId, configurationManager);
     }
 
     private Device createIO420FourDoorSolution(final Map<ObjectIdentifierServiceParameter, Device> deviceMap,
-            final Map<Integer, String> vendorMap, final int deviceId, final String objectName, final int vendorId) {
+            final Map<Integer, String> vendorMap, final int deviceId, final String objectName, final int vendorId,
+            final ConfigurationManager configurationManager) {
 
-        final Device device = new DefaultDevice();
+        final DefaultDevice device = new DefaultDevice();
         device.setId(deviceId);
         device.setName(objectName);
         device.setDescription("no entry");
@@ -35,6 +38,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         device.setVendorId(vendorId);
         device.setObjectType(ObjectType.DEVICE);
         device.setFirmwareRevision("v1.2.3.4.5.6");
+        device.setConfigurationManager(configurationManager);
 
         addChildrenToDevice(device, deviceMap, vendorMap);
         addPropertiesToDevice(device);
