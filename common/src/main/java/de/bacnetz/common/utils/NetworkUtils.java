@@ -93,7 +93,7 @@ public class NetworkUtils {
             }
         }
 
-        LOG.info("Local hostname is: " + hostAddress);
+        LOG.trace("Local hostname is: " + hostAddress);
 
         return hostAddress;
     }
