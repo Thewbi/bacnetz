@@ -2,6 +2,8 @@ package de.bacnetz.devices;
 
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import de.bacnetz.configuration.ConfigurationManager;
 import de.bacnetz.factory.Factory;
 import de.bacnetz.factory.MessageType;
@@ -10,6 +12,9 @@ import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 public class DefaultDeviceFactory implements Factory<Device> {
 
     private static final int COLDSTART = 1;
+
+    @Autowired
+    private ConfigurationManager configurationManager;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -20,27 +25,26 @@ public class DefaultDeviceFactory implements Factory<Device> {
         final int deviceId = (int) args[2];
         final String objectName = (String) args[3];
         final int vendorId = (int) args[4];
-        final ConfigurationManager configurationManager = (ConfigurationManager) args[5];
 
-        return createIO420FourDoorSolution(deviceMap, vendorMap, deviceId, objectName, vendorId, configurationManager);
+        return createIO420FourDoorSolution(deviceMap, vendorMap, deviceId, objectName, vendorId);
     }
 
     private Device createIO420FourDoorSolution(final Map<ObjectIdentifierServiceParameter, Device> deviceMap,
-            final Map<Integer, String> vendorMap, final int deviceId, final String objectName, final int vendorId,
-            final ConfigurationManager configurationManager) {
+            final Map<Integer, String> vendorMap, final int deviceId, final String objectName, final int vendorId) {
 
         final DefaultDevice device = new DefaultDevice();
+        // object-identifier (8, deviceId)
+        device.setObjectType(ObjectType.DEVICE);
         device.setId(deviceId);
         device.setName(objectName);
         device.setDescription("no entry");
         device.setLocation("Office");
         device.setVendorMap(vendorMap);
         device.setVendorId(vendorId);
-        device.setObjectType(ObjectType.DEVICE);
         device.setFirmwareRevision("v1.2.3.4.5.6");
         device.setConfigurationManager(configurationManager);
 
-        addChildrenToDevice(device, deviceMap, vendorMap);
+        addChildrenToDevice(device, vendorMap);
         addPropertiesToDevice(device);
 
         deviceMap.put(device.getObjectIdentifierServiceParameter(), device);
@@ -48,229 +52,395 @@ public class DefaultDeviceFactory implements Factory<Device> {
         return device;
     }
 
-    private void addChildrenToDevice(final Device device, final Map<ObjectIdentifierServiceParameter, Device> deviceMap,
-            final Map<Integer, String> vendorMap) {
+    private void addChildrenToDevice(final Device device, final Map<Integer, String> vendorMap) {
 
         Device childDevice = null;
         int index = 0;
+//        final int parentDeviceId = device.getId();
+        final int parentDeviceId = 0;
 
-        // 1
+        // 1 module-type (19, 1)
         index++;
         childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);
-        childDevice.setId(device.getId() + index);
+        // object-identifier (19, 1)
+        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+//        childDevice.setId(parentDeviceId + index);
+        childDevice.setId(1);
         childDevice.setName("module_type");
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
         addPropertiesToModuleTypeDevice(childDevice);
         device.getChildDevices().add(childDevice);
+        // 4 = four door solution
         childDevice.setPresentValue(4);
-        deviceMap.put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        // 80 = multi door solution
+//        childDevice.setPresentValue(80);
+        device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
-        // 2
+        // 2 - alarm-type (19, 2)
         index++;
         childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);
-        childDevice.setId(device.getId() + index);
+        // object-identifier (19, 2)
+        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+//        childDevice.setId(parentDeviceId + index);
+        childDevice.setId(2);
         childDevice.setName("alarm_type");
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
         addPropertiesToAlarmStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(1);
-        deviceMap.put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
-        // 3 binary-input,1 - open/close state
+        // 7 (notification-class) (15, 50)
+        index++;
+        childDevice = new DefaultDevice();
+        childDevice.setParentDevice(device);
+        // object-identifier (15, 50)
+        childDevice.setObjectType(ObjectType.NOTIFICATION_CLASS);
+//        childDevice.setId(parentDeviceId + index);
+        childDevice.setId(50);
+        childDevice.setName("notificaton_class_obj");
+        childDevice.setDescription("no entry");
+        childDevice.setLocation("Office");
+        childDevice.setVendorMap(vendorMap);
+        addPropertiesToNotificationClassDevice(childDevice);
+        device.getChildDevices().add(childDevice);
+        device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+
+        index = createDoor1(device, vendorMap, index, parentDeviceId);
+
+        index = createDoor2(device, vendorMap, index, parentDeviceId);
+
+        index = createDoor3(device, vendorMap, index, parentDeviceId);
+
+        createDoor4(device, vendorMap, index, parentDeviceId);
+
+//        createDoor5(device, device.getDeviceMap(), vendorMap, index, parentDeviceId);
+    }
+
+    private int createDoor1(final Device device, final Map<Integer, String> vendorMap, int index,
+            final int parentDeviceId) {
+
+        Device childDevice;
+
+        // 3 binary-input,3 - open/close state of door 1 (opened, closed)
         index++;
         childDevice = new BinaryInputDevice();
         childDevice.setParentDevice(device);
-        childDevice.setId(device.getId() + index);
+        // object-identifier (3, 1)
+        childDevice.setObjectType(ObjectType.BINARY_INPUT);
+//        childDevice.setId(parentDeviceId + index);
+        childDevice.setId(1);
         childDevice.setName("door1_close_state");
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.BINARY_INPUT);
         addPropertiesToDoorCloseStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(new byte[] { 1 });
-        deviceMap.put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
-
-        // 4
-        index++;
-        childDevice = new BinaryInputDevice();
-        childDevice.setParentDevice(device);
-        childDevice.setId(device.getId() + index);
-        childDevice.setName("door2_close_state");
-        childDevice.setDescription("no entry");
-        childDevice.setLocation("Office");
-        childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.BINARY_INPUT);
-        addPropertiesToDoorCloseStateDevice(childDevice);
-        device.getChildDevices().add(childDevice);
-        childDevice.setPresentValue(new byte[] { 1 });
-        deviceMap.put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
-
-        // 5 - multi_state_value,5 - door1_state
-        index++;
-        childDevice = new DefaultDevice();
-        childDevice.setParentDevice(device);
-        childDevice.setId(device.getId() + index);
-        childDevice.setName("door1_state");
-        childDevice.setDescription("no entry");
-        childDevice.setLocation("Office");
-        childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-        addPropertiesToDoorStateDevice(childDevice);
-        device.getChildDevices().add(childDevice);
-        childDevice.setPresentValue(1);
-        deviceMap.put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
         // 6 - multi_state_value,6 - command
         index++;
         childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);
-        childDevice.setId(device.getId() + index);
+        // object-identifier (19, 4)
+        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+//        childDevice.setId(parentDeviceId + index);
+        childDevice.setId(4);
         childDevice.setName("door1_command");
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
         addPropertiesToDoorCommandStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(1);
-        deviceMap.put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
-        // 7
+        // 5 - multi_state_value,5 - door1_state - lock state (locked, unlocked,
+        // short-time-released)
         index++;
         childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);
-        childDevice.setId(device.getId() + index);
-        childDevice.setName("notificaton_class_obj");
-        childDevice.setDescription("no entry");
-        childDevice.setLocation("Office");
-        childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.NOTIFICATION_CLASS);
-        addPropertiesToNotificationClassDevice(childDevice);
-        device.getChildDevices().add(childDevice);
-        deviceMap.put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
-
-        // 8
-        index++;
-        childDevice = new DefaultDevice();
-        childDevice.setParentDevice(device);
-        childDevice.setId(device.getId() + index);
-        childDevice.setName("door2_state");
-        childDevice.setDescription("no entry");
-        childDevice.setLocation("Office");
-        childDevice.setVendorMap(vendorMap);
+        // object-identifier (19, 3)
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+//        childDevice.setId(parentDeviceId + index);
+        childDevice.setId(3);
+        childDevice.setName("door1_state");
+        childDevice.setDescription("no entry");
+        childDevice.setLocation("Office");
+        childDevice.setVendorMap(vendorMap);
+        childDevice.getStates().add("unlock");
+        childDevice.getStates().add("lock");
+        childDevice.getStates().add("short time released");
+        childDevice.getStates().add("time switch active");
         addPropertiesToDoorStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(1);
-        deviceMap.put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+
+        return index;
+    }
+
+    private int createDoor2(final Device device, final Map<Integer, String> vendorMap, int index,
+            final int parentDeviceId) {
+
+        Device childDevice;
+
+        // 4 binary-input,2 - open/close state of door 2 or 4???
+        index++;
+        childDevice = new BinaryInputDevice();
+        childDevice.setParentDevice(device);
+//        childDevice.setId(parentDeviceId + index);
+        // object-identifier: (3, 2)
+        childDevice.setObjectType(ObjectType.BINARY_INPUT);
+        childDevice.setId(2);
+        childDevice.setName("door2_close_state");
+        childDevice.setDescription("no entry");
+        childDevice.setLocation("Office");
+        childDevice.setVendorMap(vendorMap);
+        addPropertiesToDoorCloseStateDevice(childDevice);
+        device.getChildDevices().add(childDevice);
+        childDevice.setPresentValue(new byte[] { 1 });
+        device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
         // 9
         index++;
         childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);
-        childDevice.setId(device.getId() + index);
+//        childDevice.setId(parentDeviceId + index);
+        // object-identifier (19, 6)
+        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+        childDevice.setId(6);
         childDevice.setName("door2_command");
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
-        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
         addPropertiesToDoorCommandStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(1);
-        deviceMap.put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
-        // 10
+        // 8, lock state
+        index++;
+        childDevice = new DefaultDevice();
+        childDevice.setParentDevice(device);
+//        childDevice.setId(parentDeviceId + index);
+        // object-identifier (19, 5)
+        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+        childDevice.setId(5);
+        childDevice.setName("door2_state");
+        childDevice.setDescription("no entry");
+        childDevice.setLocation("Office");
+        childDevice.setVendorMap(vendorMap);
+        childDevice.getStates().add("unlock");
+        childDevice.getStates().add("lock");
+        childDevice.getStates().add("short time released");
+        childDevice.getStates().add("time switch active");
+        addPropertiesToDoorStateDevice(childDevice);
+        device.getChildDevices().add(childDevice);
+        childDevice.setPresentValue(1);
+        device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+
+        return index;
+    }
+
+    private int createDoor3(final Device device, final Map<Integer, String> vendorMap, int index,
+            final int parentDeviceId) {
+
+        Device childDevice;
+
+        // 10 binary-input,10 - open/close state of door 3
         index++;
         childDevice = new BinaryInputDevice();
         childDevice.setParentDevice(device);
-        childDevice.setId(device.getId() + index);
+        // object-identifier (3, 3)
+        childDevice.setObjectType(ObjectType.BINARY_INPUT);
+//        childDevice.setId(parentDeviceId + index);
+        childDevice.setId(3);
         childDevice.setName("door3_close_state");
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.BINARY_INPUT);
         addPropertiesToDoorCloseStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(new byte[] { 1 });
-        deviceMap.put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
-
-        // 11
-        index++;
-        childDevice = new BinaryInputDevice();
-        childDevice.setParentDevice(device);
-        childDevice.setId(device.getId() + index);
-        childDevice.setName("door4_close_state");
-        childDevice.setDescription("no entry");
-        childDevice.setLocation("Office");
-        childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.BINARY_INPUT);
-        addPropertiesToDoorCloseStateDevice(childDevice);
-        device.getChildDevices().add(childDevice);
-        childDevice.setPresentValue(new byte[] { 1 });
-        deviceMap.put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
-
-        // 12
-        index++;
-        childDevice = new DefaultDevice();
-        childDevice.setParentDevice(device);
-        childDevice.setId(device.getId() + index);
-        childDevice.setName("door3_state");
-        childDevice.setDescription("no entry");
-        childDevice.setLocation("Office");
-        childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-        addPropertiesToDoorStateDevice(childDevice);
-        device.getChildDevices().add(childDevice);
-        childDevice.setPresentValue(1);
-        deviceMap.put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
         // 13
         index++;
         childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);
-        childDevice.setId(device.getId() + index);
+        // object-identifier (19, 8)
+        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+//        childDevice.setId(parentDeviceId + index);
+        childDevice.setId(8);
         childDevice.setName("door3_command");
         childDevice.setDescription("no entry");
-        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
         addPropertiesToDoorCommandStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(1);
-        deviceMap.put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
-        // 14
+        // 12
         index++;
         childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);
-        childDevice.setId(device.getId() + index);
-        childDevice.setName("door4_state");
+        // object-identifier (19, 7)
+        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+//        childDevice.setId(parentDeviceId + index);
+        childDevice.setId(7);
+        childDevice.setName("door3_state");
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+        childDevice.getStates().add("unlock");
+        childDevice.getStates().add("lock");
+        childDevice.getStates().add("short time released");
+        childDevice.getStates().add("time switch active");
         addPropertiesToDoorStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(1);
-        deviceMap.put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
-        // 15
+        return index;
+    }
+
+    private void createDoor4(final Device device, final Map<Integer, String> vendorMap, int index,
+            final int parentDeviceId) {
+
+        Device childDevice;
+
+        // 11 binary-input,11 - open/close state of door 4 - door state (open, closed)
+        index++;
+        childDevice = new BinaryInputDevice();
+        childDevice.setParentDevice(device);
+
+        // object-identifier (3, 4)
+        childDevice.setObjectType(ObjectType.BINARY_INPUT);
+//        childDevice.setId(parentDeviceId + index);
+        childDevice.setId(4);
+
+        childDevice.setName("door4_close_state");
+        childDevice.setDescription("no entry");
+        childDevice.setLocation("Office");
+        childDevice.setVendorMap(vendorMap);
+        addPropertiesToDoorCloseStateDevice(childDevice);
+        device.getChildDevices().add(childDevice);
+        childDevice.setPresentValue(new byte[] { 1 });
+        device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+
+        // 15 four_door_solution_door4_state MASTER COMMAND and State (locked, unlocked,
+        // short_time_released)
         index++;
         childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);
-        childDevice.setId(device.getId() + index);
+        // object-identifier (19, 10)
+        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+//        childDevice.setId(parentDeviceId + index);
+        childDevice.setId(10);
         childDevice.setName("door4_command");
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
-        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
         addPropertiesToDoorCommandStateDevice(childDevice);
+        device.getChildDevices().add(childDevice);
+        childDevice.setPresentValue(1);
+        device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+
+        // 14 four_door_solution_door4_state lock_state
+        // (locked, unlocked, short time release)
+        index++;
+        childDevice = new DefaultDevice();
+        childDevice.setParentDevice(device);
+
+        // object-identifier (19, 9)
+        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+//        childDevice.setId(parentDeviceId + index);
+        childDevice.setId(9);
+
+        childDevice.setName("door4_state");
+        childDevice.setDescription("no entry");
+        childDevice.setLocation("Office");
+        childDevice.setVendorMap(vendorMap);
+        childDevice.getStates().add("unlock");
+        childDevice.getStates().add("lock");
+        childDevice.getStates().add("short time released");
+        childDevice.getStates().add("time switch active");
+        addPropertiesToDoorStateDevice(childDevice);
+        device.getChildDevices().add(childDevice);
+        childDevice.setPresentValue(1);
+        device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+    }
+
+    private void createDoor5(final Device device, final Map<ObjectIdentifierServiceParameter, Device> deviceMap,
+            final Map<Integer, String> vendorMap, int index, final int parentDeviceId) {
+
+        Device childDevice;
+
+        // 11 binary-input,11 - open/close state of door 5 - door state (open, closed)
+        index++;
+        childDevice = new BinaryInputDevice();
+        childDevice.setParentDevice(device);
+
+        // object-identifier (3, 5)
+        childDevice.setObjectType(ObjectType.BINARY_INPUT);
+//        childDevice.setId(parentDeviceId + index);
+        childDevice.setId(5);
+
+        childDevice.setName("door5_close_state");
+        childDevice.setDescription("no entry");
+        childDevice.setLocation("Office");
+        childDevice.setVendorMap(vendorMap);
+        addPropertiesToDoorCloseStateDevice(childDevice);
+        device.getChildDevices().add(childDevice);
+        childDevice.setPresentValue(new byte[] { 1 });
+        deviceMap.put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+
+        // this objectid + object type combination is found within the command MASTER
+        // template as a state!
+        // This device describes a state of the MASTER command
+        //
+        // 15 four_door_solution_door5_state MASTER COMMAND and State (locked, unlocked,
+        // short_time_released)
+        index++;
+        childDevice = new DefaultDevice();
+        childDevice.setParentDevice(device);
+        // object-identifier (19, 12)
+        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+//        childDevice.setId(parentDeviceId + index);
+        childDevice.setId(12);
+        childDevice.setName("door5_command");
+        childDevice.setDescription("no entry");
+        childDevice.setLocation("Office");
+        childDevice.setVendorMap(vendorMap);
+        addPropertiesToDoorCommandStateDevice(childDevice);
+        device.getChildDevices().add(childDevice);
+        childDevice.setPresentValue(1);
+        deviceMap.put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+
+        // 14 four_door_solution_door5_state lock_state
+        // (locked, unlocked, short time release)
+        index++;
+        childDevice = new DefaultDevice();
+        childDevice.setParentDevice(device);
+        // object-identifier (19, 11)
+        childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
+//        childDevice.setId(parentDeviceId + index);
+        childDevice.setId(11);
+        childDevice.setName("door5_state");
+        childDevice.setDescription("no entry");
+        childDevice.setLocation("Office");
+        childDevice.setVendorMap(vendorMap);
+        childDevice.getStates().add("unlock");
+        childDevice.getStates().add("lock");
+        childDevice.getStates().add("short time released");
+        childDevice.getStates().add("time switch active");
+        addPropertiesToDoorStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(1);
         deviceMap.put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
@@ -1038,10 +1208,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x4A = 74d number-of-states
-        device.getStates().add("unlock");
-        device.getStates().add("lock");
-        device.getStates().add("short time released");
-        device.getStates().add("time switch active");
         deviceProperty = new DefaultDeviceProperty<Integer>("number-of-states", DeviceProperty.NUMBER_OF_STATES,
                 device.getStates().size(), MessageType.UNSIGNED_INTEGER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
@@ -1137,6 +1303,10 @@ public class DefaultDeviceFactory implements Factory<Device> {
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
         
         // @formatter:on
+    }
+
+    public void setConfigurationManager(final ConfigurationManager configurationManager) {
+        this.configurationManager = configurationManager;
     }
 
 }

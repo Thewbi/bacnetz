@@ -3,6 +3,7 @@ package de.bacnetz;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -39,17 +40,15 @@ import de.bacnetz.configuration.DefaultConfigurationManager;
 import de.bacnetz.controller.DefaultMessageController;
 import de.bacnetz.controller.Message;
 import de.bacnetz.devices.DefaultDeviceFactory;
+import de.bacnetz.devices.DefaultDeviceService;
 import de.bacnetz.devices.Device;
-import de.bacnetz.devices.ObjectType;
+import de.bacnetz.devices.DeviceService;
 import de.bacnetz.factory.DefaultMessageFactory;
 import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.factory.MessageType;
 import de.bacnetz.stack.IPv4Packet;
-import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.UDPPacket;
-import de.bacnetz.stack.VendorType;
 import de.bacnetz.threads.MulticastListenerReaderThread;
-import de.bacnetz.threads.ToogleDoorOpenStateThread;
 
 /**
  * <h1>Wireshark Filter</h1>
@@ -140,6 +139,163 @@ public class App {
 //		runMainOld();
     }
 
+    private static void runMain(final ConfigurationManager configurationManager)
+            throws SocketException, UnknownHostException, IOException {
+
+        final Map<Integer, String> vendorMap = processVendorMap();
+
+        final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
+        multicastListenerReaderThread.setConfigurationManager(configurationManager);
+        multicastListenerReaderThread.setVendorMap(vendorMap);
+        multicastListenerReaderThread
+                .setBindPort(configurationManager.getPropertyAsInt(ConfigurationManager.PORT_CONFIG_KEY));
+
+        final DefaultDeviceFactory defaultDeviceFactory = new DefaultDeviceFactory();
+        defaultDeviceFactory.setConfigurationManager(configurationManager);
+
+        final DeviceService deviceService = new DefaultDeviceService();
+        deviceService.setDefaultDeviceFactory(defaultDeviceFactory);
+
+        final DefaultMessageController defaultMessageController = new DefaultMessageController();
+        defaultMessageController.setDeviceService(deviceService);
+
+        final String localIp = configurationManager.getPropertyAsString(ConfigurationManager.LOCAL_IP_CONFIG_KEY);
+
+        final List<Device> devices = deviceService.createDevices(vendorMap, localIp);
+
+//        deviceService.getDevices().addAll(devices);
+        defaultMessageController.setVendorMap(vendorMap);
+        defaultMessageController.setCommunicationService(multicastListenerReaderThread);
+
+        multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
+        multicastListenerReaderThread.openBroadCastSocket();
+
+//        final Device door1CloseStateBinaryInput = device.findDevice(
+//                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 1));
+//        final Device door2CloseStateBinaryInput = device.findDevice(
+//                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 2));
+//        final Device door3CloseStateBinaryInput = device.findDevice(
+//                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 3));
+//        final Device door4CloseStateBinaryInput = device.findDevice(
+//                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 4));
+
+        new Thread(multicastListenerReaderThread).start();
+
+//        if (RUN_TOGGLE_DOOR_THREAD) {
+//
+//            final Device door1CloseStateBinaryInput = device.findDevice(
+//                    ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 1));
+//
+//            final ToogleDoorOpenStateThread toggleDoorOpenStateThread = new ToogleDoorOpenStateThread();
+//            toggleDoorOpenStateThread.setParentDevice(device);
+//            toggleDoorOpenStateThread.setChildDevice(door1CloseStateBinaryInput);
+//            toggleDoorOpenStateThread.setVendorMap(vendorMap);
+//            toggleDoorOpenStateThread.setCommunicationService(multicastListenerReaderThread);
+//            new Thread(toggleDoorOpenStateThread).start();
+//        }
+
+        boolean done = false;
+        while (!done) {
+
+            String msg = "";
+
+            // DEBUG
+            msg = "Hit Enter to send message! q = exit";
+            LOG.trace(msg);
+//            System.out.println(msg);
+
+            // read input from the user
+            final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            final String userInput = br.readLine();
+
+            if (StringUtils.equalsIgnoreCase(userInput, msg)) {
+                done = true;
+            }
+
+            // send message
+            msg = "Sending message ...";
+            LOG.trace(msg);
+//            System.out.println(msg);
+
+            // execute the action on the parent device
+            devices.get(0).executeAction();
+
+//            devices.stream().forEach(d -> d.executeAction());
+
+            // DEBUG
+//            msg = "Door is now "
+//                    + (((Boolean) door1CloseStateBinaryInput.getPresentValue()) ? "locked" : "unlocked");
+//            LOG.info(msg);
+//            System.out.println(msg);
+
+//            // send a bacnet message
+//            // not needed any more, because a BinaryInputDevice send cov messages over all existing subscriptions on
+//            // value change
+//            ToogleDoorOpenStateThread.sendCOV(device, door1CloseStateBinaryInput, vendorMap, NetworkUtils.TARGET_IP,
+//                    multicastListenerReaderThread);
+
+            // DEBUG
+            LOG.trace("Sending message done.");
+        }
+
+        devices.stream().forEach(d -> d.cleanUp());
+    }
+
+    public static Map<Integer, String> processVendorMap() throws FileNotFoundException, IOException {
+        BufferedReader bufferedReader = null;
+
+        // from file from eclipse
+        final String filename = "src/main/resources/BACnetVendors.csv";
+//        final String filename = "BACnetVendors.csv";
+        final File file = new File(filename);
+        LOG.info(file.getAbsoluteFile());
+        System.out.println(file.getAbsoluteFile());
+        bufferedReader = new BufferedReader(new FileReader(filename));
+
+        final Map<Integer, String> vendorMap = readVendorMap(bufferedReader);
+        return vendorMap;
+    }
+
+    private static Map<Integer, String> readVendorMap(final BufferedReader bufferedReader) throws IOException {
+
+        final Map<Integer, String> map = new HashMap<>();
+
+        try {
+
+            String line = null;
+            while ((line = bufferedReader.readLine()) != null) {
+
+                line = StringUtils.trim(line);
+
+                final String[] split = line.split(";");
+
+                final int vendorId = Integer.parseInt(split[0]);
+                String vendorName = split[1];
+
+                if (StringUtils.isBlank(vendorName)) {
+                    vendorName = "";
+                    for (int i = 2; i < split.length; i++) {
+                        if (i > 2) {
+                            vendorName += " ";
+                        }
+                        vendorName += split[i];
+                    }
+                }
+
+                map.put(vendorId, vendorName);
+            }
+
+        } catch (final IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (bufferedReader != null) {
+                bufferedReader.close();
+            }
+        }
+
+        return map;
+    }
+
     @SuppressWarnings("unused")
     private static void runWhoIsThread() {
 
@@ -169,7 +325,7 @@ public class App {
         LOG.info("runBroadcast() ...");
 
         final MessageFactory messageFactory = new DefaultMessageFactory();
-//		final Message whoIsMessage = messageFactory.create(MessageType.WHO_IS, 25, 25);
+//      final Message whoIsMessage = messageFactory.create(MessageType.WHO_IS, 25, 25);
         final Message whoIsMessage = messageFactory.create(MessageType.WHO_IS);
 
         final List<InetAddress> listAllBroadcastAddresses = listAllBroadcastAddresses();
@@ -254,159 +410,6 @@ public class App {
         }
 
         return broadcastList;
-    }
-
-    private static void runMain(final ConfigurationManager configurationManager)
-            throws SocketException, UnknownHostException, IOException {
-
-        final DefaultDeviceFactory defaultDeviceFactory = new DefaultDeviceFactory();
-
-        BufferedReader bufferedReader = null;
-
-        // from file from eclipse
-        final String filename = "src/main/resources/BACnetVendors.csv";
-//        final String filename = "BACnetVendors.csv";
-        final File file = new File(filename);
-        LOG.info(file.getAbsoluteFile());
-        System.out.println(file.getAbsoluteFile());
-        bufferedReader = new BufferedReader(new FileReader(filename));
-
-        final Map<Integer, String> vendorMap = readVendorMap(bufferedReader);
-
-        final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
-        multicastListenerReaderThread.setConfigurationManager(configurationManager);
-        multicastListenerReaderThread.setVendorMap(vendorMap);
-        multicastListenerReaderThread
-                .setBindPort(configurationManager.getPropertyAsInt(ConfigurationManager.PORT_CONFIG_KEY));
-
-        final DefaultMessageController defaultMessageController = new DefaultMessageController();
-
-        final List<Device> devices = new ArrayList<Device>();
-
-        // device 10100
-        Device device = defaultDeviceFactory.create(defaultMessageController.getDeviceMap(), vendorMap, 10100,
-                NetworkUtils.OBJECT_NAME, VendorType.GEZE_GMBH.getCode(), configurationManager);
-        devices.add(device);
-        device.bindSocket(configurationManager.getPropertyAsString(ConfigurationManager.LOCAL_IP_CONFIG_KEY), 10100);
-
-        // device 10200
-        device = defaultDeviceFactory.create(defaultMessageController.getDeviceMap(), vendorMap, 10200,
-                NetworkUtils.OBJECT_NAME, VendorType.GEZE_GMBH.getCode(), configurationManager);
-        devices.add(device);
-        device.bindSocket(configurationManager.getPropertyAsString(ConfigurationManager.LOCAL_IP_CONFIG_KEY), 10200);
-
-        defaultMessageController.getDevices().addAll(devices);
-        defaultMessageController.setVendorMap(vendorMap);
-        defaultMessageController.setCommunicationService(multicastListenerReaderThread);
-
-        multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
-        multicastListenerReaderThread.openBroadCastSocket();
-
-//        final Device door1CloseStateBinaryInput = device.findDevice(
-//                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 1));
-//        final Device door2CloseStateBinaryInput = device.findDevice(
-//                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 2));
-//        final Device door3CloseStateBinaryInput = device.findDevice(
-//                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 3));
-//        final Device door4CloseStateBinaryInput = device.findDevice(
-//                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 4));
-
-        new Thread(multicastListenerReaderThread).start();
-
-        if (RUN_TOGGLE_DOOR_THREAD) {
-            final Device door1CloseStateBinaryInput = device.findDevice(
-                    ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 1));
-
-            final ToogleDoorOpenStateThread toggleDoorOpenStateThread = new ToogleDoorOpenStateThread();
-            toggleDoorOpenStateThread.setParentDevice(device);
-            toggleDoorOpenStateThread.setChildDevice(door1CloseStateBinaryInput);
-            toggleDoorOpenStateThread.setVendorMap(vendorMap);
-            toggleDoorOpenStateThread.setCommunicationService(multicastListenerReaderThread);
-            new Thread(toggleDoorOpenStateThread).start();
-        }
-
-        boolean done = false;
-        while (!done) {
-
-            String msg = "";
-
-            // DEBUG
-            msg = "Hit Enter to send message! q = exit";
-            LOG.info(msg);
-            System.out.println(msg);
-
-            // read input from the user
-            final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-            final String userInput = br.readLine();
-
-            if (StringUtils.equalsIgnoreCase(userInput, msg)) {
-                done = true;
-            }
-
-            // send message
-            msg = "Sending message ...";
-            LOG.info(msg);
-            System.out.println(msg);
-
-            device.executeAction();
-
-            // DEBUG
-//            msg = "Door is now "
-//                    + (((Boolean) door1CloseStateBinaryInput.getPresentValue()) ? "locked" : "unlocked");
-//            LOG.info(msg);
-//            System.out.println(msg);
-
-//            // send a bacnet message
-//            // not needed any more, because a BinaryInputDevice send cov messages over all existing subscriptions on
-//            // value change
-//            ToogleDoorOpenStateThread.sendCOV(device, door1CloseStateBinaryInput, vendorMap, NetworkUtils.TARGET_IP,
-//                    multicastListenerReaderThread);
-
-            // DEBUG
-            LOG.info("Sending message done.");
-        }
-
-        devices.stream().forEach(d -> d.cleanUp());
-    }
-
-    private static Map<Integer, String> readVendorMap(final BufferedReader bufferedReader) throws IOException {
-
-        final Map<Integer, String> map = new HashMap<>();
-
-        try {
-
-            String line = null;
-            while ((line = bufferedReader.readLine()) != null) {
-
-                line = StringUtils.trim(line);
-
-                final String[] split = line.split(";");
-
-                final int vendorId = Integer.parseInt(split[0]);
-                String vendorName = split[1];
-
-                if (StringUtils.isBlank(vendorName)) {
-                    vendorName = "";
-                    for (int i = 2; i < split.length; i++) {
-                        if (i > 2) {
-                            vendorName += " ";
-                        }
-                        vendorName += split[i];
-                    }
-                }
-
-                map.put(vendorId, vendorName);
-            }
-
-        } catch (final IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (bufferedReader != null) {
-                bufferedReader.close();
-            }
-        }
-
-        return map;
     }
 
     @SuppressWarnings("unused")

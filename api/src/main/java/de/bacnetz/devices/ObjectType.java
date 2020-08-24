@@ -7,12 +7,24 @@ public enum ObjectType {
 
     // @formatter:off
 
+    /**
+     * 0x03 = 3d
+     */
 	BINARY_INPUT(0x03, "BINARY_INPUT"),
 	
+	/**
+	 * 0x08 = 8d
+	 */
 	DEVICE(0x08, "DEVICE"),
 	
+	/**
+	 * 0x0F = 15d
+	 */
 	NOTIFICATION_CLASS(0x0F, "NOTIFICATION_CLASS"),
 	
+	/**
+	 * 0x13 = 19d
+	 */
 	MULTI_STATE_VALUE(0x13, "MULTI_STATE_VALUE");
 
 	// @formatter:on

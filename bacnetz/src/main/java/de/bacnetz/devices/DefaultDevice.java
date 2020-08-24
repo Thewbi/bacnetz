@@ -14,9 +14,11 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -58,6 +60,8 @@ public class DefaultDevice implements Device, CommunicationService {
 
     private Device parentDevice;
 
+    private final Map<ObjectIdentifierServiceParameter, Device> deviceMap = new HashMap<>();
+
     private final Map<Integer, DeviceProperty<?>> properties = new HashMap<>();
 
     private final Collection<Device> children = new ArrayList<>();
@@ -88,7 +92,7 @@ public class DefaultDevice implements Device, CommunicationService {
 
     private LocalDateTime timeOfDeviceRestart = LocalDateTime.now();
 
-    private final List<COVSubscription> covSubscriptions = new ArrayList<>();
+    private final Set<COVSubscription> covSubscriptions = new HashSet<>();
 
     private DatagramSocket datagramSocket;
 
@@ -97,6 +101,10 @@ public class DefaultDevice implements Device, CommunicationService {
     private DefaultMessageController messageController;
 
     private MulticastListenerReaderThread multicastListenerReaderThread;
+
+    private int tempActionId;
+
+    private DefaultDeviceService deviceService;
 
     /**
      * ctor
@@ -110,6 +118,7 @@ public class DefaultDevice implements Device, CommunicationService {
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = (ObjectIdentifierServiceParameter) serviceParameter;
 
+        // find the device itself
         if (objectIdentifierServiceParameter.getObjectType() == objectType
                 && objectIdentifierServiceParameter.getInstanceNumber() == id) {
             return this;
@@ -119,11 +128,9 @@ public class DefaultDevice implements Device, CommunicationService {
             return null;
         }
 
-        // find final the object in final the list of final objects by instance final
-        // type and final instance id
+        // find the object in the list of objects by instance type and instance id
         final Optional<Device> childDevice = getChildDevices().stream()
-                .filter(d -> d.getObjectType() == objectIdentifierServiceParameter.getObjectType()
-                        && d.getId() == objectIdentifierServiceParameter.getInstanceNumber())
+                .filter(d -> (d.getObjectIdentifierServiceParameter().equals(objectIdentifierServiceParameter)))
                 .findFirst();
 
         return childDevice.isPresent() ? childDevice.get() : null;
@@ -1872,38 +1879,84 @@ public class DefaultDevice implements Device, CommunicationService {
     @Override
     public void executeAction() {
 
-        final Device door1CloseStateBinaryInput = findDevice(
-                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 1));
-        final Device door2CloseStateBinaryInput = findDevice(
-                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 2));
-        final Device door3CloseStateBinaryInput = findDevice(
-                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 3));
-        final Device door4CloseStateBinaryInput = findDevice(
-                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 4));
+//        int parentId = getId();
+        final int parentId = 0;
 
-        // toggle, which sends a value to all COV subscribers
-        final byte[] byteArray1 = (byte[]) door1CloseStateBinaryInput.getPresentValue();
-        door1CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray1[0]) });
-        final byte[] byteArray2 = (byte[]) door2CloseStateBinaryInput.getPresentValue();
-        door2CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray2[0]) });
-        final byte[] byteArray3 = (byte[]) door3CloseStateBinaryInput.getPresentValue();
-        door3CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray3[0]) });
-        final byte[] byteArray4 = (byte[]) door4CloseStateBinaryInput.getPresentValue();
-        door4CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray4[0]) });
+        if (tempActionId == 0) {
+            LOG.info("Toggling door 1 ...");
+            final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber1 = ObjectIdentifierServiceParameter
+                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, parentId + 1);
+            final Device door1CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber1);
+            if (door1CloseStateBinaryInput != null) {
+                final byte[] byteArray1 = (byte[]) door1CloseStateBinaryInput.getPresentValue();
+                door1CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray1[0]) });
+            }
+        }
+
+        if (tempActionId == 1) {
+            LOG.info("Toggling door 2 ...");
+            final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber2 = ObjectIdentifierServiceParameter
+                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, parentId + 2);
+            final Device door2CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber2);
+            if (door2CloseStateBinaryInput != null) {
+                final byte[] byteArray2 = (byte[]) door2CloseStateBinaryInput.getPresentValue();
+                door2CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray2[0]) });
+            }
+        }
+
+        if (tempActionId == 2) {
+            LOG.info("Toggling door 3 ...");
+            final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber3 = ObjectIdentifierServiceParameter
+                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, parentId + 3);
+            final Device door3CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber3);
+            if (door3CloseStateBinaryInput != null) {
+                final byte[] byteArray3 = (byte[]) door3CloseStateBinaryInput.getPresentValue();
+                door3CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray3[0]) });
+            }
+        }
+
+        if (tempActionId == 3) {
+            LOG.info("Toggling door 4 ...");
+            final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber4 = ObjectIdentifierServiceParameter
+                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, parentId + 4);
+            final Device door4CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber4);
+            if (door4CloseStateBinaryInput != null) {
+                final byte[] byteArray4 = (byte[]) door4CloseStateBinaryInput.getPresentValue();
+                door4CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray4[0]) });
+            }
+        }
+
+        if (tempActionId == 4) {
+            LOG.info("Toggling door 5 ...");
+            final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber5 = ObjectIdentifierServiceParameter
+                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, parentId + 5);
+            final Device door5CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber5);
+            if (door5CloseStateBinaryInput != null) {
+                final byte[] byteArray5 = (byte[]) door5CloseStateBinaryInput.getPresentValue();
+                door5CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray5[0]) });
+            }
+        }
+
+        tempActionId++;
+        tempActionId = tempActionId % 5;
     }
 
     @Override
     public void bindSocket(final String ip, final int port) throws SocketException, UnknownHostException {
 
         if (datagramSocket == null) {
+
             datagramSocket = new DatagramSocket(port, InetAddress.getByName(ip));
+
+            deviceService = new DefaultDeviceService();
 
             messageController = new DefaultMessageController();
             messageController.setCommunicationService(this);
+            messageController.setDeviceService(deviceService);
 
-            messageController.getDeviceMap().put(getObjectIdentifierServiceParameter(), this);
+            deviceService.getDeviceMap().put(getObjectIdentifierServiceParameter(), this);
             children.stream()
-                    .forEach(d -> messageController.getDeviceMap().put(d.getObjectIdentifierServiceParameter(), d));
+                    .forEach(d -> deviceService.getDeviceMap().put(d.getObjectIdentifierServiceParameter(), d));
 
             multicastListenerReaderThread = new MulticastListenerReaderThread();
             multicastListenerReaderThread.setConfigurationManager(configurationManager);
@@ -2033,7 +2086,7 @@ public class DefaultDevice implements Device, CommunicationService {
     }
 
     @Override
-    public List<COVSubscription> getCovSubscriptions() {
+    public Set<COVSubscription> getCovSubscriptions() {
         return covSubscriptions;
     }
 
@@ -2063,6 +2116,11 @@ public class DefaultDevice implements Device, CommunicationService {
 
     public void setConfigurationManager(final ConfigurationManager configurationManager) {
         this.configurationManager = configurationManager;
+    }
+
+    @Override
+    public Map<ObjectIdentifierServiceParameter, Device> getDeviceMap() {
+        return deviceMap;
     }
 
 }

@@ -338,7 +338,7 @@ public class APDU {
                 break;
 
             default:
-                LOG.warn("Not implemented: " + confirmedServiceChoice.name());
+                LOG.trace("Not implemented: " + confirmedServiceChoice.name());
 
             }
         }

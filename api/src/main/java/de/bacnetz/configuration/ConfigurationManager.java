@@ -8,6 +8,8 @@ public interface ConfigurationManager {
 
     static final String MULTICAST_IP_CONFIG_KEY = "multicast_ip";
 
+    void setProperty(String configKey, String value);
+
     String getPropertyAsString(String configKey);
 
     int getPropertyAsInt(String configKey);

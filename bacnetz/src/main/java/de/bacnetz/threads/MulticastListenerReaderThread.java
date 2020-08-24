@@ -17,6 +17,7 @@ import java.util.Map;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.common.utils.Utils;
@@ -32,6 +33,7 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
 
     private static final Logger LOG = LogManager.getLogger(MulticastListenerReaderThread.class);
 
+    @Autowired
     private ConfigurationManager configurationManager;
 
     private boolean running;
@@ -129,7 +131,7 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
                 response = sendMessageToController(request);
 
             } catch (final Exception e) {
-                LOG.error("Cannot parse buffer: {}", Utils.byteArrayToStringNoPrefix(data));
+                LOG.error("Cannot process buffer: {}", Utils.byteArrayToStringNoPrefix(data));
                 LOG.error(e.getMessage(), e);
             }
 

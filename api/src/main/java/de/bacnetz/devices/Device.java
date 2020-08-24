@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import de.bacnetz.controller.Message;
 import de.bacnetz.stack.BACnetServicesSupportedBitString;
@@ -76,7 +77,7 @@ public interface Device {
 
     void setTimeOfDeviceRestart(LocalDateTime timeOfDeviceRestart);
 
-    List<COVSubscription> getCovSubscriptions();
+    Set<COVSubscription> getCovSubscriptions();
 
     Device getParentDevice();
 
@@ -93,5 +94,7 @@ public interface Device {
     void cleanUp();
 
     void sendIamMessage() throws IOException;
+
+    Map<ObjectIdentifierServiceParameter, Device> getDeviceMap();
 
 }

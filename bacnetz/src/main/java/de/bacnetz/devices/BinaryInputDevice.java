@@ -1,8 +1,13 @@
 package de.bacnetz.devices;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import de.bacnetz.controller.Message;
 
 public class BinaryInputDevice extends DefaultDevice {
+
+    private static final Logger LOG = LogManager.getLogger(BinaryInputDevice.class);
 
     @Override
     public Message processPresentValueProperty(final DeviceProperty<?> deviceProperty, final Message requestMessage) {
@@ -50,6 +55,8 @@ public class BinaryInputDevice extends DefaultDevice {
 
             // set new value
             presentValueDeviceProperty.setValue(newPresentValue);
+
+            LOG.info("COV subscriptions: {}", getCovSubscriptions().size());
 
             // send message to all subscribers
             getCovSubscriptions().stream().forEach(s -> {

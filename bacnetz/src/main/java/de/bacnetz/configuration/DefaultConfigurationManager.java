@@ -44,6 +44,11 @@ public class DefaultConfigurationManager implements ConfigurationManager {
     }
 
     @Override
+    public void setProperty(final String key, final String value) {
+        properties.put(key, value);
+    }
+
+    @Override
     public String getPropertyAsString(final String key) {
         final Object value = properties.get(key);
         if (value == null) {

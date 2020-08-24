@@ -3,7 +3,6 @@ package de.bacnetz.threads;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.anyObject;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -120,33 +119,33 @@ public class MulticastListenerReaderThreadTest {
         final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
     }
 
-    @Test
-    public void testConfirmedREQ_ReadPropertyMultiple_2() {
-
-        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-        objectIdentifierServiceParameter.setInstanceNumber(10001);
-        objectIdentifierServiceParameter.setObjectType(ObjectType.DEVICE);
-
-        final Device device = mock(DefaultDevice.class);
-        when(device.findDevice(anyObject())).thenReturn(device);
-        when(device.getObjectIdentifierServiceParameter()).thenReturn(objectIdentifierServiceParameter);
-
-        final byte[] hexStringToByteArray = Utils
-                .hexStringToByteArray("810a001b01040245680e0c020027111e096b093e09a7090b090a1f");
-
-        final DefaultMessageController defaultMessageController = new DefaultMessageController();
-        defaultMessageController.getDevices().add(device);
-        defaultMessageController.getDeviceMap().put(device.getObjectIdentifierServiceParameter(), device);
-
-        final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
-        multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
-
-        final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
-                hexStringToByteArray.length);
-        final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
-
-        LOG.info("Response: " + response);
-    }
+//    @Test
+//    public void testConfirmedREQ_ReadPropertyMultiple_2() {
+//
+//        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+//        objectIdentifierServiceParameter.setInstanceNumber(10001);
+//        objectIdentifierServiceParameter.setObjectType(ObjectType.DEVICE);
+//
+//        final Device device = mock(DefaultDevice.class);
+//        when(device.findDevice(anyObject())).thenReturn(device);
+//        when(device.getObjectIdentifierServiceParameter()).thenReturn(objectIdentifierServiceParameter);
+//
+//        final byte[] hexStringToByteArray = Utils
+//                .hexStringToByteArray("810a001b01040245680e0c020027111e096b093e09a7090b090a1f");
+//
+//        final DefaultMessageController defaultMessageController = new DefaultMessageController();
+//        defaultMessageController.getDevices().add(device);
+//        defaultMessageController.getDeviceMap().put(device.getObjectIdentifierServiceParameter(), device);
+//
+//        final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
+//        multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
+//
+//        final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
+//                hexStringToByteArray.length);
+//        final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
+//
+//        LOG.info("Response: " + response);
+//    }
 
     @Test
     public void testConfirmedREQ_WhoIs() {

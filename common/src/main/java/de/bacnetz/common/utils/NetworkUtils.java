@@ -14,7 +14,7 @@ public class NetworkUtils {
     private static final Logger LOG = LogManager.getLogger(NetworkUtils.class);
 
     public static final String TARGET_IP = "192.168.2.2";
-//  private static final String TARGET_IP = "192.168.0.108";
+//    public static final String TARGET_IP = "192.168.0.108";
 
 //	public static final int DEVICE_INSTANCE_NUMBER = 26;
     public static final int DEVICE_INSTANCE_NUMBER = 10001;
