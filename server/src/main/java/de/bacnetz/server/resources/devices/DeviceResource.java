@@ -16,8 +16,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.bacnetz.devices.DeviceDto;
 import de.bacnetz.devices.DeviceFacade;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 @Path("/device")
+@Api(value = "/device")
 public class DeviceResource {
 
     private final static Logger LOG = LoggerFactory.getLogger(DeviceResource.class);
@@ -25,6 +30,8 @@ public class DeviceResource {
     @Autowired
     private DeviceFacade deviceFacade;
 
+    @ApiOperation("Retrieve all devices")
+    @ApiResponses({ @ApiResponse(code = 200, message = "OK", response = List.class) })
     @GET
     @Path("/all")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -38,6 +45,8 @@ public class DeviceResource {
      * 
      * @param uid
      */
+    @ApiOperation("Toggle specific door open state")
+    @ApiResponses({ @ApiResponse(code = 200, message = "OK") })
     @POST
     @Path("/toggle/{uid}")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -45,6 +54,8 @@ public class DeviceResource {
         LOG.info("toggle: uid={}", uid);
     }
 
+    @ApiOperation("Toggle all door open states")
+    @ApiResponses({ @ApiResponse(code = 200, message = "OK") })
     @POST
     @Path("/toggle")
     @Consumes(MediaType.APPLICATION_JSON)
