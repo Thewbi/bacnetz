@@ -444,8 +444,8 @@ public class DefaultMessageController implements MessageController {
                         lowerBoundServiceParameter.getPayload()[1], bigEndian);
 
         // find upper bound as integer
-        int upperBound = (upperBoundServiceParameter.getPayload().length == 1)
-                ? upperBound = upperBoundServiceParameter.getPayload()[0]
+        final int upperBound = (upperBoundServiceParameter.getPayload().length == 1)
+                ? upperBoundServiceParameter.getPayload()[0]
                 : Utils.bytesToUnsignedShort(upperBoundServiceParameter.getPayload()[0],
                         upperBoundServiceParameter.getPayload()[1], bigEndian);
 
