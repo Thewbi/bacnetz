@@ -218,9 +218,8 @@ public class App {
 //            System.out.println(msg);
 
             // execute the action on the parent device
-            devices.get(0).executeAction();
-
-//            devices.stream().forEach(d -> d.executeAction());
+//            devices.get(0).executeAction();
+            devices.stream().forEach(d -> d.executeAction());
 
             // DEBUG
 //            msg = "Door is now "

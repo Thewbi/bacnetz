@@ -1879,13 +1879,62 @@ public class DefaultDevice implements Device, CommunicationService {
     @Override
     public void executeAction() {
 
-//        int parentId = getId();
-        final int parentId = 0;
+        allToggle();
+//        moduloToggle();
+    }
+
+    private void allToggle() {
+
+        LOG.info("Toogling all doors on device: '{}'", getId());
+
+        final int startId = 0;
+
+        LOG.trace("Toggling door 1 ...");
+        final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber1 = ObjectIdentifierServiceParameter
+                .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 1);
+        final Device door1CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber1);
+        if (door1CloseStateBinaryInput != null) {
+            final byte[] byteArray1 = (byte[]) door1CloseStateBinaryInput.getPresentValue();
+            door1CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray1[0]) });
+        }
+
+        LOG.trace("Toggling door 2 ...");
+        final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber2 = ObjectIdentifierServiceParameter
+                .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 2);
+        final Device door2CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber2);
+        if (door2CloseStateBinaryInput != null) {
+            final byte[] byteArray2 = (byte[]) door2CloseStateBinaryInput.getPresentValue();
+            door2CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray2[0]) });
+        }
+
+        LOG.trace("Toggling door 3 ...");
+        final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber3 = ObjectIdentifierServiceParameter
+                .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 3);
+        final Device door3CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber3);
+        if (door3CloseStateBinaryInput != null) {
+            final byte[] byteArray3 = (byte[]) door3CloseStateBinaryInput.getPresentValue();
+            door3CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray3[0]) });
+        }
+
+        LOG.trace("Toggling door 4 ...");
+        final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber4 = ObjectIdentifierServiceParameter
+                .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 4);
+        final Device door4CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber4);
+        if (door4CloseStateBinaryInput != null) {
+            final byte[] byteArray4 = (byte[]) door4CloseStateBinaryInput.getPresentValue();
+            door4CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray4[0]) });
+        }
+    }
+
+    @SuppressWarnings("unused")
+    private void moduloToggle() {
+
+        final int startId = 0;
 
         if (tempActionId == 0) {
             LOG.info("Toggling door 1 ...");
             final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber1 = ObjectIdentifierServiceParameter
-                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, parentId + 1);
+                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 1);
             final Device door1CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber1);
             if (door1CloseStateBinaryInput != null) {
                 final byte[] byteArray1 = (byte[]) door1CloseStateBinaryInput.getPresentValue();
@@ -1896,7 +1945,7 @@ public class DefaultDevice implements Device, CommunicationService {
         if (tempActionId == 1) {
             LOG.info("Toggling door 2 ...");
             final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber2 = ObjectIdentifierServiceParameter
-                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, parentId + 2);
+                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 2);
             final Device door2CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber2);
             if (door2CloseStateBinaryInput != null) {
                 final byte[] byteArray2 = (byte[]) door2CloseStateBinaryInput.getPresentValue();
@@ -1907,7 +1956,7 @@ public class DefaultDevice implements Device, CommunicationService {
         if (tempActionId == 2) {
             LOG.info("Toggling door 3 ...");
             final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber3 = ObjectIdentifierServiceParameter
-                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, parentId + 3);
+                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 3);
             final Device door3CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber3);
             if (door3CloseStateBinaryInput != null) {
                 final byte[] byteArray3 = (byte[]) door3CloseStateBinaryInput.getPresentValue();
@@ -1918,7 +1967,7 @@ public class DefaultDevice implements Device, CommunicationService {
         if (tempActionId == 3) {
             LOG.info("Toggling door 4 ...");
             final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber4 = ObjectIdentifierServiceParameter
-                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, parentId + 4);
+                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 4);
             final Device door4CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber4);
             if (door4CloseStateBinaryInput != null) {
                 final byte[] byteArray4 = (byte[]) door4CloseStateBinaryInput.getPresentValue();
@@ -1926,14 +1975,43 @@ public class DefaultDevice implements Device, CommunicationService {
             }
         }
 
+        // toggle all doors
         if (tempActionId == 4) {
-            LOG.info("Toggling door 5 ...");
-            final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber5 = ObjectIdentifierServiceParameter
-                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, parentId + 5);
-            final Device door5CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber5);
-            if (door5CloseStateBinaryInput != null) {
-                final byte[] byteArray5 = (byte[]) door5CloseStateBinaryInput.getPresentValue();
-                door5CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray5[0]) });
+
+            LOG.info("Toggling door 1 ...");
+            final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber1 = ObjectIdentifierServiceParameter
+                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 1);
+            final Device door1CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber1);
+            if (door1CloseStateBinaryInput != null) {
+                final byte[] byteArray1 = (byte[]) door1CloseStateBinaryInput.getPresentValue();
+                door1CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray1[0]) });
+            }
+
+            LOG.info("Toggling door 2 ...");
+            final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber2 = ObjectIdentifierServiceParameter
+                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 2);
+            final Device door2CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber2);
+            if (door2CloseStateBinaryInput != null) {
+                final byte[] byteArray2 = (byte[]) door2CloseStateBinaryInput.getPresentValue();
+                door2CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray2[0]) });
+            }
+
+            LOG.info("Toggling door 3 ...");
+            final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber3 = ObjectIdentifierServiceParameter
+                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 3);
+            final Device door3CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber3);
+            if (door3CloseStateBinaryInput != null) {
+                final byte[] byteArray3 = (byte[]) door3CloseStateBinaryInput.getPresentValue();
+                door3CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray3[0]) });
+            }
+
+            LOG.info("Toggling door 4 ...");
+            final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber4 = ObjectIdentifierServiceParameter
+                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 4);
+            final Device door4CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber4);
+            if (door4CloseStateBinaryInput != null) {
+                final byte[] byteArray4 = (byte[]) door4CloseStateBinaryInput.getPresentValue();
+                door4CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray4[0]) });
             }
         }
 

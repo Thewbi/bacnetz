@@ -45,4 +45,11 @@ public class DeviceResource {
         LOG.info("toggle: uid={}", uid);
     }
 
+    @POST
+    @Path("/toggle")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void toggleAll() {
+        deviceFacade.toggleAll();
+    }
+
 }

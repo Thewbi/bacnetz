@@ -464,8 +464,14 @@ public class DefaultMessageController implements MessageController {
 //            return null;
 //        }
 
-        return deviceService.getDevices().stream().filter(d -> (lowerBound <= d.getId() && d.getId() <= upperBound))
+        // @formatter:off
+        
+        return deviceService.getDevices()
+                .stream()
+                .filter(d -> (lowerBound <= d.getId() && d.getId() <= upperBound))
                 .collect(Collectors.toCollection(ArrayList::new));
+        
+        // @formatter:on
     }
 
     public static Message retrieveIamMessage(final Device device) {

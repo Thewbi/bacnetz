@@ -16,6 +16,8 @@ import de.bacnetz.stack.VendorType;
 
 public class DefaultDeviceService implements DeviceService {
 
+    private static final int AMOUNT_OF_DEVICES = 31;
+
     private final List<Device> devices = new ArrayList<Device>();
 
     private final Map<ObjectIdentifierServiceParameter, Device> deviceMap = new HashMap<>();
@@ -29,63 +31,68 @@ public class DefaultDeviceService implements DeviceService {
 
         // device 20000
         final int startDeviceId = 20000;
-
         final int deviceIdIncrement = 1;
         int deviceIdOffset = 0;
-        int deviceId = startDeviceId + deviceIdOffset;
-        Device device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
-                VendorType.GEZE_GMBH.getCode());
-        devices.add(device);
-        device.bindSocket(localIp, deviceId);
 
-        deviceIdOffset += deviceIdIncrement;
-        deviceId = startDeviceId + deviceIdOffset;
-        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
-                VendorType.GEZE_GMBH.getCode());
-        devices.add(device);
-        device.bindSocket(localIp, deviceId);
+        for (int i = 0; i < AMOUNT_OF_DEVICES; i++) {
 
-        deviceIdOffset += deviceIdIncrement;
-        deviceId = startDeviceId + deviceIdOffset;
-        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
-                VendorType.GEZE_GMBH.getCode());
-        devices.add(device);
-        device.bindSocket(localIp, deviceId);
+            final int deviceId = startDeviceId + deviceIdOffset;
+            final Device device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
+                    VendorType.GEZE_GMBH.getCode());
+            devices.add(device);
+            device.bindSocket(localIp, deviceId);
 
-        deviceIdOffset += deviceIdIncrement;
-        deviceId = startDeviceId + deviceIdOffset;
-        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
-                VendorType.GEZE_GMBH.getCode());
-        devices.add(device);
-        device.bindSocket(localIp, deviceId);
+            deviceIdOffset += deviceIdIncrement;
+        }
 
-        deviceIdOffset += deviceIdIncrement;
-        deviceId = startDeviceId + deviceIdOffset;
-        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
-                VendorType.GEZE_GMBH.getCode());
-        devices.add(device);
-        device.bindSocket(localIp, deviceId);
-
-        deviceIdOffset += deviceIdIncrement;
-        deviceId = startDeviceId + deviceIdOffset;
-        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
-                VendorType.GEZE_GMBH.getCode());
-        devices.add(device);
-        device.bindSocket(localIp, deviceId);
-
-        deviceIdOffset += deviceIdIncrement;
-        deviceId = startDeviceId + deviceIdOffset;
-        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
-                VendorType.GEZE_GMBH.getCode());
-        devices.add(device);
-        device.bindSocket(localIp, deviceId);
-
-        deviceIdOffset += deviceIdIncrement;
-        deviceId = startDeviceId + deviceIdOffset;
-        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
-                VendorType.GEZE_GMBH.getCode());
-        devices.add(device);
-        device.bindSocket(localIp, deviceId);
+//        deviceIdOffset += deviceIdIncrement;
+//        deviceId = startDeviceId + deviceIdOffset;
+//        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
+//                VendorType.GEZE_GMBH.getCode());
+//        devices.add(device);
+//        device.bindSocket(localIp, deviceId);
+//
+//        deviceIdOffset += deviceIdIncrement;
+//        deviceId = startDeviceId + deviceIdOffset;
+//        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
+//                VendorType.GEZE_GMBH.getCode());
+//        devices.add(device);
+//        device.bindSocket(localIp, deviceId);
+//
+//        deviceIdOffset += deviceIdIncrement;
+//        deviceId = startDeviceId + deviceIdOffset;
+//        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
+//                VendorType.GEZE_GMBH.getCode());
+//        devices.add(device);
+//        device.bindSocket(localIp, deviceId);
+//
+//        deviceIdOffset += deviceIdIncrement;
+//        deviceId = startDeviceId + deviceIdOffset;
+//        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
+//                VendorType.GEZE_GMBH.getCode());
+//        devices.add(device);
+//        device.bindSocket(localIp, deviceId);
+//
+//        deviceIdOffset += deviceIdIncrement;
+//        deviceId = startDeviceId + deviceIdOffset;
+//        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
+//                VendorType.GEZE_GMBH.getCode());
+//        devices.add(device);
+//        device.bindSocket(localIp, deviceId);
+//
+//        deviceIdOffset += deviceIdIncrement;
+//        deviceId = startDeviceId + deviceIdOffset;
+//        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
+//                VendorType.GEZE_GMBH.getCode());
+//        devices.add(device);
+//        device.bindSocket(localIp, deviceId);
+//
+//        deviceIdOffset += deviceIdIncrement;
+//        deviceId = startDeviceId + deviceIdOffset;
+//        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
+//                VendorType.GEZE_GMBH.getCode());
+//        devices.add(device);
+//        device.bindSocket(localIp, deviceId);
 
         return devices;
     }

@@ -21,4 +21,9 @@ public class DefaultDeviceFacade implements DeviceFacade {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public void toggleAll() {
+        deviceService.getDevices().stream().forEach(d -> d.executeAction());
+    }
+
 }
