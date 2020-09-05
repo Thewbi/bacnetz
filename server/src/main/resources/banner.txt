@@ -21,7 +21,7 @@ Swagger:
 http://localhost:8182/index.html
 
 Actuator:
-http://localhost:8080/actuator
+http://localhost:8182/actuator
 
 Spring Boot Documentation:
 https://docs.spring.io/spring-boot/docs/current-SNAPSHOT/reference/htmlsingle/
