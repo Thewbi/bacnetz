@@ -123,8 +123,23 @@
 		
 	</dependencies>
 
+<!-- -->
 	<build>
+	
 		<plugins>
+		
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<skipTests>true</skipTests>
+				</configuration>
+			</plugin>
+		
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
 
 			<plugin>
 				<groupId>com.github.eirslett</groupId>
@@ -154,7 +169,6 @@
 							<arguments>install</arguments>
 						</configuration>
 					</execution>
-					
 					<execution>
                      <id>prod</id>
                      <goals>
@@ -168,12 +182,8 @@
 				</executions>
 			</plugin>
 
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-
 		</plugins>
+		
 	</build>
 
 </project>

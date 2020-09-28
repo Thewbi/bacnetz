@@ -21,7 +21,7 @@ export class AppComponent {
     //// get with URL params
     //let params = new HttpParams().set('logNamespace', 'logNamespace');
     //
-    //this.http.get<string>('http://127.0.0.1:8182/bacnetz/sysinfo/version', {params: params})
+    //this.http.get<string>('http://127.0.0.1:8182/bacnetz/api/sysinfo/version', {params: params})
     //.subscribe(
     //    res => console.log('HTTP response', res),
     //    err => console.log('HTTP Error', err),
@@ -35,7 +35,7 @@ export class AppComponent {
     //};
 
     // post with body
-    // this.http.post('http://127.0.0.1:8182/bacnetz/device/toggle/', JSON.stringify({
+    // this.http.post('http://127.0.0.1:8182/bacnetz/api/device/toggle/', JSON.stringify({
     //   username: 'username',
     //   password: 'password',
     // })).subscribe(
@@ -45,7 +45,7 @@ export class AppComponent {
     // );
 
     // post with body and URL params
-    // this.http.post('http://127.0.0.1:8182/bacnetz/device/toggle', JSON.stringify({
+    // this.http.post('http://127.0.0.1:8182/bacnetz/api/device/toggle', JSON.stringify({
     //   username: 'username',
     //   password: 'password',
     // }), {params: params}).subscribe(
@@ -55,7 +55,7 @@ export class AppComponent {
     // );
 
     //// post with path parameter
-    //const url = 'http://127.0.0.1:8182/bacnetz/device/toggle/' + 101;
+    //const url = 'http://127.0.0.1:8182/bacnetz/api/device/toggle/' + 101;
     //this.http.post(url, {}).subscribe(
     //    res => console.log('HTTP response', res),
     //    err => console.log('HTTP Error', err),
@@ -63,7 +63,7 @@ export class AppComponent {
     //);
     
     // post
-    const url = 'http://127.0.0.1:8182/bacnetz/device/toggle';
+    const url = 'http://127.0.0.1:8182/bacnetz/api/device/toggle';
     this.http.post(url, {}).subscribe(
         res => console.log('HTTP response', res),
         err => console.log('HTTP Error', err),

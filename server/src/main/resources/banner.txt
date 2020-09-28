@@ -14,14 +14,21 @@ _  /_/ / /_/ // /__ _  / / /  __/ /_ __  /_
 Usage:
 The simulator is used for simulating BACnet/IP devices
 
+Angular App:
+http://${server.address}:${server.port}/bacnetz/index.html
+0.0.0.0 is the default interface and might also be 127.0.0.1
+
 Swagger JSON:
-http://localhost:8182/bacnetz/api/swagger.json
+http://${server.address}:${server.port}/bacnetz/api/swagger.json
+0.0.0.0 is the default interface and might also be 127.0.0.1
 
 Swagger:
-http://localhost:8182/index.html
+http://${server.address}:${server.port}/index.html
+0.0.0.0 is the default interface and might also be 127.0.0.1
 
 Actuator:
-http://localhost:8182/actuator
+http://${server.address}:${server.port}/actuator
+0.0.0.0 is the default interface and might also be 127.0.0.1
 
 Spring Boot Documentation:
 https://docs.spring.io/spring-boot/docs/current-SNAPSHOT/reference/htmlsingle/

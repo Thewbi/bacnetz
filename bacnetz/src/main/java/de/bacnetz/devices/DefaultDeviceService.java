@@ -16,7 +16,7 @@ import de.bacnetz.stack.VendorType;
 
 public class DefaultDeviceService implements DeviceService {
 
-    private static final int AMOUNT_OF_DEVICES = 31;
+    private static final int AMOUNT_OF_DEVICES = 1;
 
     private final List<Device> devices = new ArrayList<Device>();
 

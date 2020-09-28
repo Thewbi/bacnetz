@@ -51,8 +51,8 @@ public class JerseyConfiguration extends ResourceConfig {
         this.register(SwaggerSerializers.class);
 
         final BeanConfig config = new BeanConfig();
-        config.setConfigId("JerseyConfiguration");
-        config.setTitle("JerseyConfiguration");
+        config.setConfigId("Bacnetz");
+        config.setTitle("Bacnetz");
         config.setVersion("v1");
         config.setContact("Me");
         config.setSchemes(new String[] { "http", "https" });
