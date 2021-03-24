@@ -41,6 +41,18 @@ import de.bacnetz.stack.TagClass;
 import de.bacnetz.stack.UnconfirmedServiceChoice;
 import de.bacnetz.stack.VirtualLinkControl;
 
+/**
+ * This controller processes APDU messages and ignores NPDU messages.
+ * 
+ * Handling a message means to create one or more output messages as a response
+ * to an incoming message. The information in the response messages may come
+ * from a bacnet the bacnet device that is associated with this controller.
+ * 
+ * This controller is not a bean but each bacent device maintains it's own
+ * personal instance of this controller. This controller instance is stored in a
+ * member variable of the respective bacnet devices. This design was choose so
+ * that the server can host any number of bacnet devices.
+ */
 public class DefaultMessageController implements MessageController {
 
     private static final Logger LOG = LogManager.getLogger(DefaultMessageController.class);
@@ -68,6 +80,12 @@ public class DefaultMessageController implements MessageController {
         }
     }
 
+    /**
+     * Messages that are not APDU are just ignored by this controller.
+     * 
+     * @param message
+     * @return
+     */
     private List<Message> processNonAPDUMessage(final Message message) {
 
         LOG.warn("<<< Not handling: " + message.getNpdu().getNetworkLayerMessageType().name());
@@ -96,6 +114,9 @@ public class DefaultMessageController implements MessageController {
             return null;
 
         default:
+            // for a message that is not known yet, output a warning message so it can
+            // be decided wether to handle that message or wether to add that message into
+            // the list of ignored messages
             LOG.warn("<<< Unknown message: " + message.getNpdu().getNetworkLayerMessageType());
             return null;
         }

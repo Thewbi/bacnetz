@@ -4,7 +4,7 @@ import java.util.Map;
 
 import de.bacnetz.devices.Device;
 import de.bacnetz.services.CommunicationService;
-import de.bacnetz.threads.ToogleDoorOpenStateThread;
+import de.bacnetz.threads.ToggleDoorOpenStateThread;
 
 public class DefaultCOVSubscription implements COVSubscription {
 
@@ -27,7 +27,7 @@ public class DefaultCOVSubscription implements COVSubscription {
 
     @Override
     public void valueChanged(final Object newValue) {
-        ToogleDoorOpenStateThread.sendCOV(parentDevice, device, vendorMap, clientIp, communicationService);
+        ToggleDoorOpenStateThread.sendCOV(parentDevice, device, vendorMap, clientIp, communicationService);
     }
 
     @Override

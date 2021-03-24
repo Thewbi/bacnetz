@@ -54,12 +54,25 @@ import de.bacnetz.stack.TagClass;
 import de.bacnetz.stack.VirtualLinkControl;
 import de.bacnetz.threads.MulticastListenerReaderThread;
 
+/**
+ * A device is a hierarchy of devices and child devices. A FourDoorSolution for
+ * example is a device that contains four child devices, one for each of the
+ * four doors.
+ * 
+ * Each door in turn contains a binary child device, which models the door's
+ * state (open or closed). This describes a three level hierarchy of devices.
+ * 
+ * Check the DefaultDeviceFactory class to see how the devices are assembled.
+ * Each device stores a reference to it's optional parent device.
+ */
 public class DefaultDevice implements Device, CommunicationService {
 
     private static final Logger LOG = LogManager.getLogger(DefaultDevice.class);
 
+    /** the optional parent device in the hiearchy of objects */
     private Device parentDevice;
 
+    /** this map contains all child devices */
     private final Map<ObjectIdentifierServiceParameter, Device> deviceMap = new HashMap<>();
 
     private final Map<Integer, DeviceProperty<?>> properties = new HashMap<>();
@@ -82,6 +95,7 @@ public class DefaultDevice implements Device, CommunicationService {
 
     private int vendorId;
 
+    /** invoke id used in APDU (currently only in ToogleDoorOpenStateThread */
     private final AtomicInteger invokeId = new AtomicInteger(0);
 
     private boolean outOfService;
@@ -98,13 +112,26 @@ public class DefaultDevice implements Device, CommunicationService {
 
     private ConfigurationManager configurationManager;
 
-    private DefaultMessageController messageController;
-
+    /**
+     * Every device that is created (every four door solution, every TZ320, will
+     * bind to a port. On that port a MulticastListenerReaderThread is started to
+     * listen for bacnet messages.
+     */
     private MulticastListenerReaderThread multicastListenerReaderThread;
 
     private int tempActionId;
 
+    /**
+     * Internal service (no spring bean). Used during binding of this device to a
+     * port.
+     */
     private DefaultDeviceService deviceService;
+
+    /**
+     * Internal service (no spring bean). Used during binding of this device to a
+     * port.
+     */
+    private DefaultMessageController messageController;
 
     /**
      * ctor

@@ -24,7 +24,7 @@ import de.bacnetz.stack.TagClass;
 import de.bacnetz.stack.UnconfirmedServiceChoice;
 import de.bacnetz.stack.VirtualLinkControl;
 
-public class ToogleDoorOpenStateThread implements Runnable {
+public class ToggleDoorOpenStateThread implements Runnable {
 
     // select the IP of the network interface, the bacnet objects should be
     // available at
@@ -35,7 +35,7 @@ public class ToogleDoorOpenStateThread implements Runnable {
 
     private static final int SLEEP_TIME = 10000;
 
-    private static final Logger LOG = LogManager.getLogger(ToogleDoorOpenStateThread.class);
+    private static final Logger LOG = LogManager.getLogger(ToggleDoorOpenStateThread.class);
 
     private Device parentDevice;
 
