@@ -158,7 +158,7 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
         }
 
         // this will open the broadcast socket on 127.0.0.1 or even 0.0.0.0
-        broadcastDatagramSocket = new DatagramSocket(NetworkUtils.DEFAULT_PORT);
+        broadcastDatagramSocket = new DatagramSocket(ConfigurationManager.BACNET_PORT_DEFAULT_VALUE);
         broadcastDatagramSocket.setBroadcast(true);
     }
 
@@ -227,7 +227,7 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
 
         final InetAddress destinationAddress = datagramPacketAddress;
         final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, destinationAddress,
-                NetworkUtils.DEFAULT_PORT);
+                ConfigurationManager.BACNET_PORT_DEFAULT_VALUE);
 
         broadcastDatagramSocket.send(responseDatagramPacket);
     }
@@ -268,11 +268,11 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
         final InetAddress group = InetAddress.getByName("224.0.0.0");
 
         // https://docs.oracle.com/javase/tutorial/networking/datagrams/broadcasting.html
-        final MulticastSocket socket = new MulticastSocket(NetworkUtils.DEFAULT_PORT);
+        final MulticastSocket socket = new MulticastSocket(ConfigurationManager.BACNET_PORT_DEFAULT_VALUE);
         socket.joinGroup(group);
 
-        final SocketAddress socketAddress = new InetSocketAddress(NetworkUtils.BACNET_MULTICAST_IP,
-                NetworkUtils.DEFAULT_PORT);
+        final SocketAddress socketAddress = new InetSocketAddress(
+                ConfigurationManager.BACNET_MULTICAST_IP_DEFAULT_VALUE, ConfigurationManager.BACNET_PORT_DEFAULT_VALUE);
         final byte[] bytes = message.getBytes();
         final DatagramPacket multiCastDatagramPacket = new DatagramPacket(bytes, bytes.length, socketAddress);
         socket.send(multiCastDatagramPacket);
@@ -320,7 +320,7 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
         multicastSocket = new MulticastSocket(inetSocketAddress);
         multicastSocket.setReuseAddress(true);
 
-        LOG.info("Multicast listener on " + NetworkUtils.BACNET_MULTICAST_IP + " started.");
+        LOG.info("Multicast listener on " + ConfigurationManager.BACNET_MULTICAST_IP_DEFAULT_VALUE + " started.");
 
         while (running) {
 

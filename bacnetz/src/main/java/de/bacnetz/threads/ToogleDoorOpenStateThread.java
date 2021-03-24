@@ -26,6 +26,13 @@ import de.bacnetz.stack.VirtualLinkControl;
 
 public class ToogleDoorOpenStateThread implements Runnable {
 
+    // select the IP of the network interface, the bacnet objects should be
+    // available at
+    public static final String TARGET_IP = "192.168.0.234";
+//    public static final String TARGET_IP = "192.168.0.2";
+//    public static final String TARGET_IP = "192.168.2.2";
+//    public static final String TARGET_IP = "192.168.0.108";
+
     private static final int SLEEP_TIME = 10000;
 
     private static final Logger LOG = LogManager.getLogger(ToogleDoorOpenStateThread.class);
@@ -62,7 +69,7 @@ public class ToogleDoorOpenStateThread implements Runnable {
             // toggle
             binaryInputDevice.setPresentValue(!(Boolean) binaryInputDevice.getPresentValue());
 
-            sendCOV(parentDevice, binaryInputDevice, vendorMap, NetworkUtils.TARGET_IP, communicationService);
+            sendCOV(parentDevice, binaryInputDevice, vendorMap, TARGET_IP, communicationService);
 
             try {
                 Thread.sleep(SLEEP_TIME);

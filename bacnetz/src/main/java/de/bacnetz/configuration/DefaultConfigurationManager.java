@@ -34,12 +34,12 @@ public class DefaultConfigurationManager implements ConfigurationManager {
 
         // add multicast_ip default value
         properties.computeIfAbsent(MULTICAST_IP_CONFIG_KEY, k -> {
-            return NetworkUtils.BACNET_MULTICAST_IP;
+            return BACNET_MULTICAST_IP_DEFAULT_VALUE;
         });
 
         // add port default value
         properties.computeIfAbsent(PORT_CONFIG_KEY, k -> {
-            return NetworkUtils.DEFAULT_PORT;
+            return BACNET_PORT_DEFAULT_VALUE;
         });
     }
 

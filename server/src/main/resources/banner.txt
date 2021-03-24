@@ -21,7 +21,7 @@ Swagger JSON:
 http://${server.address}:${server.port}/bacnetz/api/swagger.json
 
 Swagger:
-http://${server.address}:${server.port}/index.html
+http://${server.address}:${server.port}/swagger/index.html
 
 Actuator:
 http://${server.address}:${server.port}/actuator

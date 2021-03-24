@@ -141,7 +141,8 @@ var AppComponent = /** @class */ (function () {
         //    () => console.log('complete')
         //);
         // post
-        var url = 'http://127.0.0.1:8182/bacnetz/api/device/toggle';
+        //const url = 'http://127.0.0.1:8182/bacnetz/api/device/toggle';
+        var url = 'http://192.168.0.234:8182/bacnetz/api/device/toggle';
         this.http.post(url, {}).subscribe(function (res) { return console.log('HTTP response', res); }, function (err) { return console.log('HTTP Error', err); }, function () { return console.log('complete'); });
     };
     AppComponent.ctorParameters = function () { return [
@@ -269,7 +270,7 @@ Object(_angular_platform_browser_dynamic__WEBPACK_IMPORTED_MODULE_1__["platformB
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\PR_TBE\GitCheckouts\bacnetz\server\src\main\resources\frontend\angular-app\src\main.ts */"./src/main.ts");
+module.exports = __webpack_require__(/*! /Users/bischowg/dev/bacnetz/server/src/main/resources/frontend/angular-app/src/main.ts */"./src/main.ts");
 
 
 /***/ })

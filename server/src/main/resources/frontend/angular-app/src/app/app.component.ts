@@ -15,7 +15,7 @@ export class AppComponent {
   constructor(private http: HttpClient) { }
 
   onClickMe() {
-  
+
     console.log('click');
 
     //// get with URL params
@@ -61,9 +61,10 @@ export class AppComponent {
     //    err => console.log('HTTP Error', err),
     //    () => console.log('complete')
     //);
-    
+
     // post
-    const url = 'http://127.0.0.1:8182/bacnetz/api/device/toggle';
+    //const url = 'http://127.0.0.1:8182/bacnetz/api/device/toggle';
+    const url = 'http://192.168.0.234:8182/bacnetz/api/device/toggle';
     this.http.post(url, {}).subscribe(
         res => console.log('HTTP response', res),
         err => console.log('HTTP Error', err),

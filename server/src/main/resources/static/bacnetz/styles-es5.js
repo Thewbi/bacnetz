@@ -557,7 +557,7 @@ if(false) {}
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\PR_TBE\GitCheckouts\bacnetz\server\src\main\resources\frontend\angular-app\src\styles.css */"./src/styles.css");
+module.exports = __webpack_require__(/*! /Users/bischowg/dev/bacnetz/server/src/main/resources/frontend/angular-app/src/styles.css */"./src/styles.css");
 
 
 /***/ })

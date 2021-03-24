@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +29,7 @@ import de.bacnetz.common.utils.BACnetUtils;
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.common.utils.Utils;
 import de.bacnetz.configuration.ConfigurationManager;
+import de.bacnetz.configuration.DefaultConfigurationManager;
 import de.bacnetz.controller.DefaultMessage;
 import de.bacnetz.controller.DefaultMessageController;
 import de.bacnetz.controller.Message;
@@ -226,7 +226,7 @@ public class DefaultDevice implements Device, CommunicationService {
         return messageFactory.create(deviceProperty, this, requestMessage);
     }
 
-    // TODO: add all these properties over.
+    // TODO: move all these properties over into the message factory.
 //		else {
 //
 //			final String msg;
@@ -620,81 +620,6 @@ public class DefaultDevice implements Device, CommunicationService {
         return bitString;
     }
 
-    private Message processAddressBindingProperty(final int propertyIdentifierCode, final Message requestMessage) {
-
-        final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
-        virtualLinkControl.setType(0x81);
-        virtualLinkControl.setFunction(0x0A);
-        virtualLinkControl.setLength(0x00);
-
-        final NPDU npdu = new NPDU();
-        npdu.setVersion(0x01);
-
-        // no additional information
-        // this works, if the cp is connected to the device directly via 192.168.2.1
-        npdu.setControl(0x00);
-
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
-
-        // this object identifier has to be context specific. I do not know why
-        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-        objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        objectIdentifierServiceParameter.setTagNumber(0x00);
-        objectIdentifierServiceParameter.setLengthValueType(4);
-//        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-//        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
-        objectIdentifierServiceParameter.setObjectType(objectType);
-        objectIdentifierServiceParameter.setInstanceNumber(id);
-
-        final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
-        propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        propertyIdentifierServiceParameter.setTagNumber(0x01);
-        propertyIdentifierServiceParameter.setLengthValueType(0x01);
-        propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) propertyIdentifierCode });
-
-        final ServiceParameter openingTagServiceParameter3 = new ServiceParameter();
-        openingTagServiceParameter3.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        openingTagServiceParameter3.setTagNumber(0x03);
-        openingTagServiceParameter3.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
-
-        final ServiceParameter closingTagServiceParameter3 = new ServiceParameter();
-        closingTagServiceParameter3.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        closingTagServiceParameter3.setTagNumber(0x03);
-        closingTagServiceParameter3.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
-
-        final APDU apdu = new APDU();
-        apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
-        apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
-        apdu.setVendorMap(vendorMap);
-        apdu.getServiceParameters().add(objectIdentifierServiceParameter);
-        apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
-        apdu.getServiceParameters().add(openingTagServiceParameter3);
-        // no data
-        apdu.getServiceParameters().add(closingTagServiceParameter3);
-
-        final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
-        result.setNpdu(npdu);
-        result.setApdu(apdu);
-
-        virtualLinkControl.setLength(result.getDataLength());
-
-//		final byte[] bytes = result.getBytes();
-//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
-
-        return result;
-    }
-
     private Message processStringProperty(final int propertyIdentifierCode, final Message requestMessage,
             final String data) {
 
@@ -1043,251 +968,6 @@ public class DefaultDevice implements Device, CommunicationService {
         return result;
     }
 
-    private Message processRestartNotificationRecipientsProperty(final int propertyIdentifierCode,
-            final Message requestMessage) {
-
-        final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
-        virtualLinkControl.setType(0x81);
-        virtualLinkControl.setFunction(0x0A);
-        virtualLinkControl.setLength(0x00);
-
-        final NPDU npdu = new NPDU();
-        npdu.setVersion(0x01);
-
-        // no additional information
-        // this works, if the cp is connected to the device directly via 192.168.2.1
-        npdu.setControl(0x00);
-
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
-
-        // this object identifier has to be context specific. I do not know why
-        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-        objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        objectIdentifierServiceParameter.setTagNumber(0x00);
-        objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(objectType);
-        objectIdentifierServiceParameter.setInstanceNumber(id);
-
-        final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
-        propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        propertyIdentifierServiceParameter.setTagNumber(0x01);
-        propertyIdentifierServiceParameter.setLengthValueType(0x01);
-        propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) propertyIdentifierCode });
-
-        final ServiceParameter openingTagServiceParameter3 = new ServiceParameter();
-        openingTagServiceParameter3.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        openingTagServiceParameter3.setTagNumber(0x03);
-        openingTagServiceParameter3.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
-
-        final ServiceParameter closingTagServiceParameter3 = new ServiceParameter();
-        closingTagServiceParameter3.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        closingTagServiceParameter3.setTagNumber(0x03);
-        closingTagServiceParameter3.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
-
-        final APDU apdu = new APDU();
-        apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
-        apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
-        apdu.setVendorMap(vendorMap);
-        apdu.getServiceParameters().add(objectIdentifierServiceParameter);
-        apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
-        apdu.getServiceParameters().add(openingTagServiceParameter3);
-
-        // there are currently no recipients configured on the device.
-        // The cp (communication partner) will now possibly write itself into the list
-        // using write property
-
-        apdu.getServiceParameters().add(closingTagServiceParameter3);
-
-        final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
-        result.setNpdu(npdu);
-        result.setApdu(apdu);
-
-        virtualLinkControl.setLength(result.getDataLength());
-
-//		final byte[] bytes = result.getBytes();
-//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
-
-        return result;
-    }
-
-    private Message processTimeOfDeviceRestartProperty(final int propertyIdentifierCode, final Message requestMessage,
-            final boolean addDate, final boolean addTime, final Date date) {
-
-        final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
-        virtualLinkControl.setType(0x81);
-        virtualLinkControl.setFunction(0x0A);
-        virtualLinkControl.setLength(0x00);
-
-        final NPDU npdu = new NPDU();
-        npdu.setVersion(0x01);
-
-        // no additional information
-        // this works, if the cp is connected to the device directly via 192.168.2.1
-        npdu.setControl(0x00);
-
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
-
-        // this object identifier has to be context specific. I do not know why
-        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-        objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        objectIdentifierServiceParameter.setTagNumber(0x00);
-        objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(objectType);
-        objectIdentifierServiceParameter.setInstanceNumber(id);
-
-        final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
-        propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        propertyIdentifierServiceParameter.setTagNumber(0x01);
-        propertyIdentifierServiceParameter.setLengthValueType(0x01);
-        propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) propertyIdentifierCode });
-
-        // {[3]
-        final ServiceParameter openingTagServiceParameter3 = new ServiceParameter();
-        openingTagServiceParameter3.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        openingTagServiceParameter3.setTagNumber(0x03);
-        openingTagServiceParameter3.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
-
-        // {[2]
-        final ServiceParameter openingTagServiceParameter2 = new ServiceParameter();
-        openingTagServiceParameter2.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        openingTagServiceParameter2.setTagNumber(0x02);
-        openingTagServiceParameter2.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
-
-        final ServiceParameter dateServiceParameter = new ServiceParameter();
-        dateServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-        dateServiceParameter.setTagNumber(ServiceParameter.DATE);
-        dateServiceParameter.setLengthValueType(0x04);
-        dateServiceParameter.setPayload(new byte[] { (byte) 0x78, (byte) 0x07, (byte) 0x09, (byte) 0x04 });
-
-        final ServiceParameter timeServiceParameter = new ServiceParameter();
-        timeServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-        timeServiceParameter.setTagNumber(ServiceParameter.TIME);
-        timeServiceParameter.setLengthValueType(0x04);
-        timeServiceParameter.setPayload(new byte[] { (byte) 0x12, (byte) 0x0e, (byte) 0x16, (byte) 0x15 });
-
-        // }[2]
-        final ServiceParameter closingTagServiceParameter2 = new ServiceParameter();
-        closingTagServiceParameter2.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        closingTagServiceParameter2.setTagNumber(0x02);
-        closingTagServiceParameter2.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
-
-        // }[3]
-        final ServiceParameter closingTagServiceParameter3 = new ServiceParameter();
-        closingTagServiceParameter3.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        closingTagServiceParameter3.setTagNumber(0x03);
-        closingTagServiceParameter3.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
-
-        final APDU apdu = new APDU();
-        apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
-        apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
-        apdu.setVendorMap(vendorMap);
-        apdu.getServiceParameters().add(objectIdentifierServiceParameter);
-        apdu.getServiceParameters().add(propertyIdentifierServiceParameter);
-        apdu.getServiceParameters().add(openingTagServiceParameter3);
-        apdu.getServiceParameters().add(openingTagServiceParameter2);
-
-        if (addDate) {
-            apdu.getServiceParameters().add(dateServiceParameter);
-        }
-        if (addTime) {
-            apdu.getServiceParameters().add(timeServiceParameter);
-        }
-        apdu.getServiceParameters().add(closingTagServiceParameter2);
-        apdu.getServiceParameters().add(closingTagServiceParameter3);
-
-        final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
-        result.setNpdu(npdu);
-        result.setApdu(apdu);
-
-        virtualLinkControl.setLength(result.getDataLength());
-
-//		final byte[] bytes = result.getBytes();
-//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
-
-        return result;
-    }
-
-    private Message processPropertyListProperty(final int propertyIdentifierCode, final Message requestMessage) {
-
-        final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
-        virtualLinkControl.setType(0x81);
-        virtualLinkControl.setFunction(0x0A);
-        virtualLinkControl.setLength(0x00);
-
-        final NPDU npdu = new NPDU();
-        npdu.setVersion(0x01);
-
-        // no additional information
-        // this works, if the cp is connected to the device directly via 192.168.2.1
-        npdu.setControl(0x00);
-
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
-
-        final ServiceParameter errorClassServiceParameter = new ServiceParameter();
-        errorClassServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-        errorClassServiceParameter.setTagNumber(ServiceParameter.ENUMERATED_CODE);
-        errorClassServiceParameter.setLengthValueType(0x01);
-        errorClassServiceParameter.setPayload(new byte[] { (byte) 0x01 });
-
-        final ServiceParameter errorCodeServiceParameter = new ServiceParameter();
-        errorCodeServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-        errorCodeServiceParameter.setTagNumber(ServiceParameter.ENUMERATED_CODE);
-        errorCodeServiceParameter.setLengthValueType(0x01);
-        // 0x31 = unknown_object
-        errorCodeServiceParameter.setPayload(new byte[] { (byte) 0x31 });
-
-        final APDU apdu = new APDU();
-        apdu.setPduType(PDUType.ERROR_PDU);
-        apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
-        apdu.setVendorMap(vendorMap);
-        apdu.getServiceParameters().add(errorClassServiceParameter);
-        apdu.getServiceParameters().add(errorCodeServiceParameter);
-
-        final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
-        result.setNpdu(npdu);
-        result.setApdu(apdu);
-
-        virtualLinkControl.setLength(result.getDataLength());
-
-//		final byte[] bytes = result.getBytes();
-//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
-
-        return result;
-    }
-
     // Returns a number that has all bits same as n
     // except the k'th bit which is made 0
     int turnOffK(final int n, final int k) {
@@ -1301,6 +981,13 @@ public class DefaultDevice implements Device, CommunicationService {
         return (n & ~(1 << (k - 1)));
     }
 
+    /**
+     * TODO: Not yet moved into the DefaultMessageFactory.
+     * 
+     * @param propertyIdentifierCode
+     * @param requestMessage
+     * @return
+     */
     private Message processObjectNameProperty(final int propertyIdentifierCode, final Message requestMessage) {
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = (ObjectIdentifierServiceParameter) requestMessage
@@ -2105,7 +1792,7 @@ public class DefaultDevice implements Device, CommunicationService {
 
         final InetAddress destinationAddress = datagramPacketAddress;
         final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, destinationAddress,
-                NetworkUtils.DEFAULT_PORT);
+                DefaultConfigurationManager.BACNET_PORT_DEFAULT_VALUE);
 
         datagramSocket.send(responseDatagramPacket);
     }

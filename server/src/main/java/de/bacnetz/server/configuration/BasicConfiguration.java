@@ -1,5 +1,6 @@
 package de.bacnetz.server.configuration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
@@ -22,9 +23,21 @@ import de.bacnetz.threads.MulticastListenerReaderThread;
 @Component
 public class BasicConfiguration {
 
+    // from application.properties
+    // defines the multicast IP address of the ethernet subnetwork that this BACnet
+    // server takes part in
+    @Value("${multicast.ip}")
+    private String multicastIP;
+
+    @Value("${bind.ip}")
+    private String bindIp;
+
     @Bean
     public ConfigurationManager getConfigurationManager() {
-        return new DefaultConfigurationManager();
+        final ConfigurationManager configurationManager = new DefaultConfigurationManager();
+        configurationManager.setProperty(ConfigurationManager.MULTICAST_IP_CONFIG_KEY, multicastIP);
+        configurationManager.setProperty(ConfigurationManager.LOCAL_IP_CONFIG_KEY, bindIp);
+        return configurationManager;
     }
 
     @Bean

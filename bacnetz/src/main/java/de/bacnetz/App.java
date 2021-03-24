@@ -33,7 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.common.utils.Utils;
 import de.bacnetz.configuration.ConfigurationManager;
 import de.bacnetz.configuration.DefaultConfigurationManager;
@@ -89,9 +88,9 @@ import de.bacnetz.threads.MulticastListenerReaderThread;
  * <li />common
  * <li />api
  * <li />bacnetz
+ * <li />jsonrpc
  * <li />server (Takes very, very long to build because it packages the angular
  * app. It takes about 15 minutes.)
- * <li />jsonrpc
  * </ol>
  * 
  */
@@ -211,7 +210,7 @@ public class App {
 
             // DEBUG
             msg = "Hit Enter to send message! q = exit";
-            LOG.trace(msg);
+            LOG.info(msg);
 //            System.out.println(msg);
 
             // read input from the user
@@ -244,7 +243,7 @@ public class App {
 //                    multicastListenerReaderThread);
 
             // DEBUG
-            LOG.trace("Sending message done.");
+            LOG.info("Sending message done.");
         }
 
         devices.stream().forEach(d -> d.cleanUp());
@@ -358,7 +357,8 @@ public class App {
         // this socket does not bind on a specific port
         final DatagramSocket socket = new DatagramSocket();
         socket.setBroadcast(true);
-        final DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, NetworkUtils.DEFAULT_PORT);
+        final DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address,
+                ConfigurationManager.BACNET_PORT_DEFAULT_VALUE);
         socket.send(packet);
         socket.close();
     }
@@ -422,7 +422,8 @@ public class App {
     @SuppressWarnings("unused")
     private static void runMainOld() throws SocketException, UnknownHostException, IOException {
 
-        final DatagramSocket serverDatagramSocket = new DatagramSocket(NetworkUtils.DEFAULT_PORT);
+        final DatagramSocket serverDatagramSocket = new DatagramSocket(
+                DefaultConfigurationManager.BACNET_PORT_DEFAULT_VALUE);
         serverDatagramSocket.setBroadcast(true);
 
         new Thread(new Runnable() {
@@ -574,7 +575,7 @@ public class App {
         final String broadcastIP = Utils.retrieveNetworkInterfaceBroadcastIPs().get(0);
 //			InetAddress targetInetAddress = InetAddress.getByName("localhost");
         final InetAddress targetInetAddress = InetAddress.getByName(broadcastIP);
-        final int targetPort = NetworkUtils.DEFAULT_PORT;
+        final int targetPort = ConfigurationManager.BACNET_PORT_DEFAULT_VALUE;
 
         final DatagramPacket packet = new DatagramPacket(buf, 0, buf.length, targetInetAddress, targetPort);
 
