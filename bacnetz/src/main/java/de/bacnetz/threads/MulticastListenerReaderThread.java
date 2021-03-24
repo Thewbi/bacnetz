@@ -156,6 +156,8 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
         if (broadcastDatagramSocket != null) {
             return;
         }
+
+        // this will open the broadcast socket on 127.0.0.1 or even 0.0.0.0
         broadcastDatagramSocket = new DatagramSocket(NetworkUtils.DEFAULT_PORT);
         broadcastDatagramSocket.setBroadcast(true);
     }

@@ -84,10 +84,20 @@ import de.bacnetz.threads.MulticastListenerReaderThread;
  * java -jar bacnetz.jar -local_ip 192.168.2.1 -multicast_ip 192.168.2.255
  * </pre>
  * 
+ * <h1>Building</h1>
+ * <ol>
+ * <li />common
+ * <li />api
+ * <li />bacnetz
+ * <li />server (Takes very, very long to build because it packages the angular
+ * app. It takes about 15 minutes.)
+ * <li />jsonrpc
+ * </ol>
+ * 
  */
 public class App {
 
-    private static final boolean RUN_TOGGLE_DOOR_THREAD = false;
+//    private static final boolean RUN_TOGGLE_DOOR_THREAD = false;
 //    private static final boolean RUN_TOGGLE_DOOR_THREAD = true;
 
     private static final Logger LOG = LogManager.getLogger(App.class);
@@ -245,10 +255,8 @@ public class App {
 
         // from file from eclipse
         final String filename = "src/main/resources/BACnetVendors.csv";
-//        final String filename = "BACnetVendors.csv";
         final File file = new File(filename);
         LOG.info(file.getAbsoluteFile());
-        System.out.println(file.getAbsoluteFile());
         bufferedReader = new BufferedReader(new FileReader(filename));
 
         final Map<Integer, String> vendorMap = readVendorMap(bufferedReader);

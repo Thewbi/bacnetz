@@ -1,11 +1,9 @@
 package de.bacnetz.server.configuration;
 
 import javax.annotation.PostConstruct;
-import javax.ws.rs.ApplicationPath;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletProperties;
-import org.springframework.stereotype.Component;
 
 import de.bacnetz.server.cors.CorsFilter;
 import de.bacnetz.server.resource.system.SystemInformationResource;
@@ -14,8 +12,8 @@ import io.swagger.jaxrs.config.BeanConfig;
 import io.swagger.jaxrs.listing.ApiListingResource;
 import io.swagger.jaxrs.listing.SwaggerSerializers;
 
-@Component
-@ApplicationPath("/bacnetz/api")
+//@Component
+//@ApplicationPath("/bacnetz/api")
 public class JerseyConfiguration extends ResourceConfig {
 
     /**

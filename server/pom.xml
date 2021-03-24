@@ -71,12 +71,24 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
-		<!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-data-jpa</artifactId> 
-			</dependency> -->
+		
+		<!-- JPA -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        
+        <!-- REST -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jersey</artifactId>
 		</dependency>
+		
 		<!-- spring web is needed to serve the static content for swagger from 
 			src/main/resoures/static -->
 		<dependency>
@@ -98,6 +110,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		
 		<!-- log4j2 -->
 		<dependency>
 		    <groupId>org.springframework.boot</groupId>
@@ -123,7 +136,7 @@
 		
 	</dependencies>
 
-<!-- -->
+
 	<build>
 	
 		<plugins>
@@ -141,6 +154,7 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 
+			<!-- 
 			<plugin>
 				<groupId>com.github.eirslett</groupId>
 				<artifactId>frontend-maven-plugin</artifactId>
@@ -181,6 +195,7 @@
                   </execution> 
 				</executions>
 			</plugin>
+			-->
 
 		</plugins>
 		

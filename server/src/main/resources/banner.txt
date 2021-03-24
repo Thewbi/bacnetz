@@ -16,19 +16,15 @@ The simulator is used for simulating BACnet/IP devices
 
 Angular App:
 http://${server.address}:${server.port}/bacnetz/index.html
-0.0.0.0 is the default interface and might also be 127.0.0.1
 
 Swagger JSON:
 http://${server.address}:${server.port}/bacnetz/api/swagger.json
-0.0.0.0 is the default interface and might also be 127.0.0.1
 
 Swagger:
 http://${server.address}:${server.port}/index.html
-0.0.0.0 is the default interface and might also be 127.0.0.1
 
 Actuator:
 http://${server.address}:${server.port}/actuator
-0.0.0.0 is the default interface and might also be 127.0.0.1
 
 Spring Boot Documentation:
 https://docs.spring.io/spring-boot/docs/current-SNAPSHOT/reference/htmlsingle/

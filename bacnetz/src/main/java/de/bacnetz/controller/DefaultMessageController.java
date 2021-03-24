@@ -262,7 +262,6 @@ public class DefaultMessageController implements MessageController {
         // DEBUG
         final String msg = "processSubscribeCov() - COV subscription received! Object: "
                 + objectIdentifierServiceParameter.toString();
-        System.out.println(msg);
         LOG.info(msg);
 
         // @formatter:off

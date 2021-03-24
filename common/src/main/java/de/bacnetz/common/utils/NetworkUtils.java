@@ -13,11 +13,12 @@ public class NetworkUtils {
 
     private static final Logger LOG = LogManager.getLogger(NetworkUtils.class);
 
-    public static final String TARGET_IP = "192.168.2.2";
+    public static final String TARGET_IP = "192.168.0.2";
+//    public static final String TARGET_IP = "192.168.2.2";
 //    public static final String TARGET_IP = "192.168.0.108";
 
 //	public static final int DEVICE_INSTANCE_NUMBER = 26;
-    public static final int DEVICE_INSTANCE_NUMBER = 10001;
+//    public static final int DEVICE_INSTANCE_NUMBER = 10001;
 
     public static final int DEVICE_MAC_ADDRESS = 0x001268;
 //	public static final int DEVICE_MAC_ADDRESS = 0x001269;
@@ -40,7 +41,9 @@ public class NetworkUtils {
 
 //	// Cockpit in local area network connected via ethernet cable without router (test setup)
 //    public static final String LOCAL_BIND_IP = "192.168.2.1";
-    public static final String BACNET_MULTICAST_IP = "192.168.2.255";
+//    public static final String BACNET_MULTICAST_IP = "192.168.2.255";
+
+    public static final String BACNET_MULTICAST_IP = "192.168.0.255";
 
 //	public static final String LOCAL_BIND_IP = "172.18.60.118";
 //	public static final String BACNET_MULTICAST_IP = "172.18.63.255";

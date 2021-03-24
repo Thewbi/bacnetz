@@ -500,81 +500,81 @@ public class DefaultDevice implements Device, CommunicationService {
                 deviceProperty.getPropertyKey(), new byte[] { (byte) 0x01 });
     }
 
-    private Message processStatusFlagsProperty(final int propertyIdentifierCode, final Message requestMessage) {
-
-        final int deviceInstanceNumber = NetworkUtils.DEVICE_INSTANCE_NUMBER;
-
-        final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
-        virtualLinkControl.setType(0x81);
-        virtualLinkControl.setFunction(0x0A);
-        virtualLinkControl.setLength(0x00);
-
-        final NPDU npdu = new NPDU();
-        npdu.setVersion(0x01);
-
-        // no additional information
-        // this works, if the cp is connected to the device directly via 192.168.2.1
-        npdu.setControl(0x00);
-
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
-
-        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-        objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-        objectIdentifierServiceParameter.setTagNumber(0x00);
-        objectIdentifierServiceParameter.setLengthValueType(4);
-        objectIdentifierServiceParameter.setObjectType(objectType);
-        objectIdentifierServiceParameter.setInstanceNumber(id);
-
-        final ServiceParameter protocolServicesSupportedServiceParameter = new ServiceParameter();
-        protocolServicesSupportedServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        protocolServicesSupportedServiceParameter.setTagNumber(0x01);
-        protocolServicesSupportedServiceParameter.setLengthValueType(1);
-        protocolServicesSupportedServiceParameter.setPayload(new byte[] { (byte) propertyIdentifierCode });
-
-        final ServiceParameter openingTagServiceParameter = new ServiceParameter();
-        openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        openingTagServiceParameter.setTagNumber(0x03);
-        openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
-
-        final ServiceParameter statusFlagsBitStringServiceParameter = getStatusFlagsServiceParameter();
-
-        final ServiceParameter closingTagServiceParameter = new ServiceParameter();
-        closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        closingTagServiceParameter.setTagNumber(0x03);
-        closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
-
-        final APDU apdu = new APDU();
-        apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
-        apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
-        apdu.setVendorMap(vendorMap);
-        apdu.getServiceParameters().add(objectIdentifierServiceParameter);
-        apdu.getServiceParameters().add(protocolServicesSupportedServiceParameter);
-        apdu.getServiceParameters().add(openingTagServiceParameter);
-        apdu.getServiceParameters().add(statusFlagsBitStringServiceParameter);
-        apdu.getServiceParameters().add(closingTagServiceParameter);
-
-        final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
-        result.setNpdu(npdu);
-        result.setApdu(apdu);
-
-        virtualLinkControl.setLength(result.getDataLength());
-
-//		final byte[] bytes = result.getBytes();
-//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
-
-        return result;
-    }
+//    private Message processStatusFlagsProperty(final int propertyIdentifierCode, final Message requestMessage) {
+//
+//        final int deviceInstanceNumber = NetworkUtils.DEVICE_INSTANCE_NUMBER;
+//
+//        final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
+//        virtualLinkControl.setType(0x81);
+//        virtualLinkControl.setFunction(0x0A);
+//        virtualLinkControl.setLength(0x00);
+//
+//        final NPDU npdu = new NPDU();
+//        npdu.setVersion(0x01);
+//
+//        // no additional information
+//        // this works, if the cp is connected to the device directly via 192.168.2.1
+//        npdu.setControl(0x00);
+//
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+//
+//        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+//        objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+//        objectIdentifierServiceParameter.setTagNumber(0x00);
+//        objectIdentifierServiceParameter.setLengthValueType(4);
+//        objectIdentifierServiceParameter.setObjectType(objectType);
+//        objectIdentifierServiceParameter.setInstanceNumber(id);
+//
+//        final ServiceParameter protocolServicesSupportedServiceParameter = new ServiceParameter();
+//        protocolServicesSupportedServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+//        protocolServicesSupportedServiceParameter.setTagNumber(0x01);
+//        protocolServicesSupportedServiceParameter.setLengthValueType(1);
+//        protocolServicesSupportedServiceParameter.setPayload(new byte[] { (byte) propertyIdentifierCode });
+//
+//        final ServiceParameter openingTagServiceParameter = new ServiceParameter();
+//        openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+//        openingTagServiceParameter.setTagNumber(0x03);
+//        openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
+//
+//        final ServiceParameter statusFlagsBitStringServiceParameter = getStatusFlagsServiceParameter();
+//
+//        final ServiceParameter closingTagServiceParameter = new ServiceParameter();
+//        closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+//        closingTagServiceParameter.setTagNumber(0x03);
+//        closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
+//
+//        final APDU apdu = new APDU();
+//        apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
+//        apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
+//        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
+//        apdu.setVendorMap(vendorMap);
+//        apdu.getServiceParameters().add(objectIdentifierServiceParameter);
+//        apdu.getServiceParameters().add(protocolServicesSupportedServiceParameter);
+//        apdu.getServiceParameters().add(openingTagServiceParameter);
+//        apdu.getServiceParameters().add(statusFlagsBitStringServiceParameter);
+//        apdu.getServiceParameters().add(closingTagServiceParameter);
+//
+//        final DefaultMessage result = new DefaultMessage();
+//        result.setVirtualLinkControl(virtualLinkControl);
+//        result.setNpdu(npdu);
+//        result.setApdu(apdu);
+//
+//        virtualLinkControl.setLength(result.getDataLength());
+//
+////		final byte[] bytes = result.getBytes();
+////		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
+//
+//        return result;
+//    }
 
     @Override
     public ServiceParameter getStatusFlagsServiceParameter() {
@@ -2022,28 +2022,30 @@ public class DefaultDevice implements Device, CommunicationService {
     @Override
     public void bindSocket(final String ip, final int port) throws SocketException, UnknownHostException {
 
-        if (datagramSocket == null) {
+        LOG.info("Device is binding to IP: '{}' and Port: '{}'", ip, port);
 
-            datagramSocket = new DatagramSocket(port, InetAddress.getByName(ip));
-
-            deviceService = new DefaultDeviceService();
-
-            messageController = new DefaultMessageController();
-            messageController.setCommunicationService(this);
-            messageController.setDeviceService(deviceService);
-
-            deviceService.getDeviceMap().put(getObjectIdentifierServiceParameter(), this);
-            children.stream()
-                    .forEach(d -> deviceService.getDeviceMap().put(d.getObjectIdentifierServiceParameter(), d));
-
-            multicastListenerReaderThread = new MulticastListenerReaderThread();
-            multicastListenerReaderThread.setConfigurationManager(configurationManager);
-            multicastListenerReaderThread.setVendorMap(vendorMap);
-            multicastListenerReaderThread.setBroadcastDatagramSocket(datagramSocket);
-            multicastListenerReaderThread.getMessageControllers().add(messageController);
-
-            new Thread(multicastListenerReaderThread).start();
+        if (datagramSocket != null) {
+            return;
         }
+
+        datagramSocket = new DatagramSocket(port, InetAddress.getByName(ip));
+
+        deviceService = new DefaultDeviceService();
+
+        messageController = new DefaultMessageController();
+        messageController.setCommunicationService(this);
+        messageController.setDeviceService(deviceService);
+
+        deviceService.getDeviceMap().put(getObjectIdentifierServiceParameter(), this);
+        children.stream().forEach(d -> deviceService.getDeviceMap().put(d.getObjectIdentifierServiceParameter(), d));
+
+        multicastListenerReaderThread = new MulticastListenerReaderThread();
+        multicastListenerReaderThread.setConfigurationManager(configurationManager);
+        multicastListenerReaderThread.setVendorMap(vendorMap);
+        multicastListenerReaderThread.setBroadcastDatagramSocket(datagramSocket);
+        multicastListenerReaderThread.getMessageControllers().add(messageController);
+
+        new Thread(multicastListenerReaderThread).start();
     }
 
     @Override
