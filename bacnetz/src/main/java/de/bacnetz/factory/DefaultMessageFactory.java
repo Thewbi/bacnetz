@@ -994,7 +994,8 @@ public class DefaultMessageFactory implements MessageFactory {
         return result;
     }
 
-    private Message whoIsMessage() {
+    @Override
+    public Message whoIsMessage() {
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
         // Type: BACnet/IP (Annex J) (0x81)
@@ -1022,7 +1023,8 @@ public class DefaultMessageFactory implements MessageFactory {
         return result;
     }
 
-    private Message whoIsMessage(final int lowerBound, final int upperBound) {
+    @Override
+    public Message whoIsMessage(final int lowerBound, final int upperBound) {
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
         // Type: BACnet/IP (Annex J) (0x81)

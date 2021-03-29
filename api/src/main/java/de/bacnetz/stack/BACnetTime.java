@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Date;
 
-import de.bacnet.common.APIUtils;
+import de.bacnetz.common.APIUtils;
 
 /**
  * The encoding of a time value shall be primitive, with four contents octets.

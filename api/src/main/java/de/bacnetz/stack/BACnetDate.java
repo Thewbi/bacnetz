@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 
-import de.bacnet.common.APIUtils;
+import de.bacnetz.common.APIUtils;
 
 public class BACnetDate {
 

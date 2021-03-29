@@ -10,7 +10,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import de.bacnet.common.APIUtils;
+import de.bacnetz.common.APIUtils;
 import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.devices.ObjectType;
 

@@ -12,16 +12,11 @@ import java.io.OutputStreamWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -33,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.common.utils.Utils;
 import de.bacnetz.configuration.ConfigurationManager;
 import de.bacnetz.configuration.DefaultConfigurationManager;
@@ -44,10 +40,10 @@ import de.bacnetz.devices.Device;
 import de.bacnetz.devices.DeviceService;
 import de.bacnetz.factory.DefaultMessageFactory;
 import de.bacnetz.factory.MessageFactory;
-import de.bacnetz.factory.MessageType;
 import de.bacnetz.stack.IPv4Packet;
 import de.bacnetz.stack.UDPPacket;
 import de.bacnetz.threads.MulticastListenerReaderThread;
+import de.bacnetz.vendor.VendorMap;
 
 /**
  * <h1>Wireshark Filter</h1>
@@ -110,9 +106,23 @@ public class App {
         System.setProperty("java.net.preferIPv4Stack", "true");
 
         // DEBUG
-        final List<InetAddress> listAllBroadcastAddresses = listAllBroadcastAddresses();
+        final List<InetAddress> listAllBroadcastAddresses = NetworkUtils.listAllBroadcastAddresses();
         LOG.info(listAllBroadcastAddresses);
 
+        final DefaultConfigurationManager defaultConfigurationManager = createConfigurationManager(args);
+
+        final DeviceService deviceService = new DefaultDeviceService();
+
+        final Map<Integer, String> vendorMap = VendorMap.processVendorMap();
+
+        startListenerThread(defaultConfigurationManager, deviceService, vendorMap);
+        runWhoIsThread();
+//        runMain(defaultConfigurationManager);
+//		runFixVendorCSV();
+//		runMainOld();
+    }
+
+    private static DefaultConfigurationManager createConfigurationManager(final String[] args) throws ParseException {
         final DefaultConfigurationManager defaultConfigurationManager = new DefaultConfigurationManager();
 
         // create Options object
@@ -127,31 +137,34 @@ public class App {
                 "provide the bacnet devices on this multicast ip");
 
         // parse
-        final CommandLineParser commandLineParser = new DefaultParser();
-        final CommandLine commandLine = commandLineParser.parse(options, args);
+        if (args != null) {
+            final CommandLineParser commandLineParser = new DefaultParser();
+            final CommandLine commandLine = commandLineParser.parse(options, args);
 
-        if (commandLine.getOptions().length == 0) {
+            if (commandLine.getOptions().length == 0) {
 
-            // automatically generate the help statement
-            final HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("app -local_ip <IP Address>", options);
+                // automatically generate the help statement
+                final HelpFormatter formatter = new HelpFormatter();
+                formatter.printHelp("app -local_ip <IP Address>", options);
 
-            return;
+                return null;
+            }
+
+            if (commandLine != null) {
+                defaultConfigurationManager.updateWithCommandLine(commandLine);
+            }
+
         }
 
-        defaultConfigurationManager.updateWithCommandLine(commandLine);
+        // DEBUG
         defaultConfigurationManager.dumpOptions();
 
-        runMain(defaultConfigurationManager);
-//		runWhoIsThread();
-//		runFixVendorCSV();
-//		runMainOld();
+        return defaultConfigurationManager;
     }
 
-    private static void runMain(final ConfigurationManager configurationManager)
-            throws SocketException, UnknownHostException, IOException {
-
-        final Map<Integer, String> vendorMap = processVendorMap();
+    private static void startListenerThread(final ConfigurationManager configurationManager,
+            final DeviceService deviceService, final Map<Integer, String> vendorMap)
+            throws FileNotFoundException, IOException {
 
         final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
         multicastListenerReaderThread.setConfigurationManager(configurationManager);
@@ -162,15 +175,10 @@ public class App {
         final DefaultDeviceFactory defaultDeviceFactory = new DefaultDeviceFactory();
         defaultDeviceFactory.setConfigurationManager(configurationManager);
 
-        final DeviceService deviceService = new DefaultDeviceService();
         deviceService.setDefaultDeviceFactory(defaultDeviceFactory);
 
         final DefaultMessageController defaultMessageController = new DefaultMessageController();
         defaultMessageController.setDeviceService(deviceService);
-
-        final String localIp = configurationManager.getPropertyAsString(ConfigurationManager.LOCAL_IP_CONFIG_KEY);
-
-        final List<Device> devices = deviceService.createDevices(vendorMap, localIp);
 
 //        deviceService.getDevices().addAll(devices);
         defaultMessageController.setVendorMap(vendorMap);
@@ -189,6 +197,10 @@ public class App {
 //                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 4));
 
         new Thread(multicastListenerReaderThread).start();
+    }
+
+    private static void runMain(final ConfigurationManager configurationManager, final DeviceService deviceService,
+            final Map<Integer, String> vendorMap) throws SocketException, UnknownHostException, IOException {
 
 //        if (RUN_TOGGLE_DOOR_THREAD) {
 //
@@ -202,6 +214,11 @@ public class App {
 //            toggleDoorOpenStateThread.setCommunicationService(multicastListenerReaderThread);
 //            new Thread(toggleDoorOpenStateThread).start();
 //        }
+
+        startListenerThread(configurationManager, deviceService, vendorMap);
+
+        final String localIp = configurationManager.getPropertyAsString(ConfigurationManager.LOCAL_IP_CONFIG_KEY);
+        final List<Device> devices = deviceService.createDevices(vendorMap, localIp);
 
         boolean done = false;
         while (!done) {
@@ -249,59 +266,6 @@ public class App {
         devices.stream().forEach(d -> d.cleanUp());
     }
 
-    public static Map<Integer, String> processVendorMap() throws FileNotFoundException, IOException {
-        BufferedReader bufferedReader = null;
-
-        // from file from eclipse
-        final String filename = "src/main/resources/BACnetVendors.csv";
-        final File file = new File(filename);
-        LOG.info(file.getAbsoluteFile());
-        bufferedReader = new BufferedReader(new FileReader(filename));
-
-        final Map<Integer, String> vendorMap = readVendorMap(bufferedReader);
-        return vendorMap;
-    }
-
-    private static Map<Integer, String> readVendorMap(final BufferedReader bufferedReader) throws IOException {
-
-        final Map<Integer, String> map = new HashMap<>();
-
-        try {
-
-            String line = null;
-            while ((line = bufferedReader.readLine()) != null) {
-
-                line = StringUtils.trim(line);
-
-                final String[] split = line.split(";");
-
-                final int vendorId = Integer.parseInt(split[0]);
-                String vendorName = split[1];
-
-                if (StringUtils.isBlank(vendorName)) {
-                    vendorName = "";
-                    for (int i = 2; i < split.length; i++) {
-                        if (i > 2) {
-                            vendorName += " ";
-                        }
-                        vendorName += split[i];
-                    }
-                }
-
-                map.put(vendorId, vendorName);
-            }
-
-        } catch (final IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (bufferedReader != null) {
-                bufferedReader.close();
-            }
-        }
-
-        return map;
-    }
-
     @SuppressWarnings("unused")
     private static void runWhoIsThread() {
 
@@ -330,11 +294,13 @@ public class App {
 
         LOG.info("runBroadcast() ...");
 
+        // create the who-is message
         final MessageFactory messageFactory = new DefaultMessageFactory();
-//      final Message whoIsMessage = messageFactory.create(MessageType.WHO_IS, 25, 25);
-        final Message whoIsMessage = messageFactory.create(MessageType.WHO_IS);
+//        final Message whoIsMessage = messageFactory.whoIsMessage(0, 100);
+        final Message whoIsMessage = messageFactory.whoIsMessage();
 
-        final List<InetAddress> listAllBroadcastAddresses = listAllBroadcastAddresses();
+        // send the who-is message to all interfaces
+        final List<InetAddress> listAllBroadcastAddresses = NetworkUtils.listAllBroadcastAddresses();
 
         // DEBUG
         LOG.info(listAllBroadcastAddresses);
@@ -352,7 +318,7 @@ public class App {
 
     public static void broadcast(final byte[] buffer, final InetAddress address) throws IOException {
 
-        LOG.info(">>> broadcast: " + Utils.byteArrayToStringNoPrefix(buffer));
+        LOG.info(">>> broadcast: " + Utils.byteArrayToStringNoPrefix(buffer) + " to address: " + address);
 
         // this socket does not bind on a specific port
         final DatagramSocket socket = new DatagramSocket();
@@ -361,62 +327,6 @@ public class App {
                 ConfigurationManager.BACNET_PORT_DEFAULT_VALUE);
         socket.send(packet);
         socket.close();
-    }
-
-    private static List<InetAddress> listAllBroadcastAddresses() throws SocketException {
-
-        final List<InetAddress> broadcastList = new ArrayList<>();
-
-        final Map<NetworkInterface, List<InetAddress>> allMap = new HashMap<>();
-        final Map<NetworkInterface, List<InetAddress>> broadcastMap = new HashMap<>();
-
-        final Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-        int interfaceCount = 0;
-        int networkedInterfaceCount = 0;
-        while (interfaces.hasMoreElements()) {
-
-            interfaceCount++;
-
-            final NetworkInterface networkInterface = interfaces.nextElement();
-
-            if (networkInterface.isLoopback() || !networkInterface.isUp()) {
-                continue;
-            }
-
-            networkedInterfaceCount++;
-
-            final List<InetAddress> interfaceBroadcastList = new ArrayList<>();
-            broadcastMap.put(networkInterface, interfaceBroadcastList);
-
-            final List<InetAddress> interfaceList = new ArrayList<>();
-            allMap.put(networkInterface, interfaceList);
-
-            networkInterface.getInterfaceAddresses().stream().map(a -> a.getAddress()).filter(Objects::nonNull)
-                    .forEach(interfaceList::add);
-            networkInterface.getInterfaceAddresses().stream().map(a -> a.getBroadcast()).filter(Objects::nonNull)
-                    .forEach(interfaceBroadcastList::add);
-
-            networkInterface.getInterfaceAddresses().stream().map(a -> a.getBroadcast()).filter(Objects::nonNull)
-                    .forEach(broadcastList::add);
-        }
-
-        if (interfaceCount == 0 || networkedInterfaceCount == 0) {
-            throw new RuntimeException("No interfaces found that are connected to a network!");
-        }
-
-        LOG.info("All");
-        for (final Map.Entry<NetworkInterface, List<InetAddress>> entry : allMap.entrySet()) {
-
-            LOG.info(entry.getKey() + " -> IP: " + entry.getValue());
-        }
-
-        LOG.info("Broadcast");
-        for (final Map.Entry<NetworkInterface, List<InetAddress>> entry : broadcastMap.entrySet()) {
-
-            LOG.info(entry.getKey() + " -> Broadcast: " + entry.getValue());
-        }
-
-        return broadcastList;
     }
 
     @SuppressWarnings("unused")

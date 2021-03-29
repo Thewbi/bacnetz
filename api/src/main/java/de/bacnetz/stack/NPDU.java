@@ -3,7 +3,7 @@ package de.bacnetz.stack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.bacnet.common.APIUtils;
+import de.bacnetz.common.APIUtils;
 
 /**
  * Network Layer Protocol Data Unit

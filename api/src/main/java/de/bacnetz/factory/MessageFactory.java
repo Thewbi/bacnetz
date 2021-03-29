@@ -13,4 +13,8 @@ public interface MessageFactory extends Factory<Message> {
 
     Message createErrorMessage(Message requestMessage, int errorClass, int errorCode);
 
+    Message whoIsMessage();
+
+    Message whoIsMessage(int lowerBound, int upperBound);
+
 }

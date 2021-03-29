@@ -1,4 +1,4 @@
-package de.bacnet.common;
+package de.bacnetz.common;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

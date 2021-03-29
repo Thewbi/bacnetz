@@ -2,7 +2,7 @@ package de.bacnetz.stack;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import de.bacnet.common.APIUtils;
+import de.bacnetz.common.APIUtils;
 import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.devices.ObjectType;
 import de.bacnetz.factory.MessageType;

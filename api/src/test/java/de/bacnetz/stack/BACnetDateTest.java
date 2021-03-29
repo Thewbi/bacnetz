@@ -7,7 +7,7 @@ import java.util.Date;
 
 import org.junit.jupiter.api.Test;
 
-import de.bacnet.common.APIUtils;
+import de.bacnetz.common.APIUtils;
 
 public class BACnetDateTest {
 

@@ -42,16 +42,20 @@ import de.bacnetz.stack.UnconfirmedServiceChoice;
 import de.bacnetz.stack.VirtualLinkControl;
 
 /**
- * This controller processes APDU messages and ignores NPDU messages.
+ * This controller processes APDU messages and ignores NPDU messages.<br />
+ * <br />
  * 
  * Handling a message means to create one or more output messages as a response
  * to an incoming message. The information in the response messages may come
- * from a bacnet the bacnet device that is associated with this controller.
+ * from a bacnet the bacnet device that is associated with this
+ * controller.<br />
+ * <br />
  * 
  * This controller is not a bean but each bacent device maintains it's own
  * personal instance of this controller. This controller instance is stored in a
  * member variable of the respective bacnet devices. This design was choose so
- * that the server can host any number of bacnet devices.
+ * that the server can host any number of bacnet devices.<br />
+ * <br />
  */
 public class DefaultMessageController implements MessageController {
 
@@ -430,10 +434,6 @@ public class DefaultMessageController implements MessageController {
     private List<Message> processWhoIsMessage(final Message message) {
 
         final List<Device> filteredDevices = filterDevices(message);
-
-//        return filteredDevices.stream().map(d -> retrieveIamMessage(d))
-//                .collect(Collectors.toCollection(ArrayList::new));
-
         filteredDevices.stream().forEach(d -> {
             try {
                 d.sendIamMessage();
@@ -1103,6 +1103,8 @@ public class DefaultMessageController implements MessageController {
 
         LOG.info(">>> processIAMMessage: InstanceNumber: {} VendorId: {} VendorName: {}",
                 objectIdentifierServiceParameter.getInstanceNumber(), vendorId, vendorMap.get(vendorId));
+
+        // add
 
         return null;
     }

@@ -1,6 +1,6 @@
 package de.bacnetz.stack;
 
-import de.bacnet.common.APIUtils;
+import de.bacnetz.common.APIUtils;
 
 public class VirtualLinkControl {
 
