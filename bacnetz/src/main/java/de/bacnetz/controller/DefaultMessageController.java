@@ -64,12 +64,12 @@ public class DefaultMessageController implements MessageController {
     @Autowired
     private DeviceService deviceService;
 
+    @Autowired
+    private CommunicationService communicationService;
+
     private Map<Integer, String> vendorMap = new HashMap<>();
 
     private final MessageFactory messageFactory = new DefaultMessageFactory();
-
-    @Autowired
-    private CommunicationService communicationService;
 
     private final Converter<BACnetDate, byte[]> bacnetDateToByteConverter = new BACnetDateToByteConverter();
 

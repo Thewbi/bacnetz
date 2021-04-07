@@ -57,4 +57,9 @@ public class FatClientConfiguration {
         return new TestButtonHandler("ThecnoCarolaSchmidt!");
     }
 
+    @Bean
+    public DefaultApplicationListener defaultApplicationListener() {
+        return new DefaultApplicationListener();
+    }
+
 }
