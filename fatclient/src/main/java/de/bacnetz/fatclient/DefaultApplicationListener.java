@@ -4,6 +4,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -16,9 +18,10 @@ import de.bacnetz.vendor.VendorMap;
 
 public class DefaultApplicationListener implements ApplicationListener<ContextRefreshedEvent> {
 
+    private static final Logger LOG = LogManager.getLogger(DefaultApplicationListener.class);
+
     @Override
     public void onApplicationEvent(final ContextRefreshedEvent contextRefreshedEvent) {
-
         try {
 
             final ApplicationContext applicationContext = contextRefreshedEvent.getApplicationContext();
@@ -31,7 +34,6 @@ public class DefaultApplicationListener implements ApplicationListener<ContextRe
 
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);
-//            e.printStackTrace();
         }
     }
 

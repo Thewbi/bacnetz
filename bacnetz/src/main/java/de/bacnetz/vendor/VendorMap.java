@@ -1,7 +1,6 @@
 package de.bacnetz.vendor;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -13,16 +12,13 @@ import org.apache.commons.lang3.StringUtils;
 public class VendorMap {
 
     public static Map<Integer, String> processVendorMap() throws FileNotFoundException, IOException {
-        BufferedReader bufferedReader = null;
-
         // from file from eclipse
         final String filename = "src/main/resources/BACnetVendors.csv";
-        final File file = new File(filename);
+//        final File file = new File(filename);
 //        LOG.info(file.getAbsoluteFile());
-        bufferedReader = new BufferedReader(new FileReader(filename));
+        final BufferedReader bufferedReader = new BufferedReader(new FileReader(filename));
 
-        final Map<Integer, String> vendorMap = readVendorMap(bufferedReader);
-        return vendorMap;
+        return readVendorMap(bufferedReader);
     }
 
     private static Map<Integer, String> readVendorMap(final BufferedReader bufferedReader) throws IOException {

@@ -137,9 +137,8 @@ public class DefaultMessageFactory implements MessageFactory {
                         deviceProperty.getPropertyKey(), deviceProperty.getValueAsByteArray());
 
             case SINGED_INTEGER_TWOS_COMPLEMENT_NOTATION:
-                return returnSignedIntegerTwosCommplementNotationProperty(device,
-                        requestMessage.getApdu().getInvokeId(), deviceProperty.getPropertyKey(),
-                        deviceProperty.getValueAsByteArray());
+                return returnSignedIntegerTwosComplementNotationProperty(device, requestMessage.getApdu().getInvokeId(),
+                        deviceProperty.getPropertyKey(), deviceProperty.getValueAsByteArray());
 
             case CHARACTER_STRING:
                 return stringProperty(device, deviceProperty.getPropertyKey(), requestMessage,
@@ -915,7 +914,7 @@ public class DefaultMessageFactory implements MessageFactory {
         return result;
     }
 
-    private Message returnSignedIntegerTwosCommplementNotationProperty(final Device device, final int invokeId,
+    private Message returnSignedIntegerTwosComplementNotationProperty(final Device device, final int invokeId,
             final int propertyKey, final byte[] payload) {
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();

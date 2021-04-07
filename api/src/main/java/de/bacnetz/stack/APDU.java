@@ -280,6 +280,20 @@ public class APDU {
             final int serviceChoiceCode = data[startIndex + offset] & 0xFF;
             confirmedServiceChoice = ConfirmedServiceChoice.fromInt(serviceChoiceCode);
 
+        } else if (pduType == PDUType.COMPLEX_ACK_PDU) {
+
+            // this branch was introduced for parsing the response message of a
+            // read-property request towards a bacnet device object
+
+            // invoke ID
+            invokeId = data[startIndex + offset] & 0xFF;
+            offset++;
+            structureLength++;
+
+            // service choice
+            final int serviceChoiceCode = data[startIndex + offset] & 0xFF;
+            confirmedServiceChoice = ConfirmedServiceChoice.fromInt(serviceChoiceCode);
+
         } else {
 
             // unconfirmed service choice

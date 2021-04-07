@@ -13,13 +13,13 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
-import de.bacnetz.App;
 import de.bacnetz.controller.MessageController;
 import de.bacnetz.devices.Device;
 import de.bacnetz.devices.DeviceService;
 import de.bacnetz.server.persistence.covsubscriptions.COVSubscriptionData;
 import de.bacnetz.server.persistence.covsubscriptions.COVSubscriptionRepository;
 import de.bacnetz.threads.MulticastListenerReaderThread;
+import de.bacnetz.vendor.VendorMap;
 
 @Component
 public class DefaultApplicationListener implements ApplicationListener<ContextRefreshedEvent> {
@@ -65,7 +65,7 @@ public class DefaultApplicationListener implements ApplicationListener<ContextRe
 
         try {
 
-            final Map<Integer, String> vendorMap = App.processVendorMap();
+            final Map<Integer, String> vendorMap = VendorMap.processVendorMap();
 
             @SuppressWarnings("unused")
             final List<Device> devices = deviceService.createDevices(vendorMap, bindIp);

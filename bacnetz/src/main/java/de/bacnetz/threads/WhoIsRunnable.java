@@ -7,6 +7,9 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.configuration.ConfigurationManager;
 import de.bacnetz.controller.Message;
@@ -14,6 +17,8 @@ import de.bacnetz.factory.DefaultMessageFactory;
 import de.bacnetz.factory.MessageFactory;
 
 public class WhoIsRunnable implements Runnable {
+
+    private static final Logger LOG = LogManager.getLogger(WhoIsRunnable.class);
 
     @Override
     public void run() {
@@ -33,7 +38,7 @@ public class WhoIsRunnable implements Runnable {
 
     private static void runBroadcast() throws SocketException {
 
-//      LOG.info("runBroadcast() ...");
+        LOG.info("runBroadcast() ...");
 
         // create the who-is message
         final MessageFactory messageFactory = new DefaultMessageFactory();
@@ -54,7 +59,7 @@ public class WhoIsRunnable implements Runnable {
             }
         });
 
-//      LOG.info("runBroadcast() done.");
+        LOG.info("runBroadcast() done.");
     }
 
     public static void broadcast(final byte[] buffer, final InetAddress address) throws IOException {

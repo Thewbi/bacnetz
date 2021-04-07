@@ -85,6 +85,7 @@ import de.bacnetz.vendor.VendorMap;
  * <li />api
  * <li />bacnetz
  * <li />jsonrpc
+ * <li />fatclient
  * <li />server (Takes very, very long to build because it packages the angular
  * app. It takes about 15 minutes.)
  * </ol>

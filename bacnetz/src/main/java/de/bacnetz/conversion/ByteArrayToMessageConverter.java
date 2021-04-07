@@ -11,12 +11,14 @@ public class ByteArrayToMessageConverter implements Converter<byte[], DefaultMes
 
     private int payloadLength;
 
+    private int payloadOffset = 0;
+
     private Map<Integer, String> vendorMap;
 
     @Override
     public void convert(final byte[] data, final DefaultMessage defaultMessage) {
 
-        int offset = 0;
+        int offset = payloadOffset;
 
         // deserialize the virtual link control part of the message
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
@@ -58,6 +60,14 @@ public class ByteArrayToMessageConverter implements Converter<byte[], DefaultMes
 
     public void setPayloadLength(final int payloadLength) {
         this.payloadLength = payloadLength;
+    }
+
+    public int getPayloadOffset() {
+        return payloadOffset;
+    }
+
+    public void setPayloadOffset(final int payloadOffset) {
+        this.payloadOffset = payloadOffset;
     }
 
     public Map<Integer, String> getVendorMap() {

@@ -111,15 +111,15 @@ public class NetworkUtils {
             throw new RuntimeException("No interfaces found that are connected to a network!");
         }
 
+        // DEBUG
         LOG.info("All");
         for (final Map.Entry<NetworkInterface, List<InetAddress>> entry : allMap.entrySet()) {
-
             LOG.info(entry.getKey() + " -> IP: " + entry.getValue());
         }
 
+        // DEBUG
         LOG.info("Broadcast");
         for (final Map.Entry<NetworkInterface, List<InetAddress>> entry : broadcastMap.entrySet()) {
-
             LOG.info(entry.getKey() + " -> Broadcast: " + entry.getValue());
         }
 

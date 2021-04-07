@@ -40,7 +40,7 @@ public class FatClientConfiguration {
     @Bean
     public ConfigurationManager configurationManager() {
         final ConfigurationManager configurationManager = new DefaultConfigurationManager();
-        configurationManager.setProperty(ConfigurationManager.LOCAL_IP_CONFIG_KEY, "192.168.2.1");
+        configurationManager.setProperty(ConfigurationManager.LOCAL_IP_CONFIG_KEY, "192.168.2.2");
         configurationManager.setProperty(ConfigurationManager.MULTICAST_IP_CONFIG_KEY, "192.168.2.255");
         return configurationManager;
     }
