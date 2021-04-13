@@ -46,6 +46,10 @@ import de.bacnetz.threads.MulticastListenerReaderThread;
 import de.bacnetz.vendor.VendorMap;
 
 /**
+ * This is the starting point for the bacnet server which hosts bacnet device
+ * objects. To start a bacnet client application (similar to apps like YABE or
+ * BacEye) check out de.bacnetz.fatclient.App.
+ * 
  * <h1>Wireshark Filter</h1>
  * 
  * <pre>
@@ -79,7 +83,7 @@ import de.bacnetz.vendor.VendorMap;
  * java -jar bacnetz.jar -local_ip 192.168.2.1 -multicast_ip 192.168.2.255
  * </pre>
  * 
- * <h1>Building</h1>
+ * <h1>Build order</h1>
  * <ol>
  * <li />common
  * <li />api

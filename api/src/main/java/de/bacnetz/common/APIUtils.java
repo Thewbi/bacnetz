@@ -11,6 +11,9 @@ import org.apache.commons.lang3.StringUtils;
 import de.bacnetz.stack.ServiceParameter;
 import de.bacnetz.stack.TagClass;
 
+/**
+ * Static utility methods. No instances of this class should exist ever!
+ */
 public class APIUtils {
 
     /**

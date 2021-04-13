@@ -14,6 +14,9 @@ import org.apache.pivot.wtk.Window;
 
 import de.bacnetz.fatclient.buttonhandler.TestButtonHandler;
 
+/**
+ * This is the application class required by the Apache Pivot UI Framework.
+ */
 public class App extends Window implements Application, Bindable {
 
     private static Window window;

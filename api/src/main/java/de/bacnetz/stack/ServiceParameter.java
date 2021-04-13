@@ -5,7 +5,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.bacnetz.common.APIUtils;
-import de.bacnetz.common.utils.Utils;
 import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.devices.ObjectType;
 import de.bacnetz.factory.MessageType;
@@ -325,7 +324,7 @@ public class ServiceParameter {
                 if (lengthValueType == 1) {
                     stringBuffer.append(DevicePropertyType.getByCode(payload[0]));
                 } else if (lengthValueType == 2) {
-                    final int tempint = Utils.bytesToUnsignedShort(payload[0], payload[1], true);
+                    final int tempint = APIUtils.bytesToUnsignedShort(payload[0], payload[1], true);
 
                     stringBuffer.append(DevicePropertyType.getByCode(tempint));
                 }

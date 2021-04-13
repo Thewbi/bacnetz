@@ -5,8 +5,11 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Enumeration;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,6 +33,21 @@ import de.bacnetz.stack.VirtualLinkControl;
 import de.bacnetz.threads.WhoIsRunnable;
 import de.bacnetz.vendor.VendorMap;
 
+/**
+ * This class contains the main method to start the fatclient. To start the
+ * server, use de.bacnetz.App in the bacnetz project.
+ * 
+ * <h1>Build order</h1>
+ * <ol>
+ * <li />common
+ * <li />api
+ * <li />bacnetz
+ * <li />jsonrpc
+ * <li />fatclient
+ * <li />server (Takes very, very long to build because it packages the angular
+ * app. It takes about 15 minutes.)
+ * </ol>
+ */
 public class Main {
 
     private static final Logger LOG = LogManager.getLogger(Main.class);
@@ -40,6 +58,13 @@ public class Main {
      * answered. The listener has to insert a node into the GUI device tree for that
      * device.
      * 
+     * <h1>wireshark filters</h1>
+     * 
+     * <pre>
+     * ip.dst == 192.168.2.1
+     * (ip.src == 192.168.2.1 || ip.dst == 192.168.2.1) && ( ip.src == 192.168.2.2 || ip.dst == 192.168.2.2)
+     * </pre>
+     * 
      * @param args
      * @throws FileNotFoundException
      * @throws IOException
@@ -47,9 +72,23 @@ public class Main {
      */
     public static void main(final String[] args) throws FileNotFoundException, IOException, InterruptedException {
 
-//        requestObjectListSize();
-//        requestPropertiesMultipleSystemStatus(ObjectType.DEVICE, 3711630);
-        requestPropertiesMultipleAll(ObjectType.DEVICE, 3711630);
+//        final String sourceIP = "127.0.0.1";
+        final String sourceIP = "192.168.2.1";
+
+        final int sourcePort = 50212;
+
+//        final String destinationIP = "127.0.0.1";
+        final String destinationIP = "192.168.2.1";
+//        final String destinationIP = "192.168.0.108";
+//        final String destinationIP = "0.0.0.0";
+
+        final int destinationPort = 47808;
+
+//        requestObjectListSize(destinationIP, destinationPort);
+
+//        requestPropertiesMultipleSystemStatus(destinationIP, destinationPort, ObjectType.DEVICE, 3711630);
+
+        requestPropertiesMultipleAll(sourceIP, sourcePort, destinationIP, destinationPort, ObjectType.DEVICE, 3711630);
 
 //        startFatClient(args);
     }
@@ -62,8 +101,9 @@ public class Main {
      * @throws SocketException
      * @throws IOException
      */
-    private static void requestPropertiesMultipleAll(final ObjectType objectType, final int objectInstanceNumber)
-            throws UnknownHostException, SocketException, IOException {
+    private static DefaultMessage requestPropertiesMultipleAll(final String sourceIP, final int sourcePort,
+            final String destinationIP, final int destinationPort, final ObjectType objectType,
+            final int objectInstanceNumber) throws UnknownHostException, SocketException, IOException {
 
         // TODO: send a message
 
@@ -147,7 +187,7 @@ public class Main {
 
 //        try {
 ////            192.168.2.1:47808
-//            final Socket socket = new Socket("192.168.2.1", 47808);
+//            final Socket socket = new Socket("192.168.2.1", destinationPort);
 //            final DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
 //            outputStream.write(outMessage.getBytes());
 //        } catch (final IOException e) {
@@ -163,12 +203,15 @@ public class Main {
         // WORKS WITH UDP!!!
         //
 
-        final InetAddress address = InetAddress.getByName("192.168.2.1");
+        final InetAddress destinationAddress = InetAddress.getByName(destinationIP);
         final byte[] outBuffer = outMessage.getBytes();
 
-        final DatagramPacket outPacket = new DatagramPacket(outBuffer, outBuffer.length, address, 47808);
+        final DatagramPacket outPacket = new DatagramPacket(outBuffer, outBuffer.length, destinationAddress,
+                destinationPort);
 
-        final DatagramSocket socket = new DatagramSocket();
+//        final DatagramSocket socket = new DatagramSocket();
+        final DatagramSocket socket = socketByInterfaceIPAndPort(sourceIP, sourcePort);
+
         socket.send(outPacket);
         LOG.info("Packet sent!");
 
@@ -195,6 +238,8 @@ public class Main {
         LOG.info(responseDefaultMessage);
 
         LOG.info("done");
+
+        return responseDefaultMessage;
     }
 
     /**
@@ -205,8 +250,9 @@ public class Main {
      * @throws SocketException
      * @throws IOException
      */
-    private static void requestPropertiesMultipleSystemStatus(final ObjectType objectType,
-            final int objectInstanceNumber) throws UnknownHostException, SocketException, IOException {
+    private static void requestPropertiesMultipleSystemStatus(final String destinationIP, final int destinationPort,
+            final ObjectType objectType, final int objectInstanceNumber)
+            throws UnknownHostException, SocketException, IOException {
 
         // TODO: send a message
 
@@ -291,7 +337,7 @@ public class Main {
 
 //        try {
 ////            192.168.2.1:47808
-//            final Socket socket = new Socket("192.168.2.1", 47808);
+//            final Socket socket = new Socket("192.168.2.1", destinationPort);
 //            final DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
 //            outputStream.write(outMessage.getBytes());
 //        } catch (final IOException e) {
@@ -307,10 +353,10 @@ public class Main {
         // WORKS WITH UDP!!!
         //
 
-        final InetAddress address = InetAddress.getByName("192.168.2.1");
+        final InetAddress address = InetAddress.getByName(destinationIP);
         final byte[] outBuffer = outMessage.getBytes();
 
-        final DatagramPacket outPacket = new DatagramPacket(outBuffer, outBuffer.length, address, 47808);
+        final DatagramPacket outPacket = new DatagramPacket(outBuffer, outBuffer.length, address, destinationPort);
 
         final DatagramSocket socket = new DatagramSocket();
         socket.send(outPacket);
@@ -341,8 +387,8 @@ public class Main {
         LOG.info("done");
     }
 
-    private static void requestObjectListSize() throws UnknownHostException, SocketException, IOException {
-        // TODO: send a message
+    private static void requestObjectListSize(final String destinationIP, final int destinationPort)
+            throws UnknownHostException, SocketException, IOException {
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
         virtualLinkControl.setType(0x81);
@@ -399,7 +445,7 @@ public class Main {
 
 //        try {
 ////            192.168.2.1:47808
-//            final Socket socket = new Socket("192.168.2.1", 47808);
+//            final Socket socket = new Socket(destinationIP, destinationPort);
 //            final DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
 //            outputStream.write(outMessage.getBytes());
 //        } catch (final IOException e) {
@@ -415,18 +461,26 @@ public class Main {
         // WORKS WITH UDP!!!
         //
 
-        final InetAddress address = InetAddress.getByName("192.168.2.1");
+        final InetAddress address = InetAddress.getByName(destinationIP);
         final byte[] outBuffer = outMessage.getBytes();
 
-        final DatagramPacket outPacket = new DatagramPacket(outBuffer, outBuffer.length, address, 47808);
+        final DatagramPacket outPacket = new DatagramPacket(outBuffer, outBuffer.length, address, destinationPort);
 
-        final DatagramSocket socket = new DatagramSocket();
+        // final DatagramSocket socket = new DatagramSocket();
+
+        listInterfaces();
+
+//        final DatagramSocket socket = socketByInterfaceNameAndPort("eth7", destinationPort);
+        final DatagramSocket socket = socketByInterfaceIPAndPort(destinationIP, destinationPort);
         socket.send(outPacket);
-        LOG.info("Packet sent!");
 
+        LOG.info("Packet sent to '{}' !", destinationIP);
+
+        LOG.info("Packet receiving ...");
         final byte[] inBuffer = new byte[512];
         final DatagramPacket inPacket = new DatagramPacket(inBuffer, inBuffer.length);
         socket.receive(inPacket);
+        LOG.info("Packet receiving done.");
 
         final byte[] data = inPacket.getData();
         final int length = inPacket.getLength();
@@ -447,10 +501,92 @@ public class Main {
         LOG.info("done");
     }
 
+    private static DatagramSocket socketByInterfaceIPAndPort(final String ip, final int port)
+            throws SocketException, UnknownHostException {
+
+        final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+        NetworkInterface networkInterface = null;
+        InetAddress inetAddress = null;
+        while (networkInterfaces.hasMoreElements()) {
+
+            final NetworkInterface tempNetworkInterface = networkInterfaces.nextElement();
+            final Enumeration<InetAddress> networkInterfaceAddresses = tempNetworkInterface.getInetAddresses();
+
+            while (networkInterfaceAddresses.hasMoreElements()) {
+
+                final InetAddress networkInterfaceAddress = networkInterfaceAddresses.nextElement();
+
+                System.out.println(tempNetworkInterface + " -- " + networkInterfaceAddress);
+
+                if (networkInterfaceAddress.equals(InetAddress.getByName(ip))) {
+                    networkInterface = tempNetworkInterface;
+                    inetAddress = networkInterfaceAddress;
+                    break;
+                }
+            }
+
+            if (networkInterface != null) {
+                break;
+            }
+        }
+
+        if (networkInterface == null) {
+            System.err.println("Error getting the Network Interface");
+            return null;
+        }
+        System.out.println("Preparing to using the interface: " + networkInterface.getName());
+
+//        final Enumeration<InetAddress> networkInterfaceAddresses = networkInterface.getInetAddresses();
+        final InetSocketAddress inetSocketAddress = new InetSocketAddress(inetAddress, port);
+
+        return new DatagramSocket(inetSocketAddress);
+    }
+
+    private static DatagramSocket socketByInterfaceNameAndPort(final String interfaceName, final int port)
+            throws SocketException {
+
+        final NetworkInterface networkInterface = NetworkInterface.getByName(interfaceName);
+        if (networkInterface == null) {
+            System.err.println("Error getting the Network Interface");
+            return null;
+        }
+        System.out.println("Preparing to using the interface: " + networkInterface.getName());
+        final Enumeration<InetAddress> networkInterfaceAddresses = networkInterface.getInetAddresses();
+
+        final InetSocketAddress inetSocketAddress = new InetSocketAddress(networkInterfaceAddresses.nextElement(),
+                port);
+
+        return new DatagramSocket(inetSocketAddress);
+    }
+
+    private static void listInterfaces() throws SocketException {
+
+        final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+        while (networkInterfaces.hasMoreElements()) {
+
+            final NetworkInterface networkInterface = networkInterfaces.nextElement();
+
+            final Enumeration<InetAddress> networkInterfaceAddresses = networkInterface.getInetAddresses();
+            while (networkInterfaceAddresses.hasMoreElements()) {
+
+                final InetAddress networkInterfaceAddress = networkInterfaceAddresses.nextElement();
+
+                System.out.println(networkInterface + " -- " + networkInterfaceAddress);
+            }
+        }
+    }
+
+    /**
+     * Starts the UI (= FatClient)
+     * 
+     * @param args
+     * @throws InterruptedException
+     */
     private static void startFatClient(final String[] args) throws InterruptedException {
         final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
                 FatClientConfiguration.class);
 
+        // start the Apache Pivot UI Framework
         DesktopApplicationContext.main(App.class, args);
 
         Thread.sleep(1000);
