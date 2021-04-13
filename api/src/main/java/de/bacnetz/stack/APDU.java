@@ -617,7 +617,7 @@ public class APDU {
                 getServiceParameters().add(serviceParameter);
                 index += serviceParameter.fromBytes(data, offset + index);
 
-            } while (!APIUtils.isClosingServiceParameter(serviceParameter));
+            } while (!APIUtils.isClosingServiceParameter(serviceParameter, 1));
         }
 
         return index;

@@ -368,7 +368,7 @@ public enum DevicePropertyType {
 
     private String name;
 
-    private static Map<Integer, DevicePropertyType> codeMap = new HashMap<Integer, DevicePropertyType>();
+    private static Map<Integer, DevicePropertyType> codeMap = new HashMap<>();
 
     private DevicePropertyType(final int code, final String name) {
         this.code = code;

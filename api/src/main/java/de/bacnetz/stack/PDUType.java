@@ -2,6 +2,10 @@ package de.bacnetz.stack;
 
 public enum PDUType {
 
+    /**
+     * confirmed request, means the communication partner has to acknowledge the
+     * request. Value 0x00
+     */
     CONFIRMED_SERVICE_REQUEST_PDU(0x00),
 
     UNCONFIRMED_SERVICE_REQUEST_PDU(0x01),

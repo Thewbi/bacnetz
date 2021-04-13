@@ -1,13 +1,18 @@
 package de.bacnetz.stack;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.bacnetz.common.APIUtils;
+import de.bacnetz.common.utils.Utils;
 import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.devices.ObjectType;
 import de.bacnetz.factory.MessageType;
 
 public class ServiceParameter {
+
+    private static final Logger LOG = LogManager.getLogger(ServiceParameter.class);
 
     public static final int CLOSING_TAG_CODE = 7;
 
@@ -30,6 +35,14 @@ public class ServiceParameter {
     public static final int DATE = 0x0A;
 
     public static final int TIME = 0x0B;
+
+    public static final int APPLICATION_TAG_BOOLEAN = 0x01;
+
+    public static final int APPLICATION_TAG_DATE = 0x0A;
+
+    public static final int APPLICATION_TAG_TIME = 0x0B;
+
+    public static final int APPLICATION_TAG_OBJECT_IDENTIFIER = 4;
 
     public static final int APPLICATION_TAG_NUMBER_CHARACTER_STRING = 7;
 
@@ -73,7 +86,7 @@ public class ServiceParameter {
         // context tag number are upper four bit
         tagNumber = (data[offset + 0] & 0xF0) >> 4;
 
-        // tag class is bit number three
+        // tag class (ContextSpecific or Application) is bit number three
         tagClass = TagClass.fromInt((data[offset + 0] & 0x08) >> 3);
 
         // lower three bits are either a length value or a type value
@@ -89,11 +102,19 @@ public class ServiceParameter {
 
             // tag number 6 is opening bracket without any payload
 
+            // DEBUG
+//            LOG.info("{[" + tagNumber + "]");
+
         } else if (lengthValueType == CLOSING_TAG_CODE) {
 
             // tag number 7 is closing bracket without any payload
 
+            // DEBUG
+//            LOG.info("}[" + tagNumber + "]");
+
         } else if (lengthValueType == EXTENDED_TAG_CODE) {
+
+//            LOG.info("EXTENDED TAG");
 
             final int payloadLength = data[offset + 1];
             length++;
@@ -101,18 +122,76 @@ public class ServiceParameter {
             payload = new byte[payloadLength];
             System.arraycopy(data, offset + 2, payload, 0, payloadLength);
 
+//            // DEBUG
+//            final String temp = new String(payload);
+//            LOG.info("EXTENDED TAG: '{}'", temp);
+
             length += payloadLength;
 
-        } else {
+        }
+//        else if (lengthValueType == APPLICATION_TAG_OBJECT_IDENTIFIER) {
+//
+////            payload = new byte[lengthValueType];
+////            System.arraycopy(data, offset + 1, payload, 0, lengthValueType);
+//
+////            final String temp = toString();
+////            LOG.info("ObjectIdentifier: " + temp);
+//
+//            length += lengthValueType;
+//
+//        } 
+        else {
 
             payload = new byte[lengthValueType];
             System.arraycopy(data, offset + 1, payload, 0, lengthValueType);
 
             length += lengthValueType;
 
+//            // DEBUG
+//            if (tagNumber == 0) {
+//                LOG.info("ObjectIdentifier");
+//            } else if (tagNumber == 7) {
+//                LOG.info("Character String. Value is: ");
+//                for (int i = 0; i < lengthValueType; i++) {
+//                    LOG.info(payload[i]);
+//                }
+//            }
+////            else if (payload[0] == DeviceProperty.DESCRIPTION) {
+////                LOG.info("DESCRIPTION");
+////            } 
+//            else {
+////                LOG.info("UNKNOWN");
+//                LOG.info(DevicePropertyType.getByCode(payload[0]));
+//            }
+
         }
 
+        LOG.info(toString());
+
         return length;
+    }
+
+    public void toBytes(final byte[] data, final int offset) {
+
+        int index = 0;
+
+        // the application tag is a byte that encodes the information type of this
+        // service parameter, the type of this service parameter (Application or context
+        // specific) and the length of the payload inside this service parameter
+        final int applicationTag = (tagNumber << 4) | (tagClass.getId() << 3) | (lengthValueType);
+        data[offset + index++] = (byte) applicationTag;
+
+        // copy the payload in
+        if (ArrayUtils.isNotEmpty(payload)) {
+
+            // for extended values, preface the actual payload with the payload's length
+            if (lengthValueType == ServiceParameter.EXTENDED_VALUE) {
+                data[offset + index++] = (byte) (payload.length);
+            }
+
+            System.arraycopy(payload, 0, data, offset + index, payload.length);
+            index += payload.length;
+        }
     }
 
     @Override
@@ -144,6 +223,23 @@ public class ServiceParameter {
 
             switch (tagNumber) {
 
+            case APPLICATION_TAG_BOOLEAN:
+                stringBuffer.append("BOOLEAN");
+                break;
+
+            case APPLICATION_TAG_DATE:
+                stringBuffer.append("DATE");
+                break;
+
+            case APPLICATION_TAG_TIME:
+                stringBuffer.append("TIME");
+                break;
+
+            case APPLICATION_TAG_NUMBER_CHARACTER_STRING:
+                final String temp = new String(payload);
+                stringBuffer.append("Character String (7) '").append(temp).append("'");
+                break;
+
             case UNSIGNED_INTEGER_CODE:
                 stringBuffer.append("Unsigned Integer (2)");
                 break;
@@ -168,6 +264,10 @@ public class ServiceParameter {
                     stringBuffer.append(", ObjectType: device");
                     break;
 
+                case ObjectType.FILE_CODE:
+                    stringBuffer.append(", ObjectType: file");
+                    break;
+
                 case ObjectType.NOTIFICATION_CLASS_CODE:
                     stringBuffer.append(", ObjectType: notification-class");
                     break;
@@ -186,6 +286,7 @@ public class ServiceParameter {
 
             default:
                 stringBuffer.append("Unknown Application Tag: ").append(tagNumber).append("]");
+                stringBuffer.append(DevicePropertyType.getByCode(payload[0] & 0xFF));
             }
             break;
 
@@ -196,8 +297,10 @@ public class ServiceParameter {
             switch (lengthValueType) {
 
             case 1:
-                stringBuffer.append("[DeviceProperty:").append(DevicePropertyType.getByCode(payload[0]).getName())
-                        .append("]");
+                final int codeAsUnsignedInt = payload[0] & 0xff;
+                stringBuffer.append("[DeviceProperty:")
+                        .append(DevicePropertyType.getByCode(codeAsUnsignedInt).getName()).append(", Code: ")
+                        .append(codeAsUnsignedInt).append("]");
                 break;
 
             case ServiceParameter.OPENING_TAG_CODE:
@@ -208,14 +311,31 @@ public class ServiceParameter {
                 stringBuffer.append("}[").append(tagNumber).append("]");
                 break;
 
+            case APPLICATION_TAG_OBJECT_IDENTIFIER:
+
+                final int bufferToInt = APIUtils.bufferToInt(getPayload(), 0);
+
+                final ObjectType objectType = ObjectType.getByCode(bufferToInt >> 22);
+                final int instanceNumber = (bufferToInt & 0x3FFFFF);
+                stringBuffer.append("objectType " + objectType + " instanceNumber " + instanceNumber);
+                break;
+
             default:
                 stringBuffer.append("[Unknown Context Specific Tag: ").append(lengthValueType).append("]");
+                if (lengthValueType == 1) {
+                    stringBuffer.append(DevicePropertyType.getByCode(payload[0]));
+                } else if (lengthValueType == 2) {
+                    final int tempint = Utils.bytesToUnsignedShort(payload[0], payload[1], true);
+
+                    stringBuffer.append(DevicePropertyType.getByCode(tempint));
+                }
             }
 
             break;
 
         default:
             stringBuffer.append("[UNKNOWN_TAG_CLASS:").append(tagClass).append("]");
+            stringBuffer.append(DevicePropertyType.getByCode(payload[0] & 0xFF));
             break;
         }
 
@@ -275,29 +395,6 @@ public class ServiceParameter {
         }
 
         return lengthValueType + 1;
-    }
-
-    public void toBytes(final byte[] data, final int offset) {
-
-        int index = 0;
-
-        // the application tag is a byte that encodes the information type of this
-        // service parameter, the type of this service parameter (Application or context
-        // specific) and the length of the payload inside this service parameter
-        final int applicationTag = (tagNumber << 4) | (tagClass.getId() << 3) | (lengthValueType);
-        data[offset + index++] = (byte) applicationTag;
-
-        // copy the payload in
-        if (ArrayUtils.isNotEmpty(payload)) {
-
-            // for extended values, preface the actual payload with the payload's length
-            if (lengthValueType == ServiceParameter.EXTENDED_VALUE) {
-                data[offset + index++] = (byte) (payload.length);
-            }
-
-            System.arraycopy(payload, 0, data, offset + index, payload.length);
-            index += payload.length;
-        }
     }
 
     public int getTagNumber() {

@@ -33,6 +33,8 @@ public enum ObjectType {
 
     public static final int DEVICE_CODE = 0x08;
 
+    public static final int FILE_CODE = 0x0A;
+
     public static final int NOTIFICATION_CLASS_CODE = 0x0F;
 
     public static final int MULTI_STATE_VALUE_CODE = 0x13;
@@ -41,7 +43,7 @@ public enum ObjectType {
 
     private String name;
 
-    private static Map<Integer, ObjectType> codeMap = new HashMap<Integer, ObjectType>();
+    private static Map<Integer, ObjectType> codeMap = new HashMap<>();
 
     private ObjectType(final int code, final String name) {
         this.code = code;

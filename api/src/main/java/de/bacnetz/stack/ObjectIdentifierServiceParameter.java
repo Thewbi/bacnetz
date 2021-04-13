@@ -95,6 +95,10 @@ public class ObjectIdentifierServiceParameter extends ServiceParameter {
     @Override
     public String toString() {
 
+        if (objectType == null) {
+            return super.toString();
+        }
+
         final StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Object Type: ").append(objectType).append("(").append(objectType.getName())
                 .append(") Instance Number: ").append(instanceNumber);

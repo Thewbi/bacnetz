@@ -1,6 +1,9 @@
 package de.bacnetz.controller;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -1083,6 +1086,9 @@ public class DefaultMessageController implements MessageController {
      */
     private List<Message> processIAMMessage(final Message message) {
 
+        // retrieve the IP and port from where this message originated
+        final InetSocketAddress sourceInetSocketAddress = message.getSourceInetSocketAddress();
+
         final APDU apdu = message.getApdu();
 
         final ServiceParameter objectIdentifierServiceParameter = apdu.getServiceParameters().get(0);
@@ -1101,10 +1107,76 @@ public class DefaultMessageController implements MessageController {
             vendorId = byteBuffer.getInt();
         }
 
-        LOG.info(">>> processIAMMessage: InstanceNumber: {} VendorId: {} VendorName: {}",
-                objectIdentifierServiceParameter.getInstanceNumber(), vendorId, vendorMap.get(vendorId));
+        LOG.info(">>> processIAMMessage from Source: {}, InstanceNumber: {}, VendorId: {}, VendorName: {}",
+                sourceInetSocketAddress, objectIdentifierServiceParameter.getInstanceNumber(), vendorId,
+                vendorMap.get(vendorId));
 
-        // add
+        // TODO: add node into UI tree for this newly discovered device
+
+        // TODO: send a message
+
+        final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
+        virtualLinkControl.setType(0x81);
+        virtualLinkControl.setFunction(0x0A);
+        virtualLinkControl.setLength(0x00);
+
+        // NPDU including destination network information
+        final NPDU outNpdu = new NPDU();
+        outNpdu.setVersion(0x01);
+
+        // no additional information
+        // this works, if the cp is connected to the device directly via 192.168.2.1
+        outNpdu.setControl(0x00);
+        // npdu.setControl(0x2c);
+
+//        // this object identifier has to be context specific. I do not know why
+//        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+        objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+//        objectIdentifierServiceParameter.setTagNumber(0x00);
+//        objectIdentifierServiceParameter.setLengthValueType(4);
+//        objectIdentifierServiceParameter.setObjectType(device.getObjectType());
+//        objectIdentifierServiceParameter.setInstanceNumber(device.getId());
+
+        final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
+        propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+        propertyIdentifierServiceParameter.setTagNumber(0x01);
+        propertyIdentifierServiceParameter.setLengthValueType(0x01);
+        propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) DeviceProperty.OBJECT_LIST });
+
+        // request index 0 which is the length of the array
+        final ServiceParameter propertyArrayIndexServiceParameter = new ServiceParameter();
+        propertyArrayIndexServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+        propertyArrayIndexServiceParameter.setTagNumber(0x02);
+        propertyArrayIndexServiceParameter.setLengthValueType(0x01);
+        propertyArrayIndexServiceParameter.setPayload(new byte[] { (byte) 0x00 });
+
+        final APDU outApdu = new APDU();
+        outApdu.setPduType(PDUType.CONFIRMED_SERVICE_REQUEST_PDU);
+        // outApdu.setInvokeId(invokeId);
+        outApdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
+        outApdu.setVendorMap(vendorMap);
+
+        outApdu.getServiceParameters().add(objectIdentifierServiceParameter);
+        outApdu.getServiceParameters().add(propertyIdentifierServiceParameter);
+        outApdu.getServiceParameters().add(propertyArrayIndexServiceParameter);
+
+        final DefaultMessage outMessage = new DefaultMessage();
+        outMessage.setVirtualLinkControl(virtualLinkControl);
+        outMessage.setNpdu(outNpdu);
+        outMessage.setApdu(outApdu);
+
+        virtualLinkControl.setLength(outMessage.getDataLength());
+
+//      final byte[] bytes = result.getBytes();
+//      LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
+
+        try {
+            final Socket socket = new Socket(sourceInetSocketAddress.getAddress(), sourceInetSocketAddress.getPort());
+            final DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
+            outputStream.write(outMessage.getBytes());
+        } catch (final IOException e) {
+            LOG.error(e.getMessage(), e);
+        }
 
         return null;
     }

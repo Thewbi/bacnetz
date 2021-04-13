@@ -179,11 +179,15 @@ public class APIUtils {
     }
 
     public static boolean isClosingServiceParameter(final ServiceParameter serviceParameter) {
+        return isClosingServiceParameter(serviceParameter, 1);
+    }
+
+    public static boolean isClosingServiceParameter(final ServiceParameter serviceParameter, final int tagNumber) {
 
         final boolean isContextSpecificTag = serviceParameter.getTagClass() == TagClass.CONTEXT_SPECIFIC_TAG;
         final boolean isNamedTagClosingTag = serviceParameter.getLengthValueType() == 0x07;
 
-        return isContextSpecificTag && isNamedTagClosingTag;
+        return isContextSpecificTag && isNamedTagClosingTag & serviceParameter.getTagNumber() == tagNumber;
     }
 
 }
