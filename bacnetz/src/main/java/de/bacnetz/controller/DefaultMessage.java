@@ -108,6 +108,10 @@ public class DefaultMessage implements Message {
         return data;
     }
 
+    public void merge(final DefaultMessage rhs) {
+
+    }
+
     @Override
     public String toString() {
 //        return "DefaultMessage [sourceInetSocketAddress=" + sourceInetSocketAddress + ", virtualLinkControl="

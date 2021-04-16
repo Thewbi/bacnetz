@@ -125,4 +125,38 @@ public class NetworkUtils {
 
         return broadcastList;
     }
+
+    public static List<InetAddress> getBroadcastAddressesByName(final String name) throws SocketException {
+//        final List<InetAddress> allBroadcastAddresses = listAllBroadcastAddresses();
+//
+//        for (final InetAddress inetAddress : allBroadcastAddresses) {
+//
+//            // if (inetAddress.)
+//        }
+//
+//        return null;
+
+        final List<InetAddress> broadcastList = new ArrayList<>();
+
+        final Map<String, List<InetAddress>> broadcastMap = new HashMap<>();
+
+        final Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+        while (interfaces.hasMoreElements()) {
+
+            final NetworkInterface networkInterface = interfaces.nextElement();
+
+            if (networkInterface.isLoopback() || !networkInterface.isUp()) {
+                continue;
+            }
+
+            final List<InetAddress> interfaceBroadcastList = new ArrayList<>();
+            networkInterface.getInterfaceAddresses().stream().map(a -> a.getBroadcast()).filter(Objects::nonNull)
+                    .forEach(interfaceBroadcastList::add);
+
+            broadcastMap.put(networkInterface.getName(), interfaceBroadcastList);
+        }
+
+        return broadcastMap.get(name);
+    }
+
 }

@@ -1,6 +1,7 @@
 package de.bacnetz.stack;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.bacnetz.common.APIUtils;
+import de.bacnetz.common.utils.Utils;
 import de.bacnetz.devices.DevicePropertyType;
 
 /**
@@ -70,6 +72,12 @@ public class APDU {
 
     private Map<Integer, String> vendorMap = new HashMap<>();
 
+    private int sequenceNumber = -1;
+
+    private int proposedWindowSize = -1;
+
+    private byte[] payload;
+
     public APDU() {
 
     }
@@ -106,6 +114,16 @@ public class APDU {
 
         // invoke id
         if (invokeId >= 0) {
+            dataLength++;
+        }
+
+        // 1 Byte: sequence number
+        if (sequenceNumber >= 0) {
+            dataLength++;
+        }
+
+        // 1 Byte: proposed window size
+        if (proposedWindowSize >= 0) {
             dataLength++;
         }
 
@@ -193,6 +211,16 @@ public class APDU {
             data[offset + index++] = (byte) invokeId;
         }
 
+        // 1 Byte: sequence number
+        if (sequenceNumber >= 0) {
+            data[offset + index++] = (byte) sequenceNumber;
+        }
+
+        // 1 Byte: proposed window size
+        if (proposedWindowSize >= 0) {
+            data[offset + index++] = (byte) proposedWindowSize;
+        }
+
         // 1 Byte: service choice
         if (unconfirmedServiceChoice != null) {
             data[offset + index++] = (byte) unconfirmedServiceChoice.getId();
@@ -229,22 +257,22 @@ public class APDU {
 
         // bit 3 is the segmentation bit
         segmentation = 0 < (data[startIndex + offset] & 0x08);
-        if (segmentation) {
-            // TODO: if there is segmentation, there are special segmentation bytes present
-            // in the APDU that have to be parsed.
-            throw new RuntimeException("Not implemented yet!");
-        }
+//        if (segmentation) {
+//            // TODO: if there is segmentation, there are special segmentation bytes present
+//            // in the APDU that have to be parsed.
+//            throw new RuntimeException("Not implemented yet!");
+//        }
 
         // bit 2 is the moreSegmentsFollow bit
         moreSegmentsFollow = 0 < (data[startIndex + offset] & 0x04);
-        if (moreSegmentsFollow) {
-            throw new RuntimeException("Not implemented yet!");
-        }
+//        if (moreSegmentsFollow) {
+//            throw new RuntimeException("Not implemented yet!");
+//        }
 
         // bit 1 is the segmentedResponseAccepted bit
         segmentedResponseAccepted = 0 < (data[startIndex + offset] & 0x02);
         if (segmentedResponseAccepted) {
-            LOG.trace("segmentedResponseAccepted bit");
+            LOG.info("segmentedResponseAccepted bit");
         }
 
         offset++;
@@ -290,9 +318,79 @@ public class APDU {
             offset++;
             structureLength++;
 
+            //
+            // SEGMENTATION SPECIFIC
+            //
+
+            // sequence number
+            sequenceNumber = data[startIndex + offset] & 0xFF;
+            offset++;
+            structureLength++;
+
+            // proposed window size
+            proposedWindowSize = data[startIndex + offset] & 0xFF;
+            offset++;
+            structureLength++;
+
+            //
+            // SEGMENTATION SPECIFIC
+            //
+
             // service choice
             final int serviceChoiceCode = data[startIndex + offset] & 0xFF;
             confirmedServiceChoice = ConfirmedServiceChoice.fromInt(serviceChoiceCode);
+
+        } else if (pduType == PDUType.ERROR_PDU) {
+
+            // invokeid
+            invokeId = data[startIndex + offset] & 0xFF;
+            offset++;
+            structureLength++;
+
+            // service choice
+            final int serviceChoiceCode = data[startIndex + offset] & 0xFF;
+            confirmedServiceChoice = ConfirmedServiceChoice.fromInt(serviceChoiceCode);
+            offset++;
+            structureLength++;
+
+            // read ServiceParameter ErrorClass
+            final ServiceParameter errorClassServiceParameter = new ServiceParameter();
+            int delta = errorClassServiceParameter.fromBytes(data, startIndex + offset);
+            offset += delta;
+            structureLength += delta;
+            serviceParameters.add(errorClassServiceParameter);
+
+            // read ServiceParameter ErrorCode
+            final ServiceParameter errorCodeServiceParameter = new ServiceParameter();
+            delta = errorCodeServiceParameter.fromBytes(data, startIndex + offset);
+            offset += delta;
+            structureLength += delta;
+            serviceParameters.add(errorCodeServiceParameter);
+
+            final ErrorClass errorClass = ErrorClass.fromInt(errorClassServiceParameter.getPayload()[0] & 0xFF);
+            final ErrorCode errorCode = ErrorCode.fromInt(errorCodeServiceParameter.getPayload()[0] & 0xFF);
+
+            LOG.error("Error detected! ErrorClass: " + errorClass + " ErrorCode: " + errorCode);
+
+            // no further processing
+            return;
+
+        } else if (pduType == PDUType.SIMPLE_ACK_PDU) {
+
+            // invokeid
+            invokeId = data[startIndex + offset] & 0xFF;
+            offset++;
+            structureLength++;
+
+            // sequence number
+            sequenceNumber = data[startIndex + offset] & 0xFF;
+            offset++;
+            structureLength++;
+
+            // proposedWindowSize
+            proposedWindowSize = data[startIndex + offset] & 0xFF;
+            offset++;
+            structureLength++;
 
         } else {
 
@@ -305,6 +403,14 @@ public class APDU {
         offset++;
         structureLength++;
 
+        payload = Arrays.copyOfRange(data, startIndex + offset, payloadLength);
+
+        LOG.info(Utils.bytesToHex(payload));
+
+//        processPayload(data, startIndex, payloadLength, offset);
+    }
+
+    private void processPayload(final byte[] data, final int startIndex, final int payloadLength, final int offset) {
         if (unconfirmedServiceChoice != null) {
 
             switch (unconfirmedServiceChoice) {
@@ -315,6 +421,10 @@ public class APDU {
 
             case I_AM:
                 structureLength += processIAm(startIndex + offset, data);
+                break;
+
+            case UNCONFIRMED_COV_NOTIFICATION:
+                structureLength += processUnconfirmedCOVNotification(startIndex + offset, data, payloadLength);
                 break;
 
             default:
@@ -344,7 +454,7 @@ public class APDU {
                 break;
 
             case SUBSCRIBE_COV:
-                structureLength += processSubscribeCOV(startIndex + offset, data);
+                structureLength += processSubscribeCOV(startIndex + offset, data, payloadLength);
                 break;
 
             case ADD_LIST_ELEMENT:
@@ -352,7 +462,7 @@ public class APDU {
                 break;
 
             default:
-                LOG.trace("Not implemented: " + confirmedServiceChoice.name());
+                LOG.info("Not implemented: " + confirmedServiceChoice.name());
 
             }
         }
@@ -431,7 +541,11 @@ public class APDU {
      * 
      * @return
      */
-    private int processSubscribeCOV(final int offset, final byte[] data) {
+    private int processSubscribeCOV(final int offset, final byte[] data, final int payloadLength) {
+
+        if (payloadLength == offset) {
+            return offset;
+        }
 
         int tempOffset = offset;
 
@@ -486,22 +600,28 @@ public class APDU {
 
         int tempOffset = offset;
 
-        // bacnet object identifier
-        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-        tempOffset += objectIdentifierServiceParameter.fromBytes(data, tempOffset);
-        serviceParameters.add(objectIdentifierServiceParameter);
+        try {
 
-        // property identifier service parameter
-        final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
-        tempOffset += propertyIdentifierServiceParameter.fromBytes(data, tempOffset);
-        serviceParameters.add(propertyIdentifierServiceParameter);
+            // bacnet object identifier
+            final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+            tempOffset += objectIdentifierServiceParameter.fromBytes(data, tempOffset);
+            serviceParameters.add(objectIdentifierServiceParameter);
 
-        // extract property identifier and store it into the dedicated member variable
-        final int contextLength = propertyIdentifierServiceParameter.getLengthValueType();
-        propertyIdentifier = 0;
-        for (int i = 0; i < contextLength; i++) {
-            propertyIdentifier <<= 8;
-            propertyIdentifier += propertyIdentifierServiceParameter.getPayload()[i] & 0xFF;
+            // property identifier service parameter
+            final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
+            tempOffset += propertyIdentifierServiceParameter.fromBytes(data, tempOffset);
+            serviceParameters.add(propertyIdentifierServiceParameter);
+
+            // extract property identifier and store it into the dedicated member variable
+            final int contextLength = propertyIdentifierServiceParameter.getLengthValueType();
+            propertyIdentifier = 0;
+            for (int i = 0; i < contextLength; i++) {
+                propertyIdentifier <<= 8;
+                propertyIdentifier += propertyIdentifierServiceParameter.getPayload()[i] & 0xFF;
+            }
+
+        } catch (final Exception e) {
+
         }
 
         // rest of the service parameters
@@ -738,6 +858,38 @@ public class APDU {
         return structureLength;
     }
 
+    private int processUnconfirmedCOVNotification(int offset, final byte[] data, final int payloadLength) {
+        int structureLength = 0;
+
+        if (offset < payloadLength) {
+
+            // parse optional service parameters
+            boolean parameterParsingDone = false;
+            while (!parameterParsingDone) {
+
+                final ServiceParameter serviceParameter = new ServiceParameter();
+
+                // parse service parameters until the list ends
+                final int bytesProcessed = serviceParameter.fromBytes(data, offset);
+                structureLength += bytesProcessed;
+                if (0 == bytesProcessed) {
+                    parameterParsingDone = true;
+                    break;
+                }
+
+                serviceParameters.add(serviceParameter);
+
+                offset += bytesProcessed;
+                if (offset >= payloadLength) {
+                    parameterParsingDone = true;
+                    break;
+                }
+            }
+        }
+
+        return structureLength;
+    }
+
     @Override
     public String toString() {
 
@@ -855,6 +1007,22 @@ public class APDU {
 
     public void setConfirmedServiceChoice(final ConfirmedServiceChoice confirmedServiceChoice) {
         this.confirmedServiceChoice = confirmedServiceChoice;
+    }
+
+    public int getSequenceNumber() {
+        return sequenceNumber;
+    }
+
+    public void setSequenceNumber(final int sequenceNumber) {
+        this.sequenceNumber = sequenceNumber;
+    }
+
+    public int getProposedWindowSize() {
+        return proposedWindowSize;
+    }
+
+    public void setProposedWindowSize(final int proposedWindowSize) {
+        this.proposedWindowSize = proposedWindowSize;
     }
 
 }

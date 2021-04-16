@@ -27,6 +27,8 @@ public class ServiceParameter {
 
     public static final int BOOLEAN_CODE = 1;
 
+    public static final int REAL_CODE = 4;
+
     public static final int BACNET_OBJECT_IDENTIFIER = 12;
 
     public static final int EXTENDED_VALUE = 0x05;
@@ -37,11 +39,13 @@ public class ServiceParameter {
 
     public static final int APPLICATION_TAG_BOOLEAN = 0x01;
 
+    public static final int APPLICATION_TAG_REAL = 0x04;
+
     public static final int APPLICATION_TAG_DATE = 0x0A;
 
     public static final int APPLICATION_TAG_TIME = 0x0B;
 
-    public static final int APPLICATION_TAG_OBJECT_IDENTIFIER = 4;
+//    public static final int APPLICATION_TAG_OBJECT_IDENTIFIER = 4;
 
     public static final int APPLICATION_TAG_NUMBER_CHARACTER_STRING = 7;
 
@@ -198,23 +202,6 @@ public class ServiceParameter {
 
         final StringBuffer stringBuffer = new StringBuffer();
 
-//        // application or context
-//        switch (tagClass) {
-//        case APPLICATION_TAG:
-//            stringBuffer.append("[APPLICATION_TAG]");
-//            break;
-//
-//        case CONTEXT_SPECIFIC_TAG:
-//            stringBuffer.append("[CONTEXT_SPECIFIC_TAG]");
-//            break;
-//
-//        default:
-//            stringBuffer.append("[UNKNOWN_TAG_CLASS:").append(tagClass).append("]");
-//        }
-//
-//        // device property
-//        stringBuffer.append("[DeviceProperty:").append(DevicePropertyType.getByCode(tagNumber).getName()).append("]");
-
         switch (tagClass) {
         case APPLICATION_TAG:
 
@@ -224,6 +211,13 @@ public class ServiceParameter {
 
             case APPLICATION_TAG_BOOLEAN:
                 stringBuffer.append("BOOLEAN");
+                break;
+
+            case APPLICATION_TAG_REAL:
+                stringBuffer.append("REAL");
+                final byte[] data = { 0x3f, 0x35, (byte) 0xc2, (byte) 0x8f };
+//                final float realValue = ByteBuffer.wrap(payload).order(ByteOrder.BIG_ENDIAN).getFloat();
+//                stringBuffer.append(" Value: ").append(realValue);
                 break;
 
             case APPLICATION_TAG_DATE:
@@ -255,6 +249,14 @@ public class ServiceParameter {
 
                 switch (objectType) {
 
+                case ObjectType.ANALOG_INPUT_CODE:
+                    stringBuffer.append(", ObjectType: analog-input");
+                    break;
+
+                case ObjectType.ANALOG_VALUE_CODE:
+                    stringBuffer.append(", ObjectType: analog-value");
+                    break;
+
                 case ObjectType.BINARY_INPUT_CODE:
                     stringBuffer.append(", ObjectType: binary-input");
                     break;
@@ -267,6 +269,10 @@ public class ServiceParameter {
                     stringBuffer.append(", ObjectType: file");
                     break;
 
+                case ObjectType.LOOP_CODE:
+                    stringBuffer.append(", ObjectType: loop");
+                    break;
+
                 case ObjectType.NOTIFICATION_CLASS_CODE:
                     stringBuffer.append(", ObjectType: notification-class");
                     break;
@@ -277,6 +283,7 @@ public class ServiceParameter {
 
                 default:
                     throw new RuntimeException("Unknown ObjectType: " + objectType);
+//                    LOG.error("Unknown ObjectType: " + objectType);
                 }
 
                 final int instanceNumber = getInstanceNumber();
@@ -285,7 +292,9 @@ public class ServiceParameter {
 
             default:
                 stringBuffer.append("Unknown Application Tag: ").append(tagNumber).append("]");
-                stringBuffer.append(DevicePropertyType.getByCode(payload[0] & 0xFF));
+                if (payload.length > 0) {
+                    stringBuffer.append(DevicePropertyType.getByCode(payload[0] & 0xFF));
+                }
             }
             break;
 
@@ -310,7 +319,7 @@ public class ServiceParameter {
                 stringBuffer.append("}[").append(tagNumber).append("]");
                 break;
 
-            case APPLICATION_TAG_OBJECT_IDENTIFIER:
+            case 0x04:
 
                 final int bufferToInt = APIUtils.bufferToInt(getPayload(), 0);
 

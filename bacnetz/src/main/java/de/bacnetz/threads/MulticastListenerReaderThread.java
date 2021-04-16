@@ -367,20 +367,3 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
     }
 
 }
-
-//final MessageFactory messageFactory = new MessageFactory();
-//final Message whoIsMessage = messageFactory.create(MessageType.WHO_IS, 25, 25);
-//sendViaMulticastSocket(whoIsMessage);
-
-//final InetAddress inetAddress = InetAddress.getByName(NetworkUtils.LOCAL_BIND_IP);
-
-//broadcastDatagramSocket = new DatagramSocket(NetworkUtils.DEFAULT_PORT, inetAddress);
-
-//LOG.info(">>> Sending who is ...");
-//final byte[] buffer = whoIsMessage.getBytes();
-//final InetAddress broadcastInetAddress = InetAddress.getByName("192.168.2.1");
-//final DatagramPacket whoIsDatagramPacket = new DatagramPacket(buffer, buffer.length, broadcastInetAddress,
-//      NetworkUtils.DEFAULT_PORT);
-//broadcastDatagramSocket.send(whoIsDatagramPacket);
-//LOG.info(">>> Sending who is done.");
-//sendMessage(null, whoIsMessage);

@@ -1012,14 +1012,14 @@ public class DefaultMessageFactory implements MessageFactory {
         apdu.setPduType(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU);
         apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.WHO_IS);
 
-        final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
-        result.setNpdu(npdu);
-        result.setApdu(apdu);
+        final DefaultMessage defaultMessage = new DefaultMessage();
+        defaultMessage.setVirtualLinkControl(virtualLinkControl);
+        defaultMessage.setNpdu(npdu);
+        defaultMessage.setApdu(apdu);
 
-        virtualLinkControl.setLength(result.getDataLength());
+        virtualLinkControl.setLength(defaultMessage.getDataLength());
 
-        return result;
+        return defaultMessage;
     }
 
     @Override

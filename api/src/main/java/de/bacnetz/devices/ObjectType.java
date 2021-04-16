@@ -6,6 +6,21 @@ import java.util.Map;
 public enum ObjectType {
 
     // @formatter:off
+    
+    /**
+     * 0x00 = 0d
+     */
+    ANALOG_INPUT(0x00, "ANALOG_INPUT"),
+    
+    /**
+     * 0x01 = 1d
+     */
+    ANALOG_OUTPUT(0x01, "ANALOG_OUTPUT"),
+    
+    /**
+     * 0x02 = 2d
+     */
+    ANALOG_VALUE(0x02, "ANALOG_VALUE"),
 
     /**
      * 0x03 = 3d
@@ -13,9 +28,19 @@ public enum ObjectType {
 	BINARY_INPUT(0x03, "BINARY_INPUT"),
 	
 	/**
-	 * 0x08 = 8d
+     * 0x08 = 8d
+     */
+    DEVICE(0x08, "DEVICE"),
+	
+	/**
+	 * 0x0A = 10d
 	 */
-	DEVICE(0x08, "DEVICE"),
+	FILE(0x0A, "FILE"),
+	
+	/**
+     * 0x0C = 12d
+     */
+    LOOP(0x0C, "LOOP"),
 	
 	/**
 	 * 0x0F = 15d
@@ -29,11 +54,19 @@ public enum ObjectType {
 
 	// @formatter:on
 
+    public static final int ANALOG_INPUT_CODE = 0x00;
+
+    public static final int ANALOG_OUTPUT_CODE = 0x01;
+
+    public static final int ANALOG_VALUE_CODE = 0x02;
+
     public static final int BINARY_INPUT_CODE = 0x03;
 
     public static final int DEVICE_CODE = 0x08;
 
     public static final int FILE_CODE = 0x0A;
+
+    public static final int LOOP_CODE = 0x0C;
 
     public static final int NOTIFICATION_CLASS_CODE = 0x0F;
 
