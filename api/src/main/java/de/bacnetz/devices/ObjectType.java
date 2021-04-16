@@ -41,6 +41,16 @@ public enum ObjectType {
      * 0x0C = 12d
      */
     LOOP(0x0C, "LOOP"),
+    
+    /**
+     * 0x0D = 13d
+     */
+    MULTI_STATE_INPUT(0x0D, "MULTI_STATE_INPUT"),
+    
+    /**
+     * 0x0E = 14d
+     */
+    MULTI_STATE_OUTPUT(0x0E, "MULTI_STATE_OUTPUT"),
 	
 	/**
 	 * 0x0F = 15d
@@ -67,6 +77,10 @@ public enum ObjectType {
     public static final int FILE_CODE = 0x0A;
 
     public static final int LOOP_CODE = 0x0C;
+
+    public static final int MULTI_STATE_INPUT_CODE = 0x0D;
+
+    public static final int MULTI_STATE_OUTPUT_CODE = 0x0E;
 
     public static final int NOTIFICATION_CLASS_CODE = 0x0F;
 

@@ -2,9 +2,11 @@ package de.bacnetz.controller;
 
 import java.net.InetSocketAddress;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.bacnetz.common.utils.Utils;
 import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.NPDU;
 import de.bacnetz.stack.VirtualLinkControl;
@@ -110,6 +112,16 @@ public class DefaultMessage implements Message {
 
     public void merge(final DefaultMessage rhs) {
 
+        final byte[] payload = apdu.getPayload();
+        final byte[] mergedPayload = ArrayUtils.addAll(payload, rhs.getApdu().getPayload());
+
+        LOG.info("OldPayload: " + Utils.bytesToHex(payload));
+        LOG.info("NewPayload: " + Utils.bytesToHex(rhs.getApdu().getPayload()));
+        LOG.info("MergedPayload: " + Utils.bytesToHex(mergedPayload));
+
+        apdu.setPayload(mergedPayload);
+
+//        apdu.processPayload(apdu.getPayload(), 0, apdu.getPayload().length, 0);
     }
 
     @Override

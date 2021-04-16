@@ -41,14 +41,31 @@ public class APDU {
 
     private boolean moreSegmentsFollow;
 
-    private boolean segmentedResponseAccepted;
+    /** by default allow segmentation */
+    private boolean segmentedResponseAccepted = true;
 
     /**
      * upper nibble = max response segments accepted <br />
      * <br />
      * lower nibble = size of maximum apdu accepted
+     * 
+     * <pre>
+     * //        outApdu.setMaxResponseSegmentsAccepted(30);
+     * outApdu.setMaxResponseSegmentsAccepted(16);
+     * 
+     * // binary 0000b (0d) - MinimumMessageSize (50 Octets)
+     * // binary 0001b (1d) - MinimumMessageSize (128 Octets)
+     * // binary 0010b (2d) - MinimumMessageSize (206 Octets)
+     * // binary 0011b (3d) - MinimumMessageSize (480 Octets)
+     * // binary 0100b (4d) - MinimumMessageSize (1024 Octets)
+     * // binary 0101b (5d) - MinimumMessageSize (1476 Octets)
+     * outApdu.setSizeOfMaximumAPDUAccepted(5);
+     * </pre>
+     * 
+     * As a default use a max response segments accepted of 16 and maximum ADPU size
+     * accepted of (1476 Octets) (= 5d)
      */
-    private int segmentationControl;
+    private int segmentationControl = (16 << 4) | 5;
 
     private UnconfirmedServiceChoice unconfirmedServiceChoice;
 
@@ -319,21 +336,24 @@ public class APDU {
             structureLength++;
 
             //
-            // SEGMENTATION SPECIFIC
+            // SEGMENTATION SPECIFIC - START
             //
 
-            // sequence number
-            sequenceNumber = data[startIndex + offset] & 0xFF;
-            offset++;
-            structureLength++;
+            if (segmentation || moreSegmentsFollow) {
 
-            // proposed window size
-            proposedWindowSize = data[startIndex + offset] & 0xFF;
-            offset++;
-            structureLength++;
+                // sequence number
+                sequenceNumber = data[startIndex + offset] & 0xFF;
+                offset++;
+                structureLength++;
+
+                // proposed window size
+                proposedWindowSize = data[startIndex + offset] & 0xFF;
+                offset++;
+                structureLength++;
+            }
 
             //
-            // SEGMENTATION SPECIFIC
+            // SEGMENTATION SPECIFIC - STOP
             //
 
             // service choice
@@ -410,7 +430,8 @@ public class APDU {
 //        processPayload(data, startIndex, payloadLength, offset);
     }
 
-    private void processPayload(final byte[] data, final int startIndex, final int payloadLength, final int offset) {
+    public void processPayload(final byte[] data, final int startIndex, final int payloadLength, final int offset) {
+
         if (unconfirmedServiceChoice != null) {
 
             switch (unconfirmedServiceChoice) {
@@ -594,8 +615,9 @@ public class APDU {
 
     private int readServiceParameters(final int offset, final byte[] data, final int payloadLength) {
 
-        LOG.trace("Offset: {}", offset);
-        LOG.trace("PayloadLength: {}", payloadLength);
+//        // DEBUG
+//        LOG.trace("Offset: {}", offset);
+//        LOG.trace("PayloadLength: {}", payloadLength);
 //        LOG.trace("data: {}", Utils.byteArrayToStringNoPrefix(data));
 
         int tempOffset = offset;
@@ -621,7 +643,7 @@ public class APDU {
             }
 
         } catch (final Exception e) {
-
+            LOG.error(e.getMessage(), e);
         }
 
         // rest of the service parameters
@@ -713,7 +735,7 @@ public class APDU {
 
         int index = 0;
 
-        // TODO: This entire thing can be contained several times! See image
+        // this entire thing can be contained several times! See image
         // ReadPropertyMultiple_ExtendedRequest.PNG
         // and bacnet_active_cov_subscriptions_real_answer.pcapng, message 2694
 
@@ -1023,6 +1045,14 @@ public class APDU {
 
     public void setProposedWindowSize(final int proposedWindowSize) {
         this.proposedWindowSize = proposedWindowSize;
+    }
+
+    public byte[] getPayload() {
+        return payload;
+    }
+
+    public void setPayload(final byte[] payload) {
+        this.payload = payload;
     }
 
 }

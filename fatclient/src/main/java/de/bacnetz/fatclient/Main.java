@@ -199,12 +199,13 @@ public class Main {
 
 //        broadcastWhoIs();
 
-//        requestObjectListSize(destinationIP, destinationPort, bacnetID);
+//        requestObjectListSize(sourceIP, sourcePort, destinationIP, destinationPort, ObjectType.DEVICE, bacnetID);
 
         requestObjectList(sourceIP, sourcePort, destinationIP, destinationPort, ObjectType.DEVICE, bacnetID);
 //        requestObjectList(sourceIP, sourcePort, destinationIP, destinationPort, ObjectType.ANALOG_VALUE, bacnetID);
 
-//        requestPropertiesMultipleSystemStatus(destinationIP, destinationPort, ObjectType.DEVICE, bacnetID);
+//        requestPropertiesMultipleSystemStatus(sourceIP, sourcePort, destinationIP, destinationPort, ObjectType.DEVICE,
+//                bacnetID);
 
 //        requestPropertiesMultipleAll(sourceIP, sourcePort, destinationIP, destinationPort, ObjectType.DEVICE, bacnetID);
 //        requestPropertiesMultipleAll(sourceIP, sourcePort, destinationIP, destinationPort, ObjectType.ANALOG_VALUE,
@@ -232,6 +233,10 @@ public class Main {
                     converter.setVendorMap(VendorMap.processVendorMap());
 
                     final DefaultMessage responseDefaultMessage = converter.convert(data);
+
+                    // process service parameters inside the APDU
+                    responseDefaultMessage.getApdu().processPayload(responseDefaultMessage.getApdu().getPayload(), 0,
+                            responseDefaultMessage.getApdu().getPayload().length, 0);
 
                     LOG.info(responseDefaultMessage);
 
@@ -484,7 +489,7 @@ public class Main {
      * @throws SocketException
      * @throws IOException
      */
-    private static DefaultMessage requestPropertiesMultipleAll(final String sourceIP, final int sourcePort,
+    private static void requestPropertiesMultipleAll(final String sourceIP, final int sourcePort,
             final String destinationIP, final int destinationPort, final ObjectType objectType,
             final int objectInstanceNumber) throws UnknownHostException, SocketException, IOException {
 
@@ -595,31 +600,33 @@ public class Main {
         socket.send(outPacket);
         LOG.info("Packet sent!");
 
-        LOG.info("Packet receiving ...");
-        final byte[] inBuffer = new byte[512];
-        final DatagramPacket inPacket = new DatagramPacket(inBuffer, inBuffer.length);
-        socket.receive(inPacket);
-        LOG.info("Packet receiving done.");
+//        LOG.info("Packet receiving ...");
+//        final byte[] inBuffer = new byte[512];
+//        final DatagramPacket inPacket = new DatagramPacket(inBuffer, inBuffer.length);
+//        socket.receive(inPacket);
+//        LOG.info("Packet receiving done.");
+//
+//        final byte[] data = inPacket.getData();
+//        final int length = inPacket.getLength();
+//        final int offset = inPacket.getOffset();
+//
+//        final String bytesToHex = Utils.bytesToHex(data, offset, length);
+//        LOG.info("Response Packet received as hex bytes: '{}'", bytesToHex);
+//
+//        final ByteArrayToMessageConverter converter = new ByteArrayToMessageConverter();
+//        converter.setPayloadLength(length);
+//        converter.setPayloadOffset(offset);
+//        converter.setVendorMap(VendorMap.processVendorMap());
+//
+//        final DefaultMessage responseDefaultMessage = converter.convert(data);
+//
+//        LOG.info(responseDefaultMessage);
 
-        final byte[] data = inPacket.getData();
-        final int length = inPacket.getLength();
-        final int offset = inPacket.getOffset();
-
-        final String bytesToHex = Utils.bytesToHex(data, offset, length);
-        LOG.info("Response Packet received as hex bytes: '{}'", bytesToHex);
-
-        final ByteArrayToMessageConverter converter = new ByteArrayToMessageConverter();
-        converter.setPayloadLength(length);
-        converter.setPayloadOffset(offset);
-        converter.setVendorMap(VendorMap.processVendorMap());
-
-        final DefaultMessage responseDefaultMessage = converter.convert(data);
-
-        LOG.info(responseDefaultMessage);
+        processResponse(sourceIP, sourcePort, destinationIP, destinationPort, socket);
 
         LOG.info("done");
 
-        return responseDefaultMessage;
+//        return responseDefaultMessage;
     }
 
     /**
@@ -630,9 +637,9 @@ public class Main {
      * @throws SocketException
      * @throws IOException
      */
-    private static void requestPropertiesMultipleSystemStatus(final String destinationIP, final int destinationPort,
-            final ObjectType objectType, final int objectInstanceNumber)
-            throws UnknownHostException, SocketException, IOException {
+    private static void requestPropertiesMultipleSystemStatus(final String sourceIP, final int sourcePort,
+            final String destinationIP, final int destinationPort, final ObjectType objectType,
+            final int objectInstanceNumber) throws UnknownHostException, SocketException, IOException {
 
         // TODO: send a message
 
@@ -742,27 +749,29 @@ public class Main {
         socket.send(outPacket);
         LOG.info("Packet sent!");
 
-        LOG.info("Packet receiving ...");
-        final byte[] inBuffer = new byte[512];
-        final DatagramPacket inPacket = new DatagramPacket(inBuffer, inBuffer.length);
-        socket.receive(inPacket);
-        LOG.info("Packet receiving done.");
+//        LOG.info("Packet receiving ...");
+//        final byte[] inBuffer = new byte[512];
+//        final DatagramPacket inPacket = new DatagramPacket(inBuffer, inBuffer.length);
+//        socket.receive(inPacket);
+//        LOG.info("Packet receiving done.");
+//
+//        final byte[] data = inPacket.getData();
+//        final int length = inPacket.getLength();
+//        final int offset = inPacket.getOffset();
+//
+//        final String bytesToHex = Utils.bytesToHex(data, offset, length);
+//        LOG.info("Response Packet received as hex bytes: '{}'", bytesToHex);
+//
+//        final ByteArrayToMessageConverter converter = new ByteArrayToMessageConverter();
+//        converter.setPayloadLength(length);
+//        converter.setPayloadOffset(offset);
+//        converter.setVendorMap(VendorMap.processVendorMap());
+//
+//        final DefaultMessage responseDefaultMessage = converter.convert(data);
+//
+//        LOG.info(responseDefaultMessage);
 
-        final byte[] data = inPacket.getData();
-        final int length = inPacket.getLength();
-        final int offset = inPacket.getOffset();
-
-        final String bytesToHex = Utils.bytesToHex(data, offset, length);
-        LOG.info("Response Packet received as hex bytes: '{}'", bytesToHex);
-
-        final ByteArrayToMessageConverter converter = new ByteArrayToMessageConverter();
-        converter.setPayloadLength(length);
-        converter.setPayloadOffset(offset);
-        converter.setVendorMap(VendorMap.processVendorMap());
-
-        final DefaultMessage responseDefaultMessage = converter.convert(data);
-
-        LOG.info(responseDefaultMessage);
+        processResponse(sourceIP, sourcePort, destinationIP, destinationPort, socket);
 
         LOG.info("done");
     }
@@ -814,8 +823,22 @@ public class Main {
 
         // allow segmentation for large responses
         outApdu.setSegmentation(true);
-        outApdu.setSegmentedResponseAccepted(true);
-        outApdu.setMaxResponseSegmentsAccepted(30);
+
+//        outApdu.setSegmentedResponseAccepted(true);
+//
+////        outApdu.setMaxResponseSegmentsAccepted(30);
+//        outApdu.setMaxResponseSegmentsAccepted(16);
+//
+//        // binary 0000b (0d) - MinimumMessageSize (50 Octets)
+//        // binary 0001b (1d) - MinimumMessageSize (128 Octets)
+//        // binary 0010b (2d) - MinimumMessageSize (206 Octets)
+//        // binary 0011b (3d) - MinimumMessageSize (480 Octets)
+//        // binary 0100b (4d) - MinimumMessageSize (1024 Octets)
+//        // binary 0101b (5d) - MinimumMessageSize (1476 Octets)
+//        outApdu.setSizeOfMaximumAPDUAccepted(5);
+
+//        outApdu.setSizeOfMaximumAPDUAccepted(500); --> aborted
+
 //        outApdu.setVendorMap(vendorMap);
 
         // page 57 in Standard 135-2012
@@ -865,6 +888,15 @@ public class Main {
 
         LOG.info("Packet sent to '{}' !", destinationIP);
 
+        processResponse(sourceIP, sourcePort, destinationIP, destinationPort, socket);
+
+        LOG.info("done");
+
+    }
+
+    private static void processResponse(final String sourceIP, final int sourcePort, final String destinationIP,
+            final int destinationPort, final DatagramSocket socket) throws IOException, FileNotFoundException {
+
         DefaultMessage sequencedMessage = null;
 
         boolean done = false;
@@ -891,6 +923,7 @@ public class Main {
             final DefaultMessage responseDefaultMessage = converter.convert(data);
 
             LOG.info(responseDefaultMessage);
+            LOG.info("MoreSegmentsFollow: " + responseDefaultMessage.getApdu().isMoreSegmentsFollow());
 
             done = true;
 
@@ -907,6 +940,15 @@ public class Main {
                     sequencedMessage.merge(responseDefaultMessage);
                 }
 
+            } else {
+
+                // merge the last packet it
+                if (sequencedMessage != null) {
+                    sequencedMessage.merge(responseDefaultMessage);
+                } else {
+                    sequencedMessage = responseDefaultMessage;
+                }
+
             }
 
             // this segment has to be acknowledged
@@ -917,8 +959,9 @@ public class Main {
             }
         }
 
-        LOG.info("done");
-
+        // process service parameters inside the APDU
+        sequencedMessage.getApdu().processPayload(sequencedMessage.getApdu().getPayload(), 0,
+                sequencedMessage.getApdu().getPayload().length, 0);
     }
 
     private static void sendAck(final DatagramSocket socket, final String sourceIP, final int sourcePort,
@@ -994,7 +1037,8 @@ public class Main {
         LOG.info("Packet sent!");
     }
 
-    private static void requestObjectListSize(final String destinationIP, final int destinationPort, final int bacnetID)
+    private static void requestObjectListSize(final String sourceIP, final int sourcePort, final String destinationIP,
+            final int destinationPort, final ObjectType objectType, final int bacnetID)
             throws UnknownHostException, SocketException, IOException {
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
@@ -1017,7 +1061,7 @@ public class Main {
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(0x04);
-        objectIdentifierServiceParameter.setObjectType(ObjectType.DEVICE);
+        objectIdentifierServiceParameter.setObjectType(objectType);
         objectIdentifierServiceParameter.setInstanceNumber(bacnetID);
 
         final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
@@ -1075,32 +1119,34 @@ public class Main {
 
         listInterfaces();
 
-        final DatagramSocket socket = socketByInterfaceIPAndPort(destinationIP, destinationPort);
+        final DatagramSocket socket = socketByInterfaceIPAndPort(sourceIP, sourcePort);
         socket.send(outPacket);
 
         LOG.info("Packet sent to '{}' !", destinationIP);
 
-        LOG.info("Packet receiving ...");
-        final byte[] inBuffer = new byte[512];
-        final DatagramPacket inPacket = new DatagramPacket(inBuffer, inBuffer.length);
-        socket.receive(inPacket);
-        LOG.info("Packet receiving done.");
+//        LOG.info("Packet receiving ...");
+//        final byte[] inBuffer = new byte[512];
+//        final DatagramPacket inPacket = new DatagramPacket(inBuffer, inBuffer.length);
+//        socket.receive(inPacket);
+//        LOG.info("Packet receiving done.");
+//
+//        final byte[] data = inPacket.getData();
+//        final int length = inPacket.getLength();
+//        final int offset = inPacket.getOffset();
+//
+//        final String bytesToHex = Utils.bytesToHex(data, offset, length);
+//        LOG.info("Response Packet received as hex bytes: '{}'", bytesToHex);
+//
+//        final ByteArrayToMessageConverter converter = new ByteArrayToMessageConverter();
+//        converter.setPayloadLength(length);
+//        converter.setPayloadOffset(offset);
+//        converter.setVendorMap(VendorMap.processVendorMap());
+//
+//        final DefaultMessage responseDefaultMessage = converter.convert(data);
+//
+//        LOG.info(responseDefaultMessage);
 
-        final byte[] data = inPacket.getData();
-        final int length = inPacket.getLength();
-        final int offset = inPacket.getOffset();
-
-        final String bytesToHex = Utils.bytesToHex(data, offset, length);
-        LOG.info("Response Packet received as hex bytes: '{}'", bytesToHex);
-
-        final ByteArrayToMessageConverter converter = new ByteArrayToMessageConverter();
-        converter.setPayloadLength(length);
-        converter.setPayloadOffset(offset);
-        converter.setVendorMap(VendorMap.processVendorMap());
-
-        final DefaultMessage responseDefaultMessage = converter.convert(data);
-
-        LOG.info(responseDefaultMessage);
+        processResponse(sourceIP, sourcePort, destinationIP, destinationPort, socket);
 
         LOG.info("done");
     }

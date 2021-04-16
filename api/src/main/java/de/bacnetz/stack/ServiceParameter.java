@@ -131,41 +131,12 @@ public class ServiceParameter {
 
             length += payloadLength;
 
-        }
-//        else if (lengthValueType == APPLICATION_TAG_OBJECT_IDENTIFIER) {
-//
-////            payload = new byte[lengthValueType];
-////            System.arraycopy(data, offset + 1, payload, 0, lengthValueType);
-//
-////            final String temp = toString();
-////            LOG.info("ObjectIdentifier: " + temp);
-//
-//            length += lengthValueType;
-//
-//        } 
-        else {
+        } else {
 
             payload = new byte[lengthValueType];
             System.arraycopy(data, offset + 1, payload, 0, lengthValueType);
 
             length += lengthValueType;
-
-//            // DEBUG
-//            if (tagNumber == 0) {
-//                LOG.info("ObjectIdentifier");
-//            } else if (tagNumber == 7) {
-//                LOG.info("Character String. Value is: ");
-//                for (int i = 0; i < lengthValueType; i++) {
-//                    LOG.info(payload[i]);
-//                }
-//            }
-////            else if (payload[0] == DeviceProperty.DESCRIPTION) {
-////                LOG.info("DESCRIPTION");
-////            } 
-//            else {
-////                LOG.info("UNKNOWN");
-//                LOG.info(DevicePropertyType.getByCode(payload[0]));
-//            }
 
         }
 
@@ -234,7 +205,7 @@ public class ServiceParameter {
                 break;
 
             case UNSIGNED_INTEGER_CODE:
-                stringBuffer.append("Unsigned Integer (2)");
+                stringBuffer.append("Unsigned Integer (2) - VALUE: ").append("" + (payload[0] & 0xFF));
                 break;
 
             case ENUMERATED_CODE:
@@ -275,6 +246,14 @@ public class ServiceParameter {
 
                 case ObjectType.NOTIFICATION_CLASS_CODE:
                     stringBuffer.append(", ObjectType: notification-class");
+                    break;
+
+                case ObjectType.MULTI_STATE_INPUT_CODE:
+                    stringBuffer.append(", ObjectType: multi-state-input");
+                    break;
+
+                case ObjectType.MULTI_STATE_OUTPUT_CODE:
+                    stringBuffer.append(", ObjectType: multi-state-output");
                     break;
 
                 case ObjectType.MULTI_STATE_VALUE_CODE:
