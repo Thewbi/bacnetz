@@ -42,7 +42,8 @@ public class APDU {
     private boolean moreSegmentsFollow;
 
     /** by default allow segmentation */
-    private boolean segmentedResponseAccepted = true;
+//    private boolean segmentedResponseAccepted = true;
+    private boolean segmentedResponseAccepted = false;
 
     /**
      * upper nibble = max response segments accepted <br />
@@ -213,12 +214,11 @@ public class APDU {
         // 1 Byte: APDU Type and APDU Flags
         int apduTypeAndFlags = pduType.getId();
         apduTypeAndFlags <<= 4;
-
-        // segmentedResponseAccepted flag
-        apduTypeAndFlags |= segmentedResponseAccepted ? 0x02 : 0x00;
-
+        apduTypeAndFlags |= segmentedResponseAccepted ? 0x02 : 0x00; // when missing -> abort:
+                                                                     // segmentation-not-supported
         data[offset + index++] = (byte) (apduTypeAndFlags & 0xFF);
 
+        // 1 Byte: segmentation information
         if (segmentedResponseAccepted || pduType == PDUType.CONFIRMED_SERVICE_REQUEST_PDU) {
             data[offset + index++] = (byte) (segmentationControl & 0xFF);
         }

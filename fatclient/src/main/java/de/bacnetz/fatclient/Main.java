@@ -164,11 +164,18 @@ public class Main {
      * answered. The listener has to insert a node into the GUI device tree for that
      * device.
      * 
-     * <h1>wireshark filters</h1>
+     * <h1>wireshark display filters</h1>
      * 
      * <pre>
+     * bacnet || bvlc || bacapp
      * ip.dst == 192.168.2.1
      * (ip.src == 192.168.2.1 || ip.dst == 192.168.2.1) && ( ip.src == 192.168.2.2 || ip.dst == 192.168.2.2)
+     * </pre>
+     * 
+     * <h1>wireshark capture filters</h1>
+     * 
+     * <pre>
+     * udp port 47808
      * </pre>
      * 
      * @param args
@@ -201,7 +208,13 @@ public class Main {
 
 //        requestObjectListSize(sourceIP, sourcePort, destinationIP, destinationPort, ObjectType.DEVICE, bacnetID);
 
-        requestObjectList(sourceIP, sourcePort, destinationIP, destinationPort, ObjectType.DEVICE, bacnetID);
+//        final DefaultBACNetzCallbackHandler defaultBACNetzCallbackHandler = new DefaultBACNetzCallbackHandler();
+//        final RequestObjectListTemplate requestObjectListTemplate = new RequestObjectListTemplate(sourceIP, sourcePort,
+//                destinationIP, destinationPort);
+//        requestObjectListTemplate.setBacnetzCallbackHandler(defaultBACNetzCallbackHandler);
+//        requestObjectListTemplate.send(ObjectType.DEVICE, bacnetID);
+
+//        requestObjectList(sourceIP, sourcePort, destinationIP, destinationPort, ObjectType.DEVICE, bacnetID);
 //        requestObjectList(sourceIP, sourcePort, destinationIP, destinationPort, ObjectType.ANALOG_VALUE, bacnetID);
 
 //        requestPropertiesMultipleSystemStatus(sourceIP, sourcePort, destinationIP, destinationPort, ObjectType.DEVICE,
@@ -213,7 +226,7 @@ public class Main {
 
         // TODO: keep a listener open on the port to actually retrieve the COV
         // notifications
-        // subscribeCOV(sourceIP, sourcePort, destinationIP, destinationPort);
+        subscribeCOV(sourceIP, sourcePort, destinationIP, destinationPort);
 
 //        startFatClient(args);
     }
@@ -879,6 +892,7 @@ public class Main {
 
         // final DatagramSocket socket = new DatagramSocket();
 
+        // DEBUG
         listInterfaces();
 
 //        final DatagramSocket socket = socketByInterfaceNameAndPort("eth7", destinationPort);

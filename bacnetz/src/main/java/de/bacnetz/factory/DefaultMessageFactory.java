@@ -21,6 +21,7 @@ import de.bacnetz.devices.CompositeDeviceProperty;
 import de.bacnetz.devices.Device;
 import de.bacnetz.devices.DeviceProperty;
 import de.bacnetz.devices.DevicePropertyType;
+import de.bacnetz.devices.ObjectType;
 import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.BACnetDate;
 import de.bacnetz.stack.BACnetServicesSupportedBitString;
@@ -38,7 +39,21 @@ import de.bacnetz.stack.VirtualLinkControl;
 
 public class DefaultMessageFactory implements MessageFactory {
 
-    private static final Logger LOG = LogManager.getLogger(MessageFactory.class);
+    private static final Logger LOG = LogManager.getLogger(DefaultMessageFactory.class);
+
+    /**
+     * If a large payload does not fit into a single network packet, it is segmented
+     * over several packets. This is a BACnet feature and can be forced (e.g. for
+     * testing or when an embedded device has limited memory) by letting the
+     * communication partner know that only very small payloads can be processed at
+     * a time.<br />
+     * <br />
+     * Setting this constant to true forces the communication into using the
+     * smallest packet size defined in BACnet.<br />
+     * <br />
+     * Used to test segmentation assembly/dissasembly.
+     */
+    private static final boolean TEST_SEGMENTATION = true;
 
     private Map<Integer, String> vendorMap = new HashMap<>();
 
@@ -1888,6 +1903,86 @@ public class DefaultMessageFactory implements MessageFactory {
 //      LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
         return result;
+    }
+
+    @Override
+    public Message requestObjectList(final ObjectType objectType, final int bacnetID) {
+
+        final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
+        virtualLinkControl.setType(0x81);
+        virtualLinkControl.setFunction(0x0A);
+        // not known right now. Length is set later, when the full package data was
+        // added
+        virtualLinkControl.setLength(0x00);
+
+        // NPDU including destination network information
+        final NPDU outNpdu = new NPDU();
+        outNpdu.setVersion(0x01);
+
+        // no additional information
+        // this works, if the cp is connected to the device directly via 192.168.2.1
+        outNpdu.setControl(0x00);
+        // npdu.setControl(0x2c);
+
+        // this object identifier has to be context specific. I do not know why
+        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+        objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+        objectIdentifierServiceParameter.setTagNumber(0x00);
+        objectIdentifierServiceParameter.setLengthValueType(0x04);
+        objectIdentifierServiceParameter.setObjectType(objectType);
+        objectIdentifierServiceParameter.setInstanceNumber(bacnetID);
+
+        final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
+        propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+        propertyIdentifierServiceParameter.setTagNumber(0x01);
+        propertyIdentifierServiceParameter.setLengthValueType(0x01);
+        propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) DeviceProperty.OBJECT_LIST });
+
+        final APDU outApdu = new APDU();
+        outApdu.setPduType(PDUType.CONFIRMED_SERVICE_REQUEST_PDU);
+        outApdu.setInvokeId(1);
+        outApdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
+
+        // this message is segmented, yes or no
+        outApdu.setSegmentation(false);
+
+        if (TEST_SEGMENTATION) {
+
+            // allow segmentation for large responses
+            outApdu.setSegmentedResponseAccepted(true);
+//
+////        outApdu.setMaxResponseSegmentsAccepted(30);
+            outApdu.setMaxResponseSegmentsAccepted(16);
+//
+//        // binary 0000b (0d) - MinimumMessageSize (50 Octets)
+//        // binary 0001b (1d) - MinimumMessageSize (128 Octets)
+//        // binary 0010b (2d) - MinimumMessageSize (206 Octets)
+//        // binary 0011b (3d) - MinimumMessageSize (480 Octets)
+//        // binary 0100b (4d) - MinimumMessageSize (1024 Octets)
+//        // binary 0101b (5d) - MinimumMessageSize (1476 Octets)
+
+            // for testing, choose the absolute smallest messages size so that the partner
+            // is forced into segmenting the response
+            outApdu.setSizeOfMaximumAPDUAccepted(0);
+//        outApdu.setSizeOfMaximumAPDUAccepted(5);
+
+//        outApdu.setSizeOfMaximumAPDUAccepted(500); --> aborted
+
+        }
+
+        // page 57 in Standard 135-2012
+
+        outApdu.getServiceParameters().add(objectIdentifierServiceParameter);
+        outApdu.getServiceParameters().add(propertyIdentifierServiceParameter);
+
+        final DefaultMessage outMessage = new DefaultMessage();
+        outMessage.setVirtualLinkControl(virtualLinkControl);
+        outMessage.setNpdu(outNpdu);
+        outMessage.setApdu(outApdu);
+
+        virtualLinkControl.setLength(outMessage.getDataLength());
+
+        return outMessage;
     }
 
     public Map<Integer, String> getVendorMap() {

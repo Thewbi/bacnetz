@@ -4,6 +4,7 @@ import java.util.Map;
 
 import de.bacnetz.controller.Message;
 import de.bacnetz.devices.Device;
+import de.bacnetz.devices.ObjectType;
 
 public interface MessageFactory extends Factory<Message> {
 
@@ -16,5 +17,7 @@ public interface MessageFactory extends Factory<Message> {
     Message whoIsMessage();
 
     Message whoIsMessage(int lowerBound, int upperBound);
+
+    Message requestObjectList(ObjectType objectType, int bacnetID);
 
 }
