@@ -121,7 +121,9 @@ public class App {
         final Map<Integer, String> vendorMap = VendorMap.processVendorMap();
 
         startListenerThread(defaultConfigurationManager, deviceService, vendorMap);
+
         runWhoIsThread();
+
 //        runMain(defaultConfigurationManager);
 //		runFixVendorCSV();
 //		runMainOld();

@@ -186,13 +186,15 @@ public class Main {
     public static void main(final String[] args) throws FileNotFoundException, IOException, InterruptedException {
 
 //        final String sourceIP = "127.0.0.1";
-        final String sourceIP = "192.168.2.2";
+        final String sourceIP = "192.168.26.2";
 
 //        final int sourcePort = 50212;
         final int sourcePort = 47808;
 
 //        final String destinationIP = "127.0.0.1";
-        final String destinationIP = "192.168.2.1";
+//        final String destinationIP = "192.168.2.1";
+//        final String destinationIP = "192.168.2.10";
+        final String destinationIP = "192.168.26.154";
 //        final String destinationIP = "192.168.0.108";
 //        final String destinationIP = "0.0.0.0";
 
@@ -223,10 +225,12 @@ public class Main {
 //        requestPropertiesMultipleAll(sourceIP, sourcePort, destinationIP, destinationPort, ObjectType.DEVICE, bacnetID);
 //        requestPropertiesMultipleAll(sourceIP, sourcePort, destinationIP, destinationPort, ObjectType.ANALOG_VALUE,
 //                bacnetID);
+        requestPropertiesMultipleAll(sourceIP, sourcePort, destinationIP, destinationPort, ObjectType.SCHEDULE,
+                bacnetID);
 
         // TODO: keep a listener open on the port to actually retrieve the COV
         // notifications
-        subscribeCOV(sourceIP, sourcePort, destinationIP, destinationPort);
+//        subscribeCOV(sourceIP, sourcePort, destinationIP, destinationPort);
 
 //        startFatClient(args);
     }
@@ -529,18 +533,18 @@ public class Main {
         objectIdentifierServiceParameter.setObjectType(objectType);
         objectIdentifierServiceParameter.setInstanceNumber(objectInstanceNumber);
 
-        final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
-        propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        propertyIdentifierServiceParameter.setTagNumber(0x01);
-        propertyIdentifierServiceParameter.setLengthValueType(0x01);
-        propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) DeviceProperty.OBJECT_LIST });
-
-        // request index 0 which is the length of the array
-        final ServiceParameter propertyArrayIndexServiceParameter = new ServiceParameter();
-        propertyArrayIndexServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        propertyArrayIndexServiceParameter.setTagNumber(0x02);
-        propertyArrayIndexServiceParameter.setLengthValueType(0x01);
-        propertyArrayIndexServiceParameter.setPayload(new byte[] { (byte) 0x00 });
+//        final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
+//        propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+//        propertyIdentifierServiceParameter.setTagNumber(0x01);
+//        propertyIdentifierServiceParameter.setLengthValueType(0x01);
+//        propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) DeviceProperty.OBJECT_LIST });
+//
+//        // request index 0 which is the length of the array
+//        final ServiceParameter propertyArrayIndexServiceParameter = new ServiceParameter();
+//        propertyArrayIndexServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+//        propertyArrayIndexServiceParameter.setTagNumber(0x02);
+//        propertyArrayIndexServiceParameter.setLengthValueType(0x01);
+//        propertyArrayIndexServiceParameter.setPayload(new byte[] { (byte) 0x00 });
 
         // {[1] opening bracket
         final ServiceParameter openingBracketServiceParameter = new ServiceParameter();
@@ -549,13 +553,13 @@ public class Main {
         openingBracketServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
 
         // request ALL
-        final ServiceParameter systemStatusDevicePropertyServiceParameter = new ServiceParameter();
-        systemStatusDevicePropertyServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        systemStatusDevicePropertyServiceParameter.setTagNumber(0x00);
-        systemStatusDevicePropertyServiceParameter.setLengthValueType(1);
-        systemStatusDevicePropertyServiceParameter.setPayload(new byte[] { (byte) DevicePropertyType.ALL.getCode() });
+        final ServiceParameter allDevicePropertyServiceParameter = new ServiceParameter();
+        allDevicePropertyServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+        allDevicePropertyServiceParameter.setTagNumber(0x00);
+        allDevicePropertyServiceParameter.setLengthValueType(1);
+        allDevicePropertyServiceParameter.setPayload(new byte[] { (byte) DevicePropertyType.ALL.getCode() });
 
-        // {[1] closeing bracket
+        // }[1] closeing bracket
         final ServiceParameter closingBracketServiceParameter = new ServiceParameter();
         closingBracketServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         closingBracketServiceParameter.setTagNumber(0x01);
@@ -574,7 +578,7 @@ public class Main {
 //        outApdu.getServiceParameters().add(propertyIdentifierServiceParameter);
 //        outApdu.getServiceParameters().add(propertyArrayIndexServiceParameter);
         outApdu.getServiceParameters().add(openingBracketServiceParameter);
-        outApdu.getServiceParameters().add(systemStatusDevicePropertyServiceParameter);
+        outApdu.getServiceParameters().add(allDevicePropertyServiceParameter);
         outApdu.getServiceParameters().add(closingBracketServiceParameter);
 
         final DefaultMessage outMessage = new DefaultMessage();
@@ -679,18 +683,18 @@ public class Main {
         objectIdentifierServiceParameter.setObjectType(objectType);
         objectIdentifierServiceParameter.setInstanceNumber(objectInstanceNumber);
 
-        final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
-        propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        propertyIdentifierServiceParameter.setTagNumber(0x01);
-        propertyIdentifierServiceParameter.setLengthValueType(0x01);
-        propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) DeviceProperty.OBJECT_LIST });
-
-        // request index 0 which is the length of the array
-        final ServiceParameter propertyArrayIndexServiceParameter = new ServiceParameter();
-        propertyArrayIndexServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        propertyArrayIndexServiceParameter.setTagNumber(0x02);
-        propertyArrayIndexServiceParameter.setLengthValueType(0x01);
-        propertyArrayIndexServiceParameter.setPayload(new byte[] { (byte) 0x00 });
+//        final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
+//        propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+//        propertyIdentifierServiceParameter.setTagNumber(0x01);
+//        propertyIdentifierServiceParameter.setLengthValueType(0x01);
+//        propertyIdentifierServiceParameter.setPayload(new byte[] { (byte) DeviceProperty.OBJECT_LIST });
+//
+//        // request index 0 which is the length of the array
+//        final ServiceParameter propertyArrayIndexServiceParameter = new ServiceParameter();
+//        propertyArrayIndexServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+//        propertyArrayIndexServiceParameter.setTagNumber(0x02);
+//        propertyArrayIndexServiceParameter.setLengthValueType(0x01);
+//        propertyArrayIndexServiceParameter.setPayload(new byte[] { (byte) 0x00 });
 
         // {[1] opening bracket
         final ServiceParameter openingBracketServiceParameter = new ServiceParameter();

@@ -5,6 +5,7 @@ import java.net.InetSocketAddress;
 import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.NPDU;
 import de.bacnetz.stack.VirtualLinkControl;
+import de.bacnetz.stack.exception.BACnetzException;
 
 public interface Message {
 
@@ -14,7 +15,7 @@ public interface Message {
 
     APDU getApdu();
 
-    byte[] getBytes();
+    byte[] getBytes() throws BACnetzException;
 
     void recomputeLength();
 

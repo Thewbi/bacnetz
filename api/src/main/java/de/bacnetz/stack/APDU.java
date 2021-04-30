@@ -15,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 import de.bacnetz.common.APIUtils;
 import de.bacnetz.common.utils.Utils;
 import de.bacnetz.devices.DevicePropertyType;
+import de.bacnetz.stack.exception.BACnetzException;
 
 /**
  * Application Layer Protocol Data Unit (APDU)<br />
@@ -126,6 +127,7 @@ public class APDU {
         // 1 byte: PDU type + PDU flags
         dataLength++;
 
+        // 1 Byte: segmentation information
         if (segmentedResponseAccepted || pduType == PDUType.CONFIRMED_SERVICE_REQUEST_PDU) {
             dataLength++;
         }
@@ -169,7 +171,7 @@ public class APDU {
         return dataLength;
     }
 
-    public byte[] getBytes() {
+    public byte[] getBytes() throws BACnetzException {
 
         final int dataLength = getDataLength();
 
@@ -207,7 +209,7 @@ public class APDU {
         segmentationControl |= (byte) (maxAPDUSizeType) & 0xFF;
     }
 
-    public void toBytes(final byte[] data, final int offset) {
+    public void toBytes(final byte[] data, final int offset) throws BACnetzException {
 
         int index = 0;
 
@@ -241,9 +243,10 @@ public class APDU {
         // 1 Byte: service choice
         if (unconfirmedServiceChoice != null) {
             data[offset + index++] = (byte) unconfirmedServiceChoice.getId();
-        }
-        if (confirmedServiceChoice != null) {
+        } else if (confirmedServiceChoice != null) {
             data[offset + index++] = (byte) confirmedServiceChoice.getId();
+        } else {
+            throw new BACnetzException("Either unconfirmedServiceChoice or confirmedServiceChoice is required!");
         }
 
         // service parameters (such as ObjectIdentifierServiceParameter)

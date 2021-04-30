@@ -58,6 +58,11 @@ public enum ObjectType {
 	NOTIFICATION_CLASS(0x0F, "NOTIFICATION_CLASS"),
 	
 	/**
+     * 0x11 = 17d
+     */
+    SCHEDULE(0x11, "SCHEDULE"),
+	
+	/**
 	 * 0x13 = 19d
 	 */
 	MULTI_STATE_VALUE(0x13, "MULTI_STATE_VALUE");
@@ -85,6 +90,8 @@ public enum ObjectType {
     public static final int NOTIFICATION_CLASS_CODE = 0x0F;
 
     public static final int MULTI_STATE_VALUE_CODE = 0x13;
+
+    public static final int SCHEDULE_CODE = 0x11;
 
     private int code;
 

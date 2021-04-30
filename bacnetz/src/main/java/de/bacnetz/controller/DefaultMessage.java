@@ -10,6 +10,7 @@ import de.bacnetz.common.utils.Utils;
 import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.NPDU;
 import de.bacnetz.stack.VirtualLinkControl;
+import de.bacnetz.stack.exception.BACnetzException;
 
 public class DefaultMessage implements Message {
 
@@ -60,7 +61,7 @@ public class DefaultMessage implements Message {
     }
 
     @Override
-    public byte[] getBytes() {
+    public byte[] getBytes() throws BACnetzException {
 
         int length = 0;
 

@@ -260,6 +260,10 @@ public class ServiceParameter {
                     stringBuffer.append(", ObjectType: multi-state-value");
                     break;
 
+                case ObjectType.SCHEDULE_CODE:
+                    stringBuffer.append(", ObjectType: multi-state-value");
+                    break;
+
                 default:
                     throw new RuntimeException("Unknown ObjectType: " + objectType);
 //                    LOG.error("Unknown ObjectType: " + objectType);

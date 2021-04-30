@@ -43,6 +43,7 @@ import de.bacnetz.stack.ServiceParameter;
 import de.bacnetz.stack.TagClass;
 import de.bacnetz.stack.UnconfirmedServiceChoice;
 import de.bacnetz.stack.VirtualLinkControl;
+import de.bacnetz.stack.exception.BACnetzException;
 
 /**
  * This controller processes APDU messages and ignores NPDU messages.<br />
@@ -1066,11 +1067,10 @@ public class DefaultMessageController implements MessageController {
         // TODO: set message.VirtualLinkControl.size to the size of the entire message
         resultMessage.getVirtualLinkControl().setLength(resultMessage.getDataLength());
 
-        LOG.info(Utils.byteArrayToStringNoPrefix(resultMessage.getVirtualLinkControl().getBytes()));
-        LOG.info(Utils.byteArrayToStringNoPrefix(resultMessage.getNpdu().getBytes()));
-        LOG.info(Utils.byteArrayToStringNoPrefix(resultMessage.getApdu().getBytes()));
-
-        LOG.info(Utils.byteArrayToStringNoPrefix(resultMessage.getBytes()));
+//        LOG.info(Utils.byteArrayToStringNoPrefix(resultMessage.getVirtualLinkControl().getBytes()));
+//        LOG.info(Utils.byteArrayToStringNoPrefix(resultMessage.getNpdu().getBytes()));
+//        LOG.info(Utils.byteArrayToStringNoPrefix(resultMessage.getApdu().getBytes()));
+//        LOG.info(Utils.byteArrayToStringNoPrefix(resultMessage.getBytes()));
 
         final List<Message> result = new ArrayList<>();
         result.add(resultMessage);
@@ -1083,8 +1083,9 @@ public class DefaultMessageController implements MessageController {
      * 
      * @param message
      * @return
+     * @throws BACnetzException
      */
-    private List<Message> processIAMMessage(final Message message) {
+    private List<Message> processIAMMessage(final Message message) throws BACnetzException {
 
         // retrieve the IP and port from where this message originated
         final InetSocketAddress sourceInetSocketAddress = message.getSourceInetSocketAddress();

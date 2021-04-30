@@ -111,8 +111,8 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
                 continue;
             }
 
-            // Debug
-            LOG.trace("<<< Received from inetAddress: " + datagramPacketAddress + " From socketAddress "
+            // DEBUG
+            LOG.info("<<< Received from inetAddress: " + datagramPacketAddress + " From socketAddress "
                     + datagramPacketSocketAddress + " Data: "
                     + Utils.byteArrayToStringNoPrefix(datagramPacket.getData()));
             LOG.trace("<<< " + Utils.byteArrayToStringNoPrefix(data));
