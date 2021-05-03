@@ -16,8 +16,6 @@ import de.bacnetz.stack.VendorType;
 
 public class DefaultDeviceService implements DeviceService {
 
-    private static final int AMOUNT_OF_DEVICES = 1;
-
     private final List<Device> devices = new ArrayList<Device>();
 
     private final Map<ObjectIdentifierServiceParameter, Device> deviceMap = new HashMap<>();
@@ -26,23 +24,20 @@ public class DefaultDeviceService implements DeviceService {
     private Factory<Device> deviceFactory;
 
     @Override
-    public List<Device> createDevices(final Map<Integer, String> vendorMap, final String localIp)
-            throws SocketException, UnknownHostException {
+    public List<Device> createDevices(final Map<Integer, String> vendorMap, final String localIp,
+            final DeviceCreationDescriptor deviceCreationDescriptor) throws SocketException, UnknownHostException {
 
-        // device 20000
-        final int startDeviceId = 20000;
-        final int deviceIdIncrement = 1;
-        int deviceIdOffset = 0;
+        int deviceIdOffset = deviceCreationDescriptor.getDeviceIdOffset();
 
-        for (int i = 0; i < AMOUNT_OF_DEVICES; i++) {
+        for (int i = 0; i < deviceCreationDescriptor.getAmountOfDevices(); i++) {
 
-            final int deviceId = startDeviceId + deviceIdOffset;
+            final int deviceId = deviceCreationDescriptor.getStartDeviceId() + deviceIdOffset;
             final Device device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
                     VendorType.GEZE_GMBH.getCode());
             devices.add(device);
             device.bindSocket(localIp, deviceId);
 
-            deviceIdOffset += deviceIdIncrement;
+            deviceIdOffset += deviceCreationDescriptor.getDeviceIdIncrement();
         }
 
 //        deviceIdOffset += deviceIdIncrement;
@@ -108,7 +103,7 @@ public class DefaultDeviceService implements DeviceService {
     }
 
     @Override
-    public void setDefaultDeviceFactory(final Factory<Device> deviceFactory) {
+    public void setDeviceFactory(final Factory<Device> deviceFactory) {
         this.deviceFactory = deviceFactory;
     }
 

@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.common.utils.Utils;
 import de.bacnetz.configuration.ConfigurationManager;
+import de.bacnetz.controller.DefaultMessage;
 import de.bacnetz.controller.Message;
 import de.bacnetz.controller.MessageController;
 import de.bacnetz.conversion.ByteArrayToMessageConverter;
@@ -296,7 +297,19 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
         converter.setPayloadLength(payloadLength);
         converter.setVendorMap(vendorMap);
 
-        return converter.convert(data);
+        final DefaultMessage defaultMessage = converter.convert(data);
+
+        // After all segments have been reassembled...
+        //
+        // process service parameters inside the APDU. The APDU will parse the service
+        // parameters dump them to the console and store them in it's service parameter
+        // list for further processing
+        final byte[] payload = defaultMessage.getApdu().getPayload();
+        final int startIndex = 0;
+        final int offset = 0;
+        defaultMessage.getApdu().processPayload(payload, startIndex, payload.length, offset);
+
+        return defaultMessage;
     }
 
     public List<Message> sendMessageToController(final Message message) {

@@ -17,6 +17,13 @@ public class ObjectIdentifierServiceParameter extends ServiceParameter {
     public ObjectIdentifierServiceParameter() {
     }
 
+    public ObjectIdentifierServiceParameter(final ServiceParameter other) {
+        super(other);
+        final int bufferToInt = APIUtils.bufferToInt(other.getPayload(), 0);
+        objectType = ObjectType.getByCode(bufferToInt >> 22);
+        instanceNumber = (bufferToInt & 0x3FFFFF);
+    }
+
     public ObjectIdentifierServiceParameter(final ObjectIdentifierServiceParameter other) {
         super(other);
         this.objectType = other.getObjectType();

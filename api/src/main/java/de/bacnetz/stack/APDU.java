@@ -8,12 +8,12 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.bacnetz.common.APIUtils;
-import de.bacnetz.common.utils.Utils;
 import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.stack.exception.BACnetzException;
 
@@ -428,7 +428,7 @@ public class APDU {
 
         payload = Arrays.copyOfRange(data, startIndex + offset, payloadLength);
 
-        LOG.info(Utils.bytesToHex(payload));
+        // LOG.info(Utils.bytesToHex(payload));
 
 //        processPayload(data, startIndex, payloadLength, offset);
     }
@@ -829,7 +829,7 @@ public class APDU {
             final int vendorId = (serviceParameter.getPayload()[0] & 0xFF);
 
             // DEBUG
-            if (vendorMap.containsKey(vendorId)) {
+            if (MapUtils.isNotEmpty(vendorMap) && vendorMap.containsKey(vendorId)) {
                 LOG.trace("VendorId: " + vendorMap.get(vendorId));
             }
         }

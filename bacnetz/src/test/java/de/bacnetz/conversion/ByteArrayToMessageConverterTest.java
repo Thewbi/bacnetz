@@ -3,6 +3,8 @@ package de.bacnetz.conversion;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
@@ -14,12 +16,74 @@ import de.bacnetz.devices.ObjectType;
 import de.bacnetz.devices.SystemStatus;
 import de.bacnetz.stack.ConfirmedServiceChoice;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
+import de.bacnetz.stack.PDUType;
 import de.bacnetz.stack.ServiceParameter;
 import de.bacnetz.stack.TagClass;
+import de.bacnetz.stack.UnconfirmedServiceChoice;
 
 public class ByteArrayToMessageConverterTest {
 
     private static final Logger LOG = LogManager.getLogger(ByteArrayToMessageConverterTest.class);
+
+    @Test
+    public void testParseIAMResponse() {
+
+        //
+        // Arrange
+        //
+
+        // 81 0b 00 14 01 00 10 00 c4 02 00 27 10 22 01 e0 91 00 21 b2
+        final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810b001401001000c4020027102201e0910021b2");
+
+        final ByteArrayToMessageConverter byteArrayToMessageConverter = new ByteArrayToMessageConverter();
+        byteArrayToMessageConverter.setPayloadOffset(0);
+        byteArrayToMessageConverter.setPayloadLength(20);
+
+        //
+        // Act
+        //
+
+        final DefaultMessage defaultMessage = byteArrayToMessageConverter.convert(hexStringToByteArray);
+
+        // After all segments have been reassembled...
+        //
+        // process service parameters inside the APDU. The APDU will parse the service
+        // parameters dump them to the console and store them in it's service parameter
+        // list for further processing
+        final byte[] payload = defaultMessage.getApdu().getPayload();
+        final int startIndex = 0;
+        final int offset = 0;
+        defaultMessage.getApdu().processPayload(payload, startIndex, payload.length, offset);
+
+        //
+        // Assert
+        //
+
+        assertEquals(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU, defaultMessage.getApdu().getPduType());
+        assertEquals(UnconfirmedServiceChoice.I_AM, defaultMessage.getApdu().getUnconfirmedServiceChoice());
+
+        final List<ServiceParameter> serviceParameters = defaultMessage.getApdu().getServiceParameters();
+        assertEquals(4, serviceParameters.size());
+
+        final ServiceParameter serviceParaemter = serviceParameters.get(0);
+        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter(
+                serviceParaemter);
+        assertEquals(ObjectType.DEVICE, objectIdentifierServiceParameter.getObjectType());
+        assertEquals(10000, objectIdentifierServiceParameter.getInstanceNumber());
+
+        final ServiceParameter maxAPDULengthSegmentedServiceParameter = serviceParameters.get(1);
+        final short maxAPDULengthAccepted = (short) Utils.bytesToUnsignedShort(
+                maxAPDULengthSegmentedServiceParameter.getPayload()[0],
+                maxAPDULengthSegmentedServiceParameter.getPayload()[1], true);
+        assertEquals(480, maxAPDULengthAccepted);
+
+        final ServiceParameter segmentationSupportedServiceParameter = serviceParameters.get(2);
+        assertEquals(0, segmentationSupportedServiceParameter.getPayload()[0]);
+
+        final ServiceParameter vendorIdServiceParameter = serviceParameters.get(3);
+        assertEquals(178, (vendorIdServiceParameter.getPayload()[0]) & 0xFF);
+
+    }
 
     /**
      * The data encoded as hex is the response to a object list request towards a

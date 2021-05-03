@@ -10,13 +10,13 @@ import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 
 public interface DeviceService {
 
-    List<Device> createDevices(Map<Integer, String> vendorMap, String localIp)
-            throws SocketException, UnknownHostException;
+    List<Device> createDevices(Map<Integer, String> vendorMap, String localIp,
+            DeviceCreationDescriptor deviceCreationDescriptor) throws SocketException, UnknownHostException;
 
     List<Device> getDevices();
 
     Map<ObjectIdentifierServiceParameter, Device> getDeviceMap();
 
-    void setDefaultDeviceFactory(Factory<Device> deviceFactory);
+    void setDeviceFactory(Factory<Device> deviceFactory);
 
 }

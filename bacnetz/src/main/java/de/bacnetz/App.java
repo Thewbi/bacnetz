@@ -37,6 +37,7 @@ import de.bacnetz.controller.Message;
 import de.bacnetz.devices.DefaultDeviceFactory;
 import de.bacnetz.devices.DefaultDeviceService;
 import de.bacnetz.devices.Device;
+import de.bacnetz.devices.DeviceCreationDescriptor;
 import de.bacnetz.devices.DeviceService;
 import de.bacnetz.factory.DefaultMessageFactory;
 import de.bacnetz.factory.MessageFactory;
@@ -100,6 +101,7 @@ public class App {
 //    private static final boolean RUN_TOGGLE_DOOR_THREAD = false;
 //    private static final boolean RUN_TOGGLE_DOOR_THREAD = true;
 
+    private static final int AMOUNT_OF_DEVICES = 1;
     private static final Logger LOG = LogManager.getLogger(App.class);
 
     public static void main(final String[] args) throws IOException, ParseException {
@@ -114,13 +116,27 @@ public class App {
         final List<InetAddress> listAllBroadcastAddresses = NetworkUtils.listAllBroadcastAddresses();
         LOG.info(listAllBroadcastAddresses);
 
-        final DefaultConfigurationManager defaultConfigurationManager = createConfigurationManager(args);
-
-        final DeviceService deviceService = new DefaultDeviceService();
+        final ConfigurationManager configurationManager = createConfigurationManager(args);
 
         final Map<Integer, String> vendorMap = VendorMap.processVendorMap();
 
-        startListenerThread(defaultConfigurationManager, deviceService, vendorMap);
+        final DefaultDeviceFactory deviceFactory = new DefaultDeviceFactory();
+        deviceFactory.setConfigurationManager(configurationManager);
+
+        final DeviceService deviceService = new DefaultDeviceService();
+        deviceService.setDeviceFactory(deviceFactory);
+
+        final String localIp = configurationManager.getPropertyAsString(ConfigurationManager.LOCAL_IP_CONFIG_KEY);
+
+        final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
+        deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
+        deviceCreationDescriptor.setStartDeviceId(20000);
+        deviceCreationDescriptor.setDeviceIdIncrement(1);
+        deviceCreationDescriptor.setDeviceIdOffset(0);
+
+        final List<Device> devices = deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
+
+        startListenerThread(configurationManager, deviceService, vendorMap);
 
         runWhoIsThread();
 
@@ -129,7 +145,7 @@ public class App {
 //		runMainOld();
     }
 
-    private static DefaultConfigurationManager createConfigurationManager(final String[] args) throws ParseException {
+    private static ConfigurationManager createConfigurationManager(final String[] args) throws ParseException {
         final DefaultConfigurationManager defaultConfigurationManager = new DefaultConfigurationManager();
 
         // create Options object
@@ -179,10 +195,10 @@ public class App {
         multicastListenerReaderThread
                 .setBindPort(configurationManager.getPropertyAsInt(ConfigurationManager.PORT_CONFIG_KEY));
 
-        final DefaultDeviceFactory defaultDeviceFactory = new DefaultDeviceFactory();
-        defaultDeviceFactory.setConfigurationManager(configurationManager);
+        final DefaultDeviceFactory deviceFactory = new DefaultDeviceFactory();
+        deviceFactory.setConfigurationManager(configurationManager);
 
-        deviceService.setDefaultDeviceFactory(defaultDeviceFactory);
+        deviceService.setDeviceFactory(deviceFactory);
 
         final DefaultMessageController defaultMessageController = new DefaultMessageController();
         defaultMessageController.setDeviceService(deviceService);
@@ -225,7 +241,14 @@ public class App {
         startListenerThread(configurationManager, deviceService, vendorMap);
 
         final String localIp = configurationManager.getPropertyAsString(ConfigurationManager.LOCAL_IP_CONFIG_KEY);
-        final List<Device> devices = deviceService.createDevices(vendorMap, localIp);
+
+        final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
+        deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
+        deviceCreationDescriptor.setStartDeviceId(20000);
+        deviceCreationDescriptor.setDeviceIdIncrement(1);
+        deviceCreationDescriptor.setDeviceIdOffset(0);
+
+        final List<Device> devices = deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
 
         boolean done = false;
         while (!done) {

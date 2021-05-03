@@ -192,7 +192,7 @@ public class NPDU {
             dataLength += 1;
 
             // n bytes: for the mac itself
-            dataLength += destinationMACLayerAddressLength;
+            dataLength += sourceMacLayerAddressLength;
 
             // 1 byte: hopCount
 //			dataLength += 1;

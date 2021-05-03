@@ -438,6 +438,15 @@ public class DefaultMessageController implements MessageController {
     private List<Message> processWhoIsMessage(final Message message) {
 
         final List<Device> filteredDevices = filterDevices(message);
+
+        if (CollectionUtils.isEmpty(filteredDevices)) {
+            LOG.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            LOG.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            LOG.info("No devices available in this server! Will not answer WHO-IS! Add devices!");
+            LOG.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            LOG.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        }
+
         filteredDevices.stream().forEach(d -> {
             try {
                 d.sendIamMessage();
