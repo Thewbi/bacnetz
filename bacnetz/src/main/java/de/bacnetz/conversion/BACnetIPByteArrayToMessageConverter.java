@@ -7,13 +7,15 @@ import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.NPDU;
 import de.bacnetz.stack.VirtualLinkControl;
 
-public class ByteArrayToMessageConverter implements Converter<byte[], DefaultMessage> {
+public class BACnetIPByteArrayToMessageConverter implements Converter<byte[], DefaultMessage> {
 
     private int payloadLength;
 
     private int payloadOffset = 0;
 
     private Map<Integer, String> vendorMap;
+
+    private final BACnetDataLinkType dataLinkType = BACnetDataLinkType.BACNET_IP;
 
     @Override
     public void convert(final byte[] data, final DefaultMessage defaultMessage) {
@@ -76,6 +78,10 @@ public class ByteArrayToMessageConverter implements Converter<byte[], DefaultMes
 
     public void setVendorMap(final Map<Integer, String> vendorMap) {
         this.vendorMap = vendorMap;
+    }
+
+    public BACnetDataLinkType getDataLinkType() {
+        return dataLinkType;
     }
 
 }

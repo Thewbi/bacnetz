@@ -140,7 +140,7 @@ public class ServiceParameter {
 
         }
 
-        LOG.info(toString());
+//        LOG.info(toString());
 
         return length;
     }
@@ -186,7 +186,6 @@ public class ServiceParameter {
 
             case APPLICATION_TAG_REAL:
                 stringBuffer.append("REAL");
-                final byte[] data = { 0x3f, 0x35, (byte) 0xc2, (byte) 0x8f };
 //                final float realValue = ByteBuffer.wrap(payload).order(ByteOrder.BIG_ENDIAN).getFloat();
 //                stringBuffer.append(" Value: ").append(realValue);
                 break;

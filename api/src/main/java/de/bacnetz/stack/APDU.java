@@ -292,7 +292,7 @@ public class APDU {
         // bit 1 is the segmentedResponseAccepted bit
         segmentedResponseAccepted = 0 < (data[startIndex + offset] & 0x02);
         if (segmentedResponseAccepted) {
-            LOG.info("segmentedResponseAccepted bit");
+            LOG.trace("segmentedResponseAccepted bit");
         }
 
         offset++;
@@ -522,7 +522,8 @@ public class APDU {
 //            serviceParameters.add(tempBracketOpenServiceParameter);
 
             // if the outer closing bracket was read, abort
-            if (APIUtils.isClosingServiceParameter(tempBracketOpenServiceParameter)) {
+            if (APIUtils.isClosingServiceParameter(tempBracketOpenServiceParameter,
+                    bracketOpenServiceParameter.getTagNumber())) {
                 break;
             }
 

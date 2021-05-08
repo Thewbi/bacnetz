@@ -24,7 +24,7 @@ import de.bacnetz.common.utils.Utils;
 import de.bacnetz.configuration.ConfigurationManager;
 import de.bacnetz.controller.DefaultMessage;
 import de.bacnetz.controller.Message;
-import de.bacnetz.conversion.ByteArrayToMessageConverter;
+import de.bacnetz.conversion.BACnetIPByteArrayToMessageConverter;
 import de.bacnetz.devices.DeviceProperty;
 import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.devices.ObjectType;
@@ -244,7 +244,7 @@ public class Main {
             public void process(final byte[] data) {
                 try {
 
-                    final ByteArrayToMessageConverter converter = new ByteArrayToMessageConverter();
+                    final BACnetIPByteArrayToMessageConverter converter = new BACnetIPByteArrayToMessageConverter();
                     converter.setPayloadLength(data.length);
                     converter.setPayloadOffset(0);
                     converter.setVendorMap(VendorMap.processVendorMap());
@@ -396,7 +396,7 @@ public class Main {
             final String bytesToHex = Utils.bytesToHex(data, offset, length);
             LOG.info("Response Packet received as hex bytes: '{}'", bytesToHex);
 
-            final ByteArrayToMessageConverter converter = new ByteArrayToMessageConverter();
+            final BACnetIPByteArrayToMessageConverter converter = new BACnetIPByteArrayToMessageConverter();
             converter.setPayloadLength(length);
             converter.setPayloadOffset(offset);
             converter.setVendorMap(VendorMap.processVendorMap());
@@ -933,7 +933,7 @@ public class Main {
             final String bytesToHex = Utils.bytesToHex(data, offset, length);
             LOG.info("Response Packet received as hex bytes: '{}'", bytesToHex);
 
-            final ByteArrayToMessageConverter converter = new ByteArrayToMessageConverter();
+            final BACnetIPByteArrayToMessageConverter converter = new BACnetIPByteArrayToMessageConverter();
             converter.setPayloadLength(length);
             converter.setPayloadOffset(offset);
             converter.setVendorMap(VendorMap.processVendorMap());

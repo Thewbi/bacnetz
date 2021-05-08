@@ -16,7 +16,7 @@ import org.apache.logging.log4j.Logger;
 import de.bacnetz.common.utils.Utils;
 import de.bacnetz.controller.DefaultMessage;
 import de.bacnetz.controller.Message;
-import de.bacnetz.conversion.ByteArrayToMessageConverter;
+import de.bacnetz.conversion.BACnetIPByteArrayToMessageConverter;
 import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.NPDU;
 import de.bacnetz.stack.PDUType;
@@ -96,7 +96,7 @@ public abstract class BaseBACnetzTemplate implements BACnetzTemplate {
             final String bytesToHex = Utils.bytesToHex(data, offset, length);
             getLogger().info("Response Packet received as hex bytes: '{}'", bytesToHex);
 
-            final ByteArrayToMessageConverter converter = new ByteArrayToMessageConverter();
+            final BACnetIPByteArrayToMessageConverter converter = new BACnetIPByteArrayToMessageConverter();
             converter.setPayloadLength(length);
             converter.setPayloadOffset(offset);
             converter.setVendorMap(VendorMap.processVendorMap());
@@ -301,6 +301,7 @@ public abstract class BaseBACnetzTemplate implements BACnetzTemplate {
         return bacnetzCallbackHandler;
     }
 
+    @Override
     public void setBacnetzCallbackHandler(final BACNetzCallbackHandler bacnetzCallbackHandler) {
         this.bacnetzCallbackHandler = bacnetzCallbackHandler;
     }

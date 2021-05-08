@@ -25,7 +25,7 @@ import de.bacnetz.configuration.ConfigurationManager;
 import de.bacnetz.controller.DefaultMessage;
 import de.bacnetz.controller.Message;
 import de.bacnetz.controller.MessageController;
-import de.bacnetz.conversion.ByteArrayToMessageConverter;
+import de.bacnetz.conversion.BACnetIPByteArrayToMessageConverter;
 import de.bacnetz.services.CommunicationService;
 import de.bacnetz.stack.ConfirmedServiceChoice;
 import de.bacnetz.stack.UnconfirmedServiceChoice;
@@ -293,7 +293,7 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
      */
     public Message parseBuffer(final byte[] data, final int payloadLength) {
 
-        final ByteArrayToMessageConverter converter = new ByteArrayToMessageConverter();
+        final BACnetIPByteArrayToMessageConverter converter = new BACnetIPByteArrayToMessageConverter();
         converter.setPayloadLength(payloadLength);
         converter.setVendorMap(vendorMap);
 

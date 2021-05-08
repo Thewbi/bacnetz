@@ -23,6 +23,7 @@ public class APDUTest {
 
         final APDU apdu = new APDU();
         apdu.fromBytes(hexStringToByteArray, 0, hexStringToByteArray.length);
+        apdu.processPayload(apdu.getPayload(), 0, apdu.getPayload().length, 0);
 
         assertEquals(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU, apdu.getPduType());
         assertFalse(apdu.isSegmentation());
@@ -43,6 +44,7 @@ public class APDUTest {
 
         final APDU apdu = new APDU();
         apdu.fromBytes(hexStringToByteArray, 0, hexStringToByteArray.length);
+        apdu.processPayload(apdu.getPayload(), 0, apdu.getPayload().length, 0);
 
         assertEquals(PDUType.CONFIRMED_SERVICE_REQUEST_PDU, apdu.getPduType());
         assertFalse(apdu.isSegmentation());
@@ -73,6 +75,7 @@ public class APDUTest {
 
         final APDU apdu = new APDU();
         apdu.fromBytes(hexStringToByteArray, 0, hexStringToByteArray.length);
+        apdu.processPayload(apdu.getPayload(), 0, apdu.getPayload().length, 0);
 
         assertEquals(PDUType.CONFIRMED_SERVICE_REQUEST_PDU, apdu.getPduType());
         assertFalse(apdu.isSegmentation());
@@ -92,6 +95,7 @@ public class APDUTest {
 
         final APDU apdu = new APDU();
         apdu.fromBytes(hexStringToByteArray, 0, hexStringToByteArray.length);
+        apdu.processPayload(apdu.getPayload(), 0, apdu.getPayload().length, 0);
 
         assertEquals(PDUType.CONFIRMED_SERVICE_REQUEST_PDU, apdu.getPduType());
         assertFalse(apdu.isSegmentation());
@@ -169,6 +173,7 @@ public class APDUTest {
 
         final APDU apdu = new APDU();
         apdu.fromBytes(hexStringToByteArray, 0, hexStringToByteArray.length);
+        apdu.processPayload(apdu.getPayload(), 0, apdu.getPayload().length, 0);
 
         assertEquals(PDUType.CONFIRMED_SERVICE_REQUEST_PDU, apdu.getPduType());
         assertFalse(apdu.isSegmentation());
@@ -297,6 +302,7 @@ public class APDUTest {
 
         final APDU apdu = new APDU();
         apdu.fromBytes(hexStringToByteArray, 0, hexStringToByteArray.length);
+        apdu.processPayload(apdu.getPayload(), 0, apdu.getPayload().length, 0);
 
         assertEquals(PDUType.CONFIRMED_SERVICE_REQUEST_PDU, apdu.getPduType());
         assertFalse(apdu.isSegmentation());
@@ -474,6 +480,7 @@ public class APDUTest {
 
         final APDU apdu = new APDU();
         apdu.fromBytes(hexStringToByteArray, 0, hexStringToByteArray.length);
+        apdu.processPayload(apdu.getPayload(), 0, apdu.getPayload().length, 0);
 
         assertEquals(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU, apdu.getPduType());
         assertFalse(apdu.isSegmentation());
@@ -505,6 +512,71 @@ public class APDUTest {
         System.out.println("Expected: " + APIUtils.byteArrayToStringNoPrefix(expected));
 
         assertTrue(Arrays.equals(data, expected));
+    }
+
+    @Test
+    public void testDeserialize_ComplexAck() {
+
+        final String msg1 = "300e0c0c0040000119553e44000000003f";
+
+        final byte[] hexStringToByteArray = APIUtils.hexStringToByteArray(msg1);
+
+        final APDU apdu = new APDU();
+        apdu.fromBytes(hexStringToByteArray, 0, hexStringToByteArray.length);
+        apdu.processPayload(apdu.getPayload(), 0, apdu.getPayload().length, 0);
+
+        assertEquals(PDUType.COMPLEX_ACK_PDU, apdu.getPduType());
+        assertFalse(apdu.isSegmentation());
+        assertFalse(apdu.isMoreSegmentsFollow());
+        assertFalse(apdu.isSegmentedResponseAccepted());
+
+        assertEquals(14, apdu.getInvokeId());
+        assertEquals(ConfirmedServiceChoice.READ_PROPERTY, apdu.getConfirmedServiceChoice());
+
+        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = apdu
+                .getFirstObjectIdentifierServiceParameter();
+        assertEquals(ObjectType.ANALOG_OUTPUT, objectIdentifierServiceParameter.getObjectType());
+        assertEquals(1, objectIdentifierServiceParameter.getInstanceNumber());
+
+        assertEquals(DevicePropertyType.PRESENT_VALUE.getCode(), apdu.getPropertyIdentifier());
+
+        assertEquals(5, apdu.getServiceParameters().size());
+
+        // service parameter 1
+        ServiceParameter serviceParameter = apdu.getServiceParameters().get(0);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(0, serviceParameter.getTagNumber());
+        assertEquals(4, serviceParameter.getLengthValueType());
+
+        // service parameter 2
+        serviceParameter = apdu.getServiceParameters().get(1);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(1, serviceParameter.getTagNumber());
+        assertEquals(1, serviceParameter.getLengthValueType());
+
+        // service parameter 3 - opening tag {[3]
+        serviceParameter = apdu.getServiceParameters().get(2);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(3, serviceParameter.getTagNumber());
+        assertEquals(6, serviceParameter.getLengthValueType());
+
+        // service parameter 4 - REAL Payload 0x00000000
+        serviceParameter = apdu.getServiceParameters().get(3);
+        assertEquals(TagClass.APPLICATION_TAG, serviceParameter.getTagClass());
+        assertEquals(4, serviceParameter.getTagNumber());
+        assertEquals(ServiceParameter.APPLICATION_TAG_REAL, serviceParameter.getLengthValueType());
+        assertEquals(4, serviceParameter.getPayload().length);
+        assertEquals(0, serviceParameter.getPayload()[0]);
+        assertEquals(0, serviceParameter.getPayload()[1]);
+        assertEquals(0, serviceParameter.getPayload()[2]);
+        assertEquals(0, serviceParameter.getPayload()[3]);
+
+        // service parameter 5 - closing tag {[3]
+        serviceParameter = apdu.getServiceParameters().get(4);
+        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, serviceParameter.getTagClass());
+        assertEquals(3, serviceParameter.getTagNumber());
+        assertEquals(7, serviceParameter.getLengthValueType());
+
     }
 
 }
