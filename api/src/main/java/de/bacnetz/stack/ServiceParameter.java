@@ -1,6 +1,7 @@
 package de.bacnetz.stack;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -199,7 +200,8 @@ public class ServiceParameter {
                 break;
 
             case APPLICATION_TAG_NUMBER_CHARACTER_STRING:
-                final String temp = new String(payload);
+                String temp = new String(payload);
+                temp = StringUtils.trim(temp);
                 stringBuffer.append("Character String (7) '").append(temp).append("'");
                 break;
 

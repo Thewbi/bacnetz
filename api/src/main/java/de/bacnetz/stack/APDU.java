@@ -390,8 +390,8 @@ public class APDU {
             structureLength += delta;
             serviceParameters.add(errorCodeServiceParameter);
 
-            final ErrorClass errorClass = ErrorClass.fromInt(errorClassServiceParameter.getPayload()[0] & 0xFF);
-            final ErrorCode errorCode = ErrorCode.fromInt(errorCodeServiceParameter.getPayload()[0] & 0xFF);
+            final ErrorClass errorClass = ErrorClass.getByCode(errorClassServiceParameter.getPayload()[0] & 0xFF);
+            final ErrorCode errorCode = ErrorCode.getByCode(errorCodeServiceParameter.getPayload()[0] & 0xFF);
 
             LOG.error("Error detected! ErrorClass: " + errorClass + " ErrorCode: " + errorCode);
 

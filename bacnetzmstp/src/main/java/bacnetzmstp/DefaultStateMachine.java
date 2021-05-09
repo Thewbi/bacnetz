@@ -97,9 +97,9 @@ public class DefaultStateMachine {
             } else {
 
                 // DEBUG
-                System.out.println(data + " (" + Integer.toHexString(data) + ")");
+//                System.out.println(data + " (" + Integer.toHexString(data) + ")");
 
-                // TODO: consume data
+                // TODO consume data
                 if (payloadDataRead == PAYLOAD_BUFFER_LENGTH) {
                     throw new RuntimeException("Buffer too small!");
                 }
@@ -124,11 +124,10 @@ public class DefaultStateMachine {
                 throw new RuntimeException("Invalid data CRC");
             }
 
-            final int crcValueSwitchedByteOrder = ((crcValue & 0xFF) << 8) + ((crcValue & 0xFF00) >> 8);
-
-            System.out.println("0x" + Integer.toString(crcValue, 16) + " (" + crcValue + ")");
-            System.out.println(
-                    "0x" + Integer.toString(crcValueSwitchedByteOrder, 16) + " (" + crcValueSwitchedByteOrder + ")");
+//            final int crcValueSwitchedByteOrder = ((crcValue & 0xFF) << 8) + ((crcValue & 0xFF00) >> 8);
+//            System.out.println("0x" + Integer.toString(crcValue, 16) + " (" + crcValue + ")");
+//            System.out.println(
+//                    "0x" + Integer.toString(crcValueSwitchedByteOrder, 16) + " (" + crcValueSwitchedByteOrder + ")");
 
             // send message to listener
             messageListener.message(header, payloadBuffer, payloadDataRead);
@@ -150,8 +149,9 @@ public class DefaultStateMachine {
     }
 
     private static int calcDataCRC(final int dataValue, final int crcValue) {
-        final int crcLow = (crcValue & 0xff) ^ dataValue; /* XOR C7..C0 with D7..D0 */
-        /* Exclusive OR the terms in the table (top down) */
+        // XOR C7..C0 with D7..D0
+        final int crcLow = (crcValue & 0xff) ^ dataValue;
+        // Exclusive OR the terms in the table (top down)
         final int crc = (crcValue >> 8) ^ (crcLow << 8) ^ (crcLow << 3) ^ (crcLow << 12) ^ (crcLow >> 4)
                 ^ (crcLow & 0x0f) ^ ((crcLow & 0x0f) << 7);
         return crc & 0xffff;
@@ -162,15 +162,12 @@ public class DefaultStateMachine {
     }
 
     private void backToIdle() {
-        System.out.println("Back to IDLE");
-
         reset();
         state = State.IDLE;
     }
 
     private void reset() {
         header = new Header();
-//        header.reset();
         dataCRC1 = -1;
         dataCRC2 = -1;
         payloadDataRead = 0;

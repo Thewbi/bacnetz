@@ -1,5 +1,7 @@
 package bacnetzmstp;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import de.bacnetz.controller.DefaultMessage;
 import de.bacnetz.controller.Message;
 import de.bacnetz.conversion.BACnetMSTPByteArrayToMessageConverter;
@@ -27,7 +29,8 @@ public class DefaultMessageListener implements MessageListener {
             break;
 
         case 5:
-            System.out.println("Message received - BACNET_DATA_EXPECTING_REPLY");
+        case 6:
+//            System.out.println("Message received - BACNET_DATA_EXPECTING_REPLY");
 
             final DefaultMessage defaultMessage = new DefaultMessage();
 
@@ -37,9 +40,11 @@ public class DefaultMessageListener implements MessageListener {
             converter.setPayloadOffset(0);
             converter.convert(payloadBuffer, defaultMessage);
 
-            // parse service parameters
-            defaultMessage.getApdu().processPayload(defaultMessage.getApdu().getPayload(), 0,
-                    defaultMessage.getApdu().getPayload().length, 0);
+            if (ArrayUtils.isNotEmpty(defaultMessage.getApdu().getPayload())) {
+                // parse service parameters
+                defaultMessage.getApdu().processPayload(defaultMessage.getApdu().getPayload(), 0,
+                        defaultMessage.getApdu().getPayload().length, 0);
+            }
 
             lastMessage = defaultMessage;
             break;

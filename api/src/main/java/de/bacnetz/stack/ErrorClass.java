@@ -23,7 +23,7 @@ public enum ErrorClass {
         this.name = name;
     }
 
-    public static ErrorClass fromInt(final int id) {
+    public static ErrorClass getByCode(final int id) {
 
         switch (id) {
 
