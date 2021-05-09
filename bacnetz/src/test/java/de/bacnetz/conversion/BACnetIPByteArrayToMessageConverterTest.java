@@ -116,6 +116,10 @@ public class BACnetIPByteArrayToMessageConverterTest {
     @Test
     public void testParseReadPropertyResponse() {
 
+        //
+        // Arrange
+        //
+
         // 81 0A 00 16 01 00 30 01 0C 0C 02 38 A2 8E 19 4C 29 00 3E 21 03 3f
         final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810A0016010030010C0C0238A28E194C29003E21033f");
 
@@ -123,9 +127,17 @@ public class BACnetIPByteArrayToMessageConverterTest {
         byteArrayToMessageConverter.setPayloadOffset(0);
         byteArrayToMessageConverter.setPayloadLength(22);
 
+        //
+        // Act
+        //
+
         final DefaultMessage defaultMessage = byteArrayToMessageConverter.convert(hexStringToByteArray);
         defaultMessage.getApdu().processPayload(defaultMessage.getApdu().getPayload(), 0,
                 defaultMessage.getApdu().getPayload().length, 0);
+
+        //
+        // Assert
+        //
 
         // invoke is 1
         assertEquals(1, defaultMessage.getApdu().getInvokeId());
@@ -188,8 +200,7 @@ public class BACnetIPByteArrayToMessageConverterTest {
         // closing tag
         assertEquals(ServiceParameter.CLOSING_TAG_CODE, serviceParameter.getLengthValueType());
 
-        LOG.info(defaultMessage);
-
+        LOG.trace(defaultMessage);
     }
 
     /**
