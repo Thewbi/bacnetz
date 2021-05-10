@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
+import de.bacnetz.common.utils.Utils;
+
 public class HeaderTest {
 
     @Test
@@ -60,10 +62,12 @@ public class HeaderTest {
 
     @Test
     public void testOwnCRC() {
+
         final Header header = new Header();
-        header.setFrameType(0x01);
-        header.setDestinationAddress(0x41);
-        header.setSourceAddress(0x19);
+
+        header.setFrameType(FrameType.POLL_FOR_MASTER.getNumVal());
+        header.setDestinationAddress(0x0C);
+        header.setSourceAddress(0x0A);
         header.setLength1(0x00);
         header.setLength2(0x00);
         header.setCrc(0x00);
@@ -71,6 +75,8 @@ public class HeaderTest {
         final byte[] bytes = header.toBytes();
 
         header.setCrc(bytes[7]);
+
+        System.out.println(Utils.bytesToHex(bytes));
 
         assertTrue(header.checkCRC());
     }

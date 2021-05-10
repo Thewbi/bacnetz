@@ -22,6 +22,15 @@ import de.bacnetz.devices.DefaultDevice;
  */
 public class Main {
 
+    private static final int MASTER_DEVICE_ID = 2;
+
+    // private static final int MAX_MASTER = 9;
+    private static final int MAX_MASTER = 127;
+
+    // private static final String COM_PORT = "COM8";
+
+    private static final String COM_PORT = "/dev/tty.usbserial-AR0KCOCB";
+
     private static final int MSTP_BAUD_RATE = 76800;
 
     /**
@@ -36,26 +45,30 @@ public class Main {
 
 //        System.out.println(System.getProperty("java.library.path"));
 
+        System.out.println("Listing Port Names ...");
         final String[] portNames = SerialPortBuilder.getSerialPortNames();
+        System.out.println("Listing Port Names done.");
 
         for (final String portName : portNames) {
             System.out.println(portName);
         }
 
-        final SerialPort serialPort = SerialPortBuilder.newBuilder("COM8").setParity(Parity.NONE)
+        final SerialPort serialPort = SerialPortBuilder.newBuilder(COM_PORT).setParity(Parity.NONE)
                 .setDataBits(DataBits.DATABITS_8).setStopBits(StopBits.STOPBITS_1).setBaudRate(MSTP_BAUD_RATE).build();
 
         final InputStream inputStream = serialPort.getInputStream();
         final OutputStream outputStream = serialPort.getOutputStream();
 
+        final DefaultDevice masterDevice = new DefaultDevice();
+        masterDevice.setId(MASTER_DEVICE_ID);
+
         final PollForMasterRunnable pollForMasterRunnable = new PollForMasterRunnable();
+        pollForMasterRunnable.setMasterDevice(masterDevice);
+        pollForMasterRunnable.setMaxMaster(MAX_MASTER);
         pollForMasterRunnable.setOutputStream(outputStream);
 
         final Thread thread = new Thread(pollForMasterRunnable);
-//        thread.start();
-
-        final DefaultDevice masterDevice = new DefaultDevice();
-        masterDevice.setId(10);
+        thread.start();
 
         final MessageListener messageListener = new DefaultMessageListener();
         messageListener.setOutputStream(outputStream);
@@ -66,7 +79,7 @@ public class Main {
 
         int data = -1;
         while ((data = inputStream.read()) != -1) {
-//            System.out.println(data + " (" + Integer.toHexString(data) + ")");
+            System.out.println(data + " (" + Integer.toHexString(data) + ")");
 
             stateMachine.input(data);
         }

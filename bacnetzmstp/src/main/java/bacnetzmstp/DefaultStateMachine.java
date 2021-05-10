@@ -1,12 +1,13 @@
 package bacnetzmstp;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import bacnetzmstp.messages.MessageListener;
 
 public class DefaultStateMachine {
 
-    private static final int PAYLOAD_BUFFER_LENGTH = 1024;
+    private static final int PAYLOAD_BUFFER_LENGTH = 1024 * 5;
 
     private static final int PREAMBLE_1 = 0x55;
 
@@ -16,8 +17,6 @@ public class DefaultStateMachine {
 
     private Header header = new Header();
 
-//    private int dataRead = 0;
-
     private int dataCRC1 = -1;
 
     private int dataCRC2 = -1;
@@ -25,6 +24,9 @@ public class DefaultStateMachine {
     private MessageListener messageListener;
 
     private final byte[] payloadBuffer = new byte[PAYLOAD_BUFFER_LENGTH];
+
+    private final byte[] headerBuffer = new byte[100];
+    private int headerBufferIndex = 0;
 
     private int payloadDataRead = 0;
 
@@ -39,6 +41,10 @@ public class DefaultStateMachine {
             if (data == PREAMBLE_1) {
                 state = State.PREAMBLE;
             }
+
+            // DEBUG
+            headerBuffer[headerBufferIndex] = (byte) data;
+            headerBufferIndex++;
             break;
 
         case PREAMBLE:
@@ -49,6 +55,10 @@ public class DefaultStateMachine {
                 // preamble 2 --> HEADER
                 reset();
                 state = State.HEADER;
+
+                // DEBUG
+                headerBuffer[headerBufferIndex] = (byte) data;
+                headerBufferIndex++;
             } else {
                 state = State.IDLE;
             }
@@ -60,6 +70,10 @@ public class DefaultStateMachine {
                 // go to next state
                 state = State.HEADER_CRC;
             }
+
+            // DEBUG
+            headerBuffer[headerBufferIndex] = (byte) data;
+            headerBufferIndex++;
             break;
 
         case HEADER_CRC:
@@ -76,7 +90,10 @@ public class DefaultStateMachine {
 
             // TODO: check header CRC
             if (!header.checkCRC()) {
-                throw new RuntimeException("Invalid header CRC");
+//                throw new RuntimeException(
+//                        "Invalid header CRC " + Utils.bytesToHex(headerBuffer, 0, headerBufferIndex));
+                backToIdle();
+                return;
             }
 
 //            System.out.println("BACnet MS/TP Poll For Master");
@@ -119,13 +136,15 @@ public class DefaultStateMachine {
 //            System.out.println(Utils.bytesToHex(payloadBuffer, 0, payloadDataRead + 2));
 
             // check data CRC
-            final int crcValue = getCrc(payloadBuffer, payloadDataRead, 0);
+            final int crcValue = DataCRC.getCrc(payloadBuffer, payloadDataRead, 0);
 
             final int computedCRC1 = ((crcValue & 0xFF));
             final int computedCRC2 = ((crcValue & 0xFF00) >> 8);
 
             if ((computedCRC1 != dataCRC1) || (computedCRC2 != dataCRC2)) {
-                throw new RuntimeException("Invalid data CRC");
+                // throw new RuntimeException("Invalid data CRC");
+                backToIdle();
+                return;
             }
 
 //            final int crcValueSwitchedByteOrder = ((crcValue & 0xFF) << 8) + ((crcValue & 0xFF00) >> 8);
@@ -143,28 +162,6 @@ public class DefaultStateMachine {
         }
     }
 
-    public int getCrc(final byte[] payloadBuffer, final int length, final int offset) {
-        int value = 0xffff;
-        for (int i = 0; i < length; i++) {
-            final byte b = payloadBuffer[i + offset];
-            value = calcDataCRC(b & 0xFF, value);
-        }
-        return onesComplement(value);
-    }
-
-    private static int calcDataCRC(final int dataValue, final int crcValue) {
-        // XOR C7..C0 with D7..D0
-        final int crcLow = (crcValue & 0xff) ^ dataValue;
-        // Exclusive OR the terms in the table (top down)
-        final int crc = (crcValue >> 8) ^ (crcLow << 8) ^ (crcLow << 3) ^ (crcLow << 12) ^ (crcLow >> 4)
-                ^ (crcLow & 0x0f) ^ ((crcLow & 0x0f) << 7);
-        return crc & 0xffff;
-    }
-
-    private static int onesComplement(final int i) {
-        return (~i) & 0xffff;
-    }
-
     private void backToIdle() {
         reset();
         state = State.IDLE;
@@ -175,6 +172,11 @@ public class DefaultStateMachine {
         dataCRC1 = -1;
         dataCRC2 = -1;
         payloadDataRead = 0;
+
+        Arrays.fill(payloadBuffer, (byte) 0x00);
+
+        // DEBUG
+        headerBufferIndex = 0;
     }
 
     public State getState() {

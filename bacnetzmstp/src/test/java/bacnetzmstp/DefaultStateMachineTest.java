@@ -21,6 +21,7 @@ import de.bacnetz.common.utils.Utils;
 import de.bacnetz.controller.Message;
 import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.devices.ObjectType;
+import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.ConfirmedServiceChoice;
 import de.bacnetz.stack.ErrorClass;
 import de.bacnetz.stack.ErrorCode;
@@ -1007,4 +1008,281 @@ public class DefaultStateMachineTest {
 //        System.out.println(defaultMessage);
 //        System.out.println("done");
     }
+
+    /**
+     * BACnet MS/TP - error (response)
+     * 
+     * The device receives a request for it's DESCRIPTION property.
+     * 
+     * https://store.chipkin.com/articles/how-does-bacnet-mstp-discover-new-devices-on-a-network
+     * 
+     * @throws IOException
+     */
+    @Test
+    public void response_error_unknownProperty() throws IOException {
+
+        //
+        // Arrange
+        //
+
+        final MessageListener messageListener = spy(DefaultMessageListener.class);
+
+        final DefaultStateMachine stateMachine = new DefaultStateMachine();
+        stateMachine.setMessageListener(messageListener);
+
+        final String headerHexStream = "55FF050201000D11";
+        final String npduHexStream = "0104";
+        final String apduHexStream = "0273150C0C023FFFFF19D1";
+        final String footerHexStream = "4408";
+
+        final byte[] hexStringToByteArray = Utils
+                .hexStringToByteArray(headerHexStream + npduHexStream + apduHexStream + footerHexStream);
+
+        final ArgumentCaptor<Header> headerCaptor = ArgumentCaptor.forClass(Header.class);
+        final ArgumentCaptor<byte[]> bufferCaptor = ArgumentCaptor.forClass(byte[].class);
+        final ArgumentCaptor<Integer> bufferLengthCaptor = ArgumentCaptor.forClass(Integer.class);
+
+        //
+        // Act
+        //
+
+        for (final byte data : hexStringToByteArray) {
+            stateMachine.input(data & 0xFF);
+        }
+
+        //
+        // Assert
+        //
+
+        verify(messageListener).message(headerCaptor.capture(), bufferCaptor.capture(), bufferLengthCaptor.capture());
+
+        // 22 byte of payload (= npdu + apdu)
+        assertEquals(13, bufferLengthCaptor.getValue());
+
+        final Header header = headerCaptor.getValue();
+
+        assertEquals(FrameType.BACNET_DATA_EXPECTING_REPLY.getNumVal(), header.getFrameType());
+        assertEquals(0x02, header.getDestinationAddress());
+        assertEquals(0x01, header.getSourceAddress());
+        assertEquals(13, header.getLength());
+        assertEquals(0x11, header.getCrc());
+
+        final Message defaultMessage = messageListener.getLastMessage();
+
+        // no virtual link control for BACnet MS/TP
+        assertNull(defaultMessage.getVirtualLinkControl());
+
+        // check NPDU
+        assertEquals(1, defaultMessage.getNpdu().getVersion());
+        assertEquals(4, defaultMessage.getNpdu().getControl());
+
+        // invoke id
+        assertEquals(21, defaultMessage.getApdu().getInvokeId());
+
+        // service choice is readProperty
+        assertNull(defaultMessage.getApdu().getUnconfirmedServiceChoice());
+        assertEquals(ConfirmedServiceChoice.READ_PROPERTY, defaultMessage.getApdu().getConfirmedServiceChoice());
+
+//        // object identifier (context tag)
+//        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = defaultMessage.getApdu()
+//                .getFirstObjectIdentifierServiceParameter();
+//        // context tag number 0
+//        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, objectIdentifierServiceParameter.getTagClass());
+//        assertEquals(0, objectIdentifierServiceParameter.getTagNumber());
+//        assertEquals(32, objectIdentifierServiceParameter.getInstanceNumber());
+//        assertEquals(ObjectType.BINARY_INPUT, objectIdentifierServiceParameter.getObjectType());
+//
+//        // TODO verify all service parameters
+//        assertEquals(190, defaultMessage.getApdu().getServiceParameters().size());
+
+//        System.out.println(defaultMessage);
+//        System.out.println("done");
+    }
+
+    @Test
+    public void response_structured_object_list() throws IOException {
+
+        //
+        // Arrange
+        //
+
+        final MessageListener messageListener = spy(DefaultMessageListener.class);
+
+        final DefaultStateMachine stateMachine = new DefaultStateMachine();
+        stateMachine.setMessageListener(messageListener);
+
+//        Header: 55 FF 05 02 01 00 0D 11 
+//        Payload: 01 04 02 73 0A 0C 0C 02 3F FF FF 19 4C 
+
+        final String headerHexStream = "55FF050201000D11";
+        final String npduHexStream = "0104";
+        final String apduHexStream = "0273000C0C023FFFFF19D1";
+        final String footerHexStream = "C885";
+
+        final byte[] hexStringToByteArray = Utils
+                .hexStringToByteArray(headerHexStream + npduHexStream + apduHexStream + footerHexStream);
+
+        final ArgumentCaptor<Header> headerCaptor = ArgumentCaptor.forClass(Header.class);
+        final ArgumentCaptor<byte[]> bufferCaptor = ArgumentCaptor.forClass(byte[].class);
+        final ArgumentCaptor<Integer> bufferLengthCaptor = ArgumentCaptor.forClass(Integer.class);
+
+        //
+        // Act
+        //
+
+        for (final byte data : hexStringToByteArray) {
+            stateMachine.input(data & 0xFF);
+        }
+
+        //
+        // Assert
+        //
+
+        verify(messageListener).message(headerCaptor.capture(), bufferCaptor.capture(), bufferLengthCaptor.capture());
+
+        // 22 byte of payload (= npdu + apdu)
+        assertEquals(13, bufferLengthCaptor.getValue());
+
+        final Header header = headerCaptor.getValue();
+
+        assertEquals(FrameType.BACNET_DATA_EXPECTING_REPLY.getNumVal(), header.getFrameType());
+        assertEquals(0x02, header.getDestinationAddress());
+        assertEquals(0x01, header.getSourceAddress());
+        assertEquals(13, header.getLength());
+        assertEquals(0x11, header.getCrc());
+
+        final Message defaultMessage = messageListener.getLastMessage();
+
+        // no virtual link control for BACnet MS/TP
+        assertNull(defaultMessage.getVirtualLinkControl());
+
+        // check NPDU
+        assertEquals(1, defaultMessage.getNpdu().getVersion());
+        assertEquals(4, defaultMessage.getNpdu().getControl());
+
+        // invoke id
+        assertEquals(21, defaultMessage.getApdu().getInvokeId());
+
+        // service choice is readProperty
+        assertNull(defaultMessage.getApdu().getUnconfirmedServiceChoice());
+        assertEquals(ConfirmedServiceChoice.READ_PROPERTY, defaultMessage.getApdu().getConfirmedServiceChoice());
+
+//        // object identifier (context tag)
+//        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = defaultMessage.getApdu()
+//                .getFirstObjectIdentifierServiceParameter();
+//        // context tag number 0
+//        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, objectIdentifierServiceParameter.getTagClass());
+//        assertEquals(0, objectIdentifierServiceParameter.getTagNumber());
+//        assertEquals(32, objectIdentifierServiceParameter.getInstanceNumber());
+//        assertEquals(ObjectType.BINARY_INPUT, objectIdentifierServiceParameter.getObjectType());
+//
+//        // TODO verify all service parameters
+//        assertEquals(190, defaultMessage.getApdu().getServiceParameters().size());
+
+//        System.out.println(defaultMessage);
+//        System.out.println("done");
+    }
+
+    @Test
+    public void response_object_list() throws IOException {
+
+        //
+        // Arrange
+        //
+
+        final MessageListener messageListener = spy(DefaultMessageListener.class);
+
+        final DefaultStateMachine stateMachine = new DefaultStateMachine();
+        stateMachine.setMessageListener(messageListener);
+
+//        Header: 55 FF 05 02 01 00 0D 11 
+//        Payload: 01 04 02 73 10 0C 0C 02 3F FF FF 19 4C
+
+        final String headerHexStream = "55FF050201000D11";
+        final String npduHexStream = "0104";
+        final String apduHexStream = "0273130C0C023FFFFF194C";
+        final String footerHexStream = "37E3";
+
+        final byte[] hexStringToByteArray = Utils
+                .hexStringToByteArray(headerHexStream + npduHexStream + apduHexStream + footerHexStream);
+
+        final ArgumentCaptor<Header> headerCaptor = ArgumentCaptor.forClass(Header.class);
+        final ArgumentCaptor<byte[]> bufferCaptor = ArgumentCaptor.forClass(byte[].class);
+        final ArgumentCaptor<Integer> bufferLengthCaptor = ArgumentCaptor.forClass(Integer.class);
+
+        //
+        // Act
+        //
+
+        for (final byte data : hexStringToByteArray) {
+            stateMachine.input(data & 0xFF);
+        }
+
+        //
+        // Assert
+        //
+
+        verify(messageListener).message(headerCaptor.capture(), bufferCaptor.capture(), bufferLengthCaptor.capture());
+
+        // 22 byte of payload (= npdu + apdu)
+        assertEquals(13, bufferLengthCaptor.getValue());
+
+        final Header header = headerCaptor.getValue();
+
+        // output pattern so it is possible to check that the serialization will work as
+        // expected
+        System.out.println(Utils.bytesToHex(header.toBytes()));
+
+        assertEquals(FrameType.BACNET_DATA_EXPECTING_REPLY.getNumVal(), header.getFrameType());
+        assertEquals(0x02, header.getDestinationAddress());
+        assertEquals(0x01, header.getSourceAddress());
+        assertEquals(13, header.getLength());
+        assertEquals(0x11, header.getCrc());
+
+        final Message defaultMessage = messageListener.getLastMessage();
+
+        // no virtual link control for BACnet MS/TP
+        assertNull(defaultMessage.getVirtualLinkControl());
+
+        // check NPDU
+        assertEquals(1, defaultMessage.getNpdu().getVersion());
+        assertEquals(4, defaultMessage.getNpdu().getControl());
+
+        //
+        // APDU
+        //
+
+        final APDU apdu = defaultMessage.getApdu();
+
+        // invoke id
+        assertEquals(19, apdu.getInvokeId());
+
+        // service choice is readProperty
+        assertNull(apdu.getUnconfirmedServiceChoice());
+        assertEquals(ConfirmedServiceChoice.READ_PROPERTY, apdu.getConfirmedServiceChoice());
+
+        // DEBUG
+        System.out.println(defaultMessage.getNpdu().getStructureLength());
+        System.out.println(Utils.bytesToHex(defaultMessage.getNpdu().getBytes()));
+
+        // DEBUG
+        System.out.println(apdu.getStructureLength());
+        System.out.println(Utils.bytesToHex(apdu.getBytes()));
+
+//        // object identifier (context tag)
+//        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = defaultMessage.getApdu()
+//                .getFirstObjectIdentifierServiceParameter();
+//        // context tag number 0
+//        assertEquals(TagClass.CONTEXT_SPECIFIC_TAG, objectIdentifierServiceParameter.getTagClass());
+//        assertEquals(0, objectIdentifierServiceParameter.getTagNumber());
+//        assertEquals(32, objectIdentifierServiceParameter.getInstanceNumber());
+//        assertEquals(ObjectType.BINARY_INPUT, objectIdentifierServiceParameter.getObjectType());
+//
+//        // TODO verify all service parameters
+//        assertEquals(190, defaultMessage.getApdu().getServiceParameters().size());
+
+//        System.out.println(defaultMessage);
+//        System.out.println("done");
+    }
+
 }

@@ -75,7 +75,10 @@ public class Header {
         tempCRC = CRC_Calc_Header(length1, tempCRC); // length
         tempCRC = CRC_Calc_Header(length2, tempCRC);
 
-        return onesComplement(tempCRC) == crc;
+        final int expected = onesComplement(tempCRC);
+//        System.out.println(expected + " " + crc);
+
+        return expected == crc;
     }
 
     private static int onesComplement(final int i) {
@@ -113,9 +116,33 @@ public class Header {
         tempCRC = CRC_Calc_Header(length2, tempCRC);
 
         final byte reply[] = { (byte) 0x55, (byte) 0xFF, (byte) frameType, (byte) destinationAddress,
-                (byte) sourceAddress, 0x00, 0x00, (byte) onesComplement(tempCRC) };
+                (byte) sourceAddress, (byte) length1, (byte) length2, (byte) onesComplement(tempCRC) };
 
         return reply;
+    }
+
+    public int toBytes(final byte[] data, final int offset) {
+
+        int tempCRC = 0xFF;
+        tempCRC = CRC_Calc_Header(frameType, tempCRC); // frame type
+        tempCRC = CRC_Calc_Header(destinationAddress, tempCRC); // destination address
+        tempCRC = CRC_Calc_Header(sourceAddress, tempCRC); // source address
+        tempCRC = CRC_Calc_Header(length1, tempCRC); // length
+        tempCRC = CRC_Calc_Header(length2, tempCRC);
+
+//        final byte reply[] = { (byte) 0x55, (byte) 0xFF, (byte) frameType, (byte) destinationAddress,
+//                (byte) sourceAddress, (byte) length1, (byte) length2, (byte) onesComplement(tempCRC) };
+
+        data[0] = (byte) 0x55;
+        data[1] = (byte) 0xFF;
+        data[2] = (byte) frameType;
+        data[3] = (byte) destinationAddress;
+        data[4] = (byte) sourceAddress;
+        data[5] = (byte) length1;
+        data[6] = (byte) length2;
+        data[7] = (byte) onesComplement(tempCRC);
+
+        return 8;
     }
 
     public int getFrameType() {

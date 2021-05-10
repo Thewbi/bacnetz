@@ -201,7 +201,7 @@ public class NPDU {
         return dataLength;
     }
 
-    public void toBytes(final byte[] data, final int offset) {
+    public int toBytes(final byte[] data, final int offset) {
 
         int index = 0;
 
@@ -243,6 +243,8 @@ public class NPDU {
                 }
             }
         }
+
+        return index;
     }
 
     public byte[] getBytes() {

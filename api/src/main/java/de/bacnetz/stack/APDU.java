@@ -209,7 +209,7 @@ public class APDU {
         segmentationControl |= (byte) (maxAPDUSizeType) & 0xFF;
     }
 
-    public void toBytes(final byte[] data, final int offset) throws BACnetzException {
+    public int toBytes(final byte[] data, final int offset) throws BACnetzException {
 
         int index = 0;
 
@@ -258,6 +258,8 @@ public class APDU {
                 index += serviceParameter.getDataLength();
             }
         }
+
+        return index;
     }
 
     public void fromBytes(final byte[] data, final int startIndex, final int payloadLength) {
@@ -1057,6 +1059,14 @@ public class APDU {
 
     public void setPayload(final byte[] payload) {
         this.payload = payload;
+    }
+
+    public int getSegmentationControl() {
+        return segmentationControl;
+    }
+
+    public void setSegmentationControl(final int segmentationControl) {
+        this.segmentationControl = segmentationControl;
     }
 
 }

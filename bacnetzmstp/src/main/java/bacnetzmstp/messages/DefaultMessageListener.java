@@ -9,6 +9,7 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import bacnetzmstp.FrameType;
 import bacnetzmstp.Header;
+import de.bacnetz.common.utils.Utils;
 import de.bacnetz.controller.DefaultMessage;
 import de.bacnetz.controller.Message;
 import de.bacnetz.conversion.BACnetMSTPByteArrayToMessageConverter;
@@ -28,17 +29,45 @@ public class DefaultMessageListener implements MessageListener {
         FrameType.BACNET_DATA_EXPECTING_REPLY.getNumVal();
 
         switch (header.getFrameType()) {
+
+        // 0 is token
         case 0:
-            System.out.println("Message received - TOKEN");
+//            System.out.println("Message received - TOKEN - SA: " + header.getSourceAddress() + " DA: "
+//                    + header.getDestinationAddress());
+
+            final int destinationDeviceId = header.getDestinationAddress();
+//          System.out.println("Message received - POLL_FOR_MASTER - device id: " + deviceId);
+
+            // find master with this id and send response
+            if (masterDevices.containsKey(destinationDeviceId)) {
+//                System.out
+//                        .println("Message received - POLL_FOR_MASTER - destination device id: " + destinationDeviceId);
+
+                final Device masterDevice = masterDevices.get(destinationDeviceId);
+
+                final Header responseHeader = new Header();
+                responseHeader.setFrameType(FrameType.TOKEN.getNumVal());
+                responseHeader.setDestinationAddress(header.getSourceAddress());
+                responseHeader.setSourceAddress(masterDevice.getId());
+                responseHeader.setLength1(0x00);
+                responseHeader.setLength2(0x00);
+
+                final byte reply[] = responseHeader.toBytes();
+
+                responseHeader.setCrc(reply[7]);
+
+                outputStream.write(reply);
+            }
             break;
 
+        // 1 is POLL_FOR_MASTER
         case 1:
             final int deviceId = header.getDestinationAddress();
-            System.out.println("Message received - POLL_FOR_MASTER - device id: " + deviceId);
+//            System.out.println("Message received - POLL_FOR_MASTER - device id: " + deviceId);
 
             // find master with this id and send response
             if (masterDevices.containsKey(deviceId)) {
-//                System.out.println("Message received - POLL_FOR_MASTER - device id: " + deviceId);
+                System.out.println("Message received - POLL_FOR_MASTER - device id: " + deviceId);
 
                 final Device masterDevice = masterDevices.get(deviceId);
 
@@ -46,20 +75,30 @@ public class DefaultMessageListener implements MessageListener {
                 responseHeader.setFrameType(FrameType.REPLY_TO_POLL_FOR_MASTER.getNumVal());
                 responseHeader.setDestinationAddress(header.getSourceAddress());
                 responseHeader.setSourceAddress(masterDevice.getId());
+                responseHeader.setLength1(0x00);
+                responseHeader.setLength2(0x00);
 
                 final byte reply[] = responseHeader.toBytes();
 
-//                outputStream.write(reply);
+                responseHeader.setCrc(reply[7]);
+
+                outputStream.write(reply);
             }
             break;
 
+        // REPLY_TO_POLL_FOR_MASTER
         case 2:
             System.out.println("Message received - REPLY_TO_POLL_FOR_MASTER");
             break;
 
+        // BACNET_DATA_EXPECTING_REPLY(5),
+        // BACNET_DATA_NOT_EXPECTING_REPLY(6),
         case 5:
         case 6:
-//            System.out.println("Message received - BACNET_DATA_EXPECTING_REPLY");
+            System.out.println("Message received - BACNET_DATA_EXPECTING_REPLY");
+
+            System.out.println("Header: " + Utils.bytesToHex(header.toBytes()));
+            System.out.println("Payload: " + Utils.bytesToHex(payloadBuffer, 0, payloadDataRead));
 
             final DefaultMessage defaultMessage = new DefaultMessage();
 
@@ -76,6 +115,8 @@ public class DefaultMessageListener implements MessageListener {
             }
 
             lastMessage = defaultMessage;
+
+            System.out.println(defaultMessage);
             break;
 
         default:
