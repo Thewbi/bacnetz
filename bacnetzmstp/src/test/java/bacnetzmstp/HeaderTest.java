@@ -25,7 +25,6 @@ public class HeaderTest {
         // 229d = 0xe5
 //        System.out.println(crc);
         System.out.println(onesComplement(crc));
-
     }
 
     @Test
@@ -57,7 +56,23 @@ public class HeaderTest {
         header.setCrc(0x1c);
 
         assertTrue(header.checkCRC());
+    }
 
+    @Test
+    public void testOwnCRC() {
+        final Header header = new Header();
+        header.setFrameType(0x01);
+        header.setDestinationAddress(0x41);
+        header.setSourceAddress(0x19);
+        header.setLength1(0x00);
+        header.setLength2(0x00);
+        header.setCrc(0x00);
+
+        final byte[] bytes = header.toBytes();
+
+        header.setCrc(bytes[7]);
+
+        assertTrue(header.checkCRC());
     }
 
     private static int onesComplement(final int i) {

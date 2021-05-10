@@ -7,6 +7,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -14,6 +15,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import bacnetzmstp.messages.DefaultMessageListener;
+import bacnetzmstp.messages.MessageListener;
 import de.bacnetz.common.utils.Utils;
 import de.bacnetz.controller.Message;
 import de.bacnetz.devices.DevicePropertyType;
@@ -31,9 +34,11 @@ public class DefaultStateMachineTest {
      * Incomplete data, sequence does not start at preamble but in between messages
      * 64 (40) 169 (a9) 35 (23) 16 (10) 16 (10) 253 (fd) 85 (55) 255 (ff) 64 (40)
      * 169 (a9) 35 (23)
+     * 
+     * @throws IOException
      */
     @Test
-    public void dataTest() {
+    public void dataTest() throws IOException {
 
         final DefaultStateMachine stateMachine = new DefaultStateMachine();
 
@@ -45,10 +50,11 @@ public class DefaultStateMachineTest {
     }
 
     /**
+     * @throws IOException
      * 
      */
     @Test
-    public void dataTest2() {
+    public void dataTest2() throws IOException {
 
         //
         // Arrange
@@ -113,9 +119,11 @@ public class DefaultStateMachineTest {
      * BACnet MS/TP - poll for master
      * 
      * https://store.chipkin.com/articles/how-does-bacnet-mstp-discover-new-devices-on-a-network
+     * 
+     * @throws IOException
      */
     @Test
-    public void pollForMaster() {
+    public void pollForMaster() throws IOException {
 
         //
         // Arrange
@@ -171,9 +179,11 @@ public class DefaultStateMachineTest {
      * https://store.chipkin.com/articles/how-does-bacnet-mstp-discover-new-devices-on-a-network
      * 
      * Specification 9.3 - MS/TP Frame Format
+     * 
+     * @throws IOException
      */
     @Test
-    public void replyToPollForMaster() {
+    public void replyToPollForMaster() throws IOException {
 
         //
         // Arrange
@@ -229,9 +239,11 @@ public class DefaultStateMachineTest {
      * 
      * https://store.chipkin.com/articles/how-does-bacnet-mstp-discover-new-devices-on-a-network
      * 
+     * @throws IOException
+     * 
      */
     @Test
-    public void token() {
+    public void token() throws IOException {
 
         //
         // Arrange
@@ -288,9 +300,11 @@ public class DefaultStateMachineTest {
      * 
      * https://store.chipkin.com/articles/how-does-bacnet-mstp-discover-new-devices-on-a-network
      * 
+     * @throws IOException
+     * 
      */
     @Test
-    public void request_readProperty_description() {
+    public void request_readProperty_description() throws IOException {
 
         //
         // Arrange
@@ -380,9 +394,11 @@ public class DefaultStateMachineTest {
      * The device receives a request for it's DESCRIPTION property.
      * 
      * https://store.chipkin.com/articles/how-does-bacnet-mstp-discover-new-devices-on-a-network
+     * 
+     * @throws IOException
      */
     @Test
-    public void response_readProperty_description() {
+    public void response_readProperty_description() throws IOException {
 
         //
         // Arrange
@@ -502,9 +518,11 @@ public class DefaultStateMachineTest {
      * 
      * https://store.chipkin.com/articles/how-does-bacnet-mstp-discover-new-devices-on-a-network
      * 
+     * @throws IOException
+     * 
      */
     @Test
-    public void request_readProperty_objectname() {
+    public void request_readProperty_objectname() throws IOException {
 
         //
         // Arrange
@@ -594,9 +612,11 @@ public class DefaultStateMachineTest {
      * The device receives a request for it's DESCRIPTION property.
      * 
      * https://store.chipkin.com/articles/how-does-bacnet-mstp-discover-new-devices-on-a-network
+     * 
+     * @throws IOException
      */
     @Test
-    public void response_readProperty_objectname() {
+    public void response_readProperty_objectname() throws IOException {
 
         //
         // Arrange
@@ -715,9 +735,11 @@ public class DefaultStateMachineTest {
      * The device receives a request for it's DESCRIPTION property.
      * 
      * https://store.chipkin.com/articles/how-does-bacnet-mstp-discover-new-devices-on-a-network
+     * 
+     * @throws IOException
      */
     @Test
-    public void response_error() {
+    public void response_error() throws IOException {
 
         //
         // Arrange
@@ -808,9 +830,11 @@ public class DefaultStateMachineTest {
      * 
      * https://store.chipkin.com/articles/how-does-bacnet-mstp-discover-new-devices-on-a-network
      * 
+     * @throws IOException
+     * 
      */
     @Test
-    public void request_readPropertyMultiple() {
+    public void request_readPropertyMultiple() throws IOException {
 
         //
         // Arrange
@@ -899,9 +923,11 @@ public class DefaultStateMachineTest {
      * The device receives a request for it's DESCRIPTION property.
      * 
      * https://store.chipkin.com/articles/how-does-bacnet-mstp-discover-new-devices-on-a-network
+     * 
+     * @throws IOException
      */
     @Test
-    public void response_readPropertyMultiple() {
+    public void response_readPropertyMultiple() throws IOException {
 
         //
         // Arrange

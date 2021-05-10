@@ -10,6 +10,10 @@ import org.openmuc.jrxtx.SerialPort;
 import org.openmuc.jrxtx.SerialPortBuilder;
 import org.openmuc.jrxtx.StopBits;
 
+import bacnetzmstp.messages.DefaultMessageListener;
+import bacnetzmstp.messages.MessageListener;
+import de.bacnetz.devices.DefaultDevice;
+
 /**
  * Installation of jrxtx
  *
@@ -30,8 +34,6 @@ public class Main {
      */
     public static void main(final String[] args) throws IOException {
 
-        final DefaultStateMachine stateMachine = new DefaultStateMachine();
-
 //        System.out.println(System.getProperty("java.library.path"));
 
         final String[] portNames = SerialPortBuilder.getSerialPortNames();
@@ -44,6 +46,23 @@ public class Main {
                 .setDataBits(DataBits.DATABITS_8).setStopBits(StopBits.STOPBITS_1).setBaudRate(MSTP_BAUD_RATE).build();
 
         final InputStream inputStream = serialPort.getInputStream();
+        final OutputStream outputStream = serialPort.getOutputStream();
+
+        final PollForMasterRunnable pollForMasterRunnable = new PollForMasterRunnable();
+        pollForMasterRunnable.setOutputStream(outputStream);
+
+        final Thread thread = new Thread(pollForMasterRunnable);
+//        thread.start();
+
+        final DefaultDevice masterDevice = new DefaultDevice();
+        masterDevice.setId(10);
+
+        final MessageListener messageListener = new DefaultMessageListener();
+        messageListener.setOutputStream(outputStream);
+        messageListener.getMasterDevices().put(masterDevice.getId(), masterDevice);
+
+        final DefaultStateMachine stateMachine = new DefaultStateMachine();
+        stateMachine.setMessageListener(messageListener);
 
         int data = -1;
         while ((data = inputStream.read()) != -1) {
@@ -51,8 +70,6 @@ public class Main {
 
             stateMachine.input(data);
         }
-
-        final OutputStream outputStream = serialPort.getOutputStream();
 
         if (serialPort != null) {
             try {

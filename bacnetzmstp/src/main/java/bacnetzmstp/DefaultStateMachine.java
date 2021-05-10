@@ -1,5 +1,9 @@
 package bacnetzmstp;
 
+import java.io.IOException;
+
+import bacnetzmstp.messages.MessageListener;
+
 public class DefaultStateMachine {
 
     private static final int PAYLOAD_BUFFER_LENGTH = 1024;
@@ -24,7 +28,7 @@ public class DefaultStateMachine {
 
     private int payloadDataRead = 0;
 
-    public void input(final int data) {
+    public void input(final int data) throws IOException {
 
 //        System.out.println(data + " (" + Integer.toHexString(data) + ")");
 
