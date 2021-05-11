@@ -3,6 +3,9 @@ package bacnetzmstp;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import bacnetzmstp.messages.MessageListener;
 
 public class DefaultStateMachine {
@@ -12,6 +15,8 @@ public class DefaultStateMachine {
     private static final int PREAMBLE_1 = 0x55;
 
     private static final int PREAMBLE_2 = 0xFF;
+
+    private static final Logger LOG = LogManager.getLogger(DefaultStateMachine.class);
 
     private State state = State.IDLE;
 
@@ -32,7 +37,7 @@ public class DefaultStateMachine {
 
     public void input(final int data) throws IOException {
 
-//        System.out.println(data + " (" + Integer.toHexString(data) + ")");
+//        LOG.trace(data + " (" + Integer.toHexString(data) + ")");
 
         switch (state) {
 
@@ -79,7 +84,7 @@ public class DefaultStateMachine {
         case HEADER_CRC:
             header.setCrc(data);
 
-//            System.out.println("New message header detected!");
+//            LOG.trace("New message header detected!");
 
 //            // only frame type = "poll for master"
 //            if (header.getFrameType() != 1) {
@@ -118,7 +123,7 @@ public class DefaultStateMachine {
             } else {
 
                 // DEBUG
-//                System.out.println(data + " (" + Integer.toHexString(data) + ")");
+//                LOG.trace(data + " (" + Integer.toHexString(data) + ")");
 
                 // TODO consume data
                 if (payloadDataRead == PAYLOAD_BUFFER_LENGTH) {
@@ -133,7 +138,7 @@ public class DefaultStateMachine {
         case DATA_CRC:
             dataCRC2 = data;
 
-//            System.out.println(Utils.bytesToHex(payloadBuffer, 0, payloadDataRead + 2));
+//            LOG.trace(Utils.bytesToHex(payloadBuffer, 0, payloadDataRead + 2));
 
             // check data CRC
             final int crcValue = DataCRC.getCrc(payloadBuffer, payloadDataRead, 0);
@@ -148,8 +153,8 @@ public class DefaultStateMachine {
             }
 
 //            final int crcValueSwitchedByteOrder = ((crcValue & 0xFF) << 8) + ((crcValue & 0xFF00) >> 8);
-//            System.out.println("0x" + Integer.toString(crcValue, 16) + " (" + crcValue + ")");
-//            System.out.println(
+//            LOG.trace("0x" + Integer.toString(crcValue, 16) + " (" + crcValue + ")");
+//            LOG.trace(
 //                    "0x" + Integer.toString(crcValueSwitchedByteOrder, 16) + " (" + crcValueSwitchedByteOrder + ")");
 
             // send message to listener

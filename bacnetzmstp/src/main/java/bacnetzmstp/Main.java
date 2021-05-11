@@ -28,8 +28,9 @@ public class Main {
     private static final int MAX_MASTER = 127;
 
     // private static final String COM_PORT = "COM8";
+    private static final String COM_PORT = "COM27";
 
-    private static final String COM_PORT = "/dev/tty.usbserial-AR0KCOCB";
+//    private static final String COM_PORT = "/dev/tty.usbserial-AR0KCOCB";
 
     private static final int MSTP_BAUD_RATE = 76800;
 
@@ -47,13 +48,26 @@ public class Main {
 
         System.out.println("Listing Port Names ...");
         final String[] portNames = SerialPortBuilder.getSerialPortNames();
+        if (portNames.length > 0) {
+            for (final String portName : portNames) {
+                System.out.println(portName);
+            }
+        } else {
+            System.out.println("No COM ports found!");
+            return;
+        }
         System.out.println("Listing Port Names done.");
 
-        for (final String portName : portNames) {
-            System.out.println(portName);
+        String comPort = COM_PORT;
+        if (portNames.length == 1) {
+            comPort = portNames[0];
+            System.out.println("Using COM port: " + comPort);
+        } else {
+            System.out.println("Please select a COM port!");
+            return;
         }
 
-        final SerialPort serialPort = SerialPortBuilder.newBuilder(COM_PORT).setParity(Parity.NONE)
+        final SerialPort serialPort = SerialPortBuilder.newBuilder(comPort).setParity(Parity.NONE)
                 .setDataBits(DataBits.DATABITS_8).setStopBits(StopBits.STOPBITS_1).setBaudRate(MSTP_BAUD_RATE).build();
 
         final InputStream inputStream = serialPort.getInputStream();
@@ -67,8 +81,8 @@ public class Main {
         pollForMasterRunnable.setMaxMaster(MAX_MASTER);
         pollForMasterRunnable.setOutputStream(outputStream);
 
-        final Thread thread = new Thread(pollForMasterRunnable);
-        thread.start();
+        final Thread pollForMasterThread = new Thread(pollForMasterRunnable);
+//        pollForMasterThread.start();
 
         final MessageListener messageListener = new DefaultMessageListener();
         messageListener.setOutputStream(outputStream);
@@ -79,7 +93,7 @@ public class Main {
 
         int data = -1;
         while ((data = inputStream.read()) != -1) {
-            System.out.println(data + " (" + Integer.toHexString(data) + ")");
+//            System.out.println(data + " (" + Integer.toHexString(data) + ")");
 
             stateMachine.input(data);
         }

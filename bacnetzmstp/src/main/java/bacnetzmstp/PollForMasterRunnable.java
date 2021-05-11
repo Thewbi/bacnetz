@@ -3,9 +3,17 @@ package bacnetzmstp;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import de.bacnetz.devices.DefaultDevice;
 
 public class PollForMasterRunnable implements Runnable {
+
+//    private static final int SLEEP_IN_BETWEEN_IN_MS = 1000;
+    private static final int SLEEP_IN_BETWEEN_IN_MS = 500;
+
+    private static final Logger LOG = LogManager.getLogger(PollForMasterRunnable.class);
 
     private DefaultDevice masterDevice;
 
@@ -16,34 +24,38 @@ public class PollForMasterRunnable implements Runnable {
     @Override
     public void run() {
 
-        for (int i = 0; i <= maxMaster; i++) {
+        while (true) {
 
-            final Header responseHeader = new Header();
-            responseHeader.setFrameType(FrameType.POLL_FOR_MASTER.getNumVal());
-            responseHeader.setDestinationAddress(i);
-            responseHeader.setSourceAddress(masterDevice.getId());
-            responseHeader.setLength1(0x00);
-            responseHeader.setLength2(0x00);
+            for (int i = 0; i <= maxMaster; i++) {
 
-            final byte reply[] = responseHeader.toBytes();
+                LOG.info("<<< Message sent - POLL_FOR_MASTER for foreign id " + i);
 
-            responseHeader.setCrc(reply[7]);
+                final Header requestHeader = new Header();
+                requestHeader.setFrameType(FrameType.POLL_FOR_MASTER.getNumVal());
+                requestHeader.setDestinationAddress(i);
+                requestHeader.setSourceAddress(masterDevice.getId());
+                requestHeader.setLength1(0x00);
+                requestHeader.setLength2(0x00);
 
-//            System.out.println(Utils.bytesToHex(reply));
+                final byte requestAsBytes[] = requestHeader.toBytes();
 
-            try {
-                outputStream.write(reply);
-            } catch (final IOException e) {
-                e.printStackTrace();
-            }
+                requestHeader.setCrc(requestAsBytes[7]);
 
-            try {
-                Thread.sleep(1000);
-            } catch (final InterruptedException e) {
-                e.printStackTrace();
+                // System.out.println(Utils.bytesToHex(reply));
+
+                try {
+                    outputStream.write(requestAsBytes);
+                } catch (final IOException e) {
+                    e.printStackTrace();
+                }
+
+                try {
+                    Thread.sleep(SLEEP_IN_BETWEEN_IN_MS);
+                } catch (final InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
-
     }
 
     public OutputStream getOutputStream() {

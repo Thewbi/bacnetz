@@ -12,7 +12,7 @@ public class DataCRC {
             final byte b = payloadBuffer[i + offset];
 
             // DEBUG
-            System.out.println(Integer.toString(b & 0xFF, 16));
+//            System.out.println(Integer.toString(b & 0xFF, 16));
 
             value = calcDataCRC(b & 0xFF, value);
         }
