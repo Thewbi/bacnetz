@@ -9,6 +9,8 @@ import de.bacnetz.stack.exception.BACnetzException;
 
 public interface Message {
 
+    void setVirtualLinkControl(VirtualLinkControl virtualLinkControl);
+
     VirtualLinkControl getVirtualLinkControl();
 
     NPDU getNpdu();

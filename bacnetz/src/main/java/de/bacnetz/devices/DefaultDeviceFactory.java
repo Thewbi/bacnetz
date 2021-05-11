@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.bacnetz.configuration.ConfigurationManager;
 import de.bacnetz.factory.Factory;
+import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.factory.MessageType;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 
@@ -15,6 +16,9 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
     @Autowired
     private ConfigurationManager configurationManager;
+
+    @Autowired
+    private MessageFactory messageFactory;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -43,6 +47,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         device.setVendorId(vendorId);
         device.setFirmwareRevision("v1.2.3.4.5.6");
         device.setConfigurationManager(configurationManager);
+        device.setMessageFactory(messageFactory);
 
         addChildrenToDevice(device, vendorMap);
         addPropertiesToDevice(device);
@@ -56,7 +61,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         Device childDevice = null;
         int index = 0;
-//        final int parentDeviceId = device.getId();
         final int parentDeviceId = 0;
 
         // 1 module-type (19, 1)
@@ -65,7 +69,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setParentDevice(device);
         // object-identifier (19, 1)
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-//        childDevice.setId(parentDeviceId + index);
         childDevice.setId(1);
         childDevice.setName("module_type");
         childDevice.setDescription("no entry");
@@ -85,7 +88,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setParentDevice(device);
         // object-identifier (19, 2)
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-//        childDevice.setId(parentDeviceId + index);
         childDevice.setId(2);
         childDevice.setName("alarm_type");
         childDevice.setDescription("no entry");
@@ -102,7 +104,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setParentDevice(device);
         // object-identifier (15, 50)
         childDevice.setObjectType(ObjectType.NOTIFICATION_CLASS);
-//        childDevice.setId(parentDeviceId + index);
         childDevice.setId(50);
         childDevice.setName("notificaton_class_obj");
         childDevice.setDescription("no entry");
@@ -134,7 +135,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setParentDevice(device);
         // object-identifier (3, 1)
         childDevice.setObjectType(ObjectType.BINARY_INPUT);
-//        childDevice.setId(parentDeviceId + index);
         childDevice.setId(1);
         childDevice.setName("door1_close_state");
         childDevice.setDescription("no entry");
@@ -151,7 +151,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setParentDevice(device);
         // object-identifier (19, 4)
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-//        childDevice.setId(parentDeviceId + index);
         childDevice.setId(4);
         childDevice.setName("door1_command");
         childDevice.setDescription("no entry");
@@ -169,7 +168,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setParentDevice(device);
         // object-identifier (19, 3)
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-//        childDevice.setId(parentDeviceId + index);
         childDevice.setId(3);
         childDevice.setName("door1_state");
         childDevice.setDescription("no entry");
@@ -213,7 +211,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
         index++;
         childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);
-//        childDevice.setId(parentDeviceId + index);
         // object-identifier (19, 6)
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
         childDevice.setId(6);
@@ -229,7 +226,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
         index++;
         childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);
-//        childDevice.setId(parentDeviceId + index);
         // object-identifier (19, 5)
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
         childDevice.setId(5);
@@ -260,7 +256,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setParentDevice(device);
         // object-identifier (3, 3)
         childDevice.setObjectType(ObjectType.BINARY_INPUT);
-//        childDevice.setId(parentDeviceId + index);
         childDevice.setId(3);
         childDevice.setName("door3_close_state");
         childDevice.setDescription("no entry");
@@ -277,7 +272,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setParentDevice(device);
         // object-identifier (19, 8)
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-//        childDevice.setId(parentDeviceId + index);
         childDevice.setId(8);
         childDevice.setName("door3_command");
         childDevice.setDescription("no entry");
@@ -292,7 +286,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setParentDevice(device);
         // object-identifier (19, 7)
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-//        childDevice.setId(parentDeviceId + index);
         childDevice.setId(7);
         childDevice.setName("door3_state");
         childDevice.setDescription("no entry");
@@ -322,7 +315,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         // object-identifier (3, 4)
         childDevice.setObjectType(ObjectType.BINARY_INPUT);
-//        childDevice.setId(parentDeviceId + index);
         childDevice.setId(4);
 
         childDevice.setName("door4_close_state");
@@ -341,7 +333,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setParentDevice(device);
         // object-identifier (19, 10)
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-//        childDevice.setId(parentDeviceId + index);
         childDevice.setId(10);
         childDevice.setName("door4_command");
         childDevice.setDescription("no entry");
@@ -360,7 +351,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         // object-identifier (19, 9)
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-//        childDevice.setId(parentDeviceId + index);
         childDevice.setId(9);
 
         childDevice.setName("door4_state");
@@ -389,7 +379,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
         // object-identifier (3, 5)
         childDevice.setObjectType(ObjectType.BINARY_INPUT);
-//        childDevice.setId(parentDeviceId + index);
         childDevice.setId(5);
 
         childDevice.setName("door5_close_state");
@@ -412,7 +401,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setParentDevice(device);
         // object-identifier (19, 12)
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-//        childDevice.setId(parentDeviceId + index);
         childDevice.setId(12);
         childDevice.setName("door5_command");
         childDevice.setDescription("no entry");
@@ -430,7 +418,6 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setParentDevice(device);
         // object-identifier (19, 11)
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-//        childDevice.setId(parentDeviceId + index);
         childDevice.setId(11);
         childDevice.setName("door5_state");
         childDevice.setDescription("no entry");
@@ -1307,6 +1294,10 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
     public void setConfigurationManager(final ConfigurationManager configurationManager) {
         this.configurationManager = configurationManager;
+    }
+
+    public void setMessageFactory(final MessageFactory messageFactory) {
+        this.messageFactory = messageFactory;
     }
 
 }

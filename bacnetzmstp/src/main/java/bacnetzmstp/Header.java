@@ -7,6 +7,8 @@ import de.bacnetz.common.utils.Utils;
  */
 public class Header {
 
+    public static final int HEADER_LENGTH = 8;
+
     private int headerOctetCount = 0;
 
     private int frameType = -1;
@@ -142,7 +144,7 @@ public class Header {
         data[6] = (byte) length2;
         data[7] = (byte) onesComplement(tempCRC);
 
-        return 8;
+        return HEADER_LENGTH;
     }
 
     public int getFrameType() {

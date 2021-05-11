@@ -5,6 +5,7 @@ import java.util.Map;
 import de.bacnetz.controller.Message;
 import de.bacnetz.devices.Device;
 import de.bacnetz.devices.ObjectType;
+import de.bacnetz.stack.LinkLayerType;
 
 public interface MessageFactory extends Factory<Message> {
 
@@ -19,5 +20,9 @@ public interface MessageFactory extends Factory<Message> {
     Message whoIsMessage(int lowerBound, int upperBound);
 
     Message requestObjectList(ObjectType objectType, int bacnetID);
+
+    LinkLayerType getLinkLayerType();
+
+    void setLinkLayerType(LinkLayerType linkLayerType);
 
 }

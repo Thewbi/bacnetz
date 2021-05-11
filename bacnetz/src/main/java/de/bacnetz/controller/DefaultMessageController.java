@@ -26,7 +26,6 @@ import de.bacnetz.devices.Device;
 import de.bacnetz.devices.DeviceProperty;
 import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.devices.DeviceService;
-import de.bacnetz.factory.DefaultMessageFactory;
 import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.services.CommunicationService;
 import de.bacnetz.stack.APDU;
@@ -63,6 +62,22 @@ import de.bacnetz.stack.exception.BACnetzException;
  */
 public class DefaultMessageController implements MessageController {
 
+    /**
+     * BACnet Testing Laboratories - Implementation Guidelines
+     * 
+     * 3.7 Device instance number 4194303 is for reading a Device object’s
+     * Object_Identifier Device instance number 4194303 can be used as a “wildcard”
+     * value for reading a Device object’s Object_Identifier property (to determine
+     * its Device instance). If a ReadProperty or ReadPropertyMultiple request is
+     * received for the Object_Identifier property of Device 4194303, the response
+     * shall convey the responding device’s correct Device object instance.
+     * 
+     * The ability to respond to instance 4194303 as a “wildcard” value was added in
+     * Addendum 135-2001a; it might not be implemented in devices earlier than
+     * Protocol_Revision 4.
+     */
+    private static final int WILDCARD_DEVICE_ID = 4194303;
+
     private static final Logger LOG = LogManager.getLogger(DefaultMessageController.class);
 
     @Autowired
@@ -73,7 +88,7 @@ public class DefaultMessageController implements MessageController {
 
     private Map<Integer, String> vendorMap = new HashMap<>();
 
-    private final MessageFactory messageFactory = new DefaultMessageFactory();
+    private MessageFactory messageFactory;
 
     private final Converter<BACnetDate, byte[]> bacnetDateToByteConverter = new BACnetDateToByteConverter();
 
@@ -654,24 +669,31 @@ public class DefaultMessageController implements MessageController {
 
     private List<Message> processReadProperty(final Message requestMessage) {
 
-        LOG.trace("processReadProperty()");
+        LOG.info("processReadProperty()");
 
         final int propertyIdentifierCode = requestMessage.getApdu().getPropertyIdentifier();
 
-        LOG.trace("Property Identifier: {}", propertyIdentifierCode);
+        LOG.info("Property Identifier: {}", propertyIdentifierCode);
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()
                 .getFirstObjectIdentifierServiceParameter();
 
-        LOG.trace(">>> Property Identifier: {} ({}) Object Identifier: {}", propertyIdentifierCode,
+        LOG.info(">>> Property Identifier: {} ({}) Object Identifier: {}", propertyIdentifierCode,
                 DevicePropertyType.getByCode(propertyIdentifierCode).getName(),
                 objectIdentifierServiceParameter.toString());
+
+        final boolean wildcardId = objectIdentifierServiceParameter.getInstanceNumber() == WILDCARD_DEVICE_ID;
+        if (wildcardId) {
+            objectIdentifierServiceParameter.setInstanceNumber(2);
+        }
 
         // find device
         final Device targetDevice = deviceService.getDeviceMap().get(objectIdentifierServiceParameter);
         final List<Message> result = new ArrayList<>();
         if (targetDevice != null) {
             result.add(targetDevice.getPropertyValue(requestMessage, propertyIdentifierCode));
+        } else {
+            LOG.warn("No device found for OID: {}", objectIdentifierServiceParameter);
         }
 
         return result;
@@ -1219,6 +1241,14 @@ public class DefaultMessageController implements MessageController {
 
     public void setDeviceService(final DeviceService deviceService) {
         this.deviceService = deviceService;
+    }
+
+    public MessageFactory getMessageFactory() {
+        return messageFactory;
+    }
+
+    public void setMessageFactory(final MessageFactory messageFactory) {
+        this.messageFactory = messageFactory;
     }
 
 }

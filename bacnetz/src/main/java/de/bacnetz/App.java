@@ -145,7 +145,7 @@ public class App {
 //		runMainOld();
     }
 
-    private static ConfigurationManager createConfigurationManager(final String[] args) throws ParseException {
+    public static ConfigurationManager createConfigurationManager(final String[] args) throws ParseException {
         final DefaultConfigurationManager defaultConfigurationManager = new DefaultConfigurationManager();
 
         // create Options object

@@ -29,6 +29,7 @@ import de.bacnetz.stack.BACnetTime;
 import de.bacnetz.stack.ConfirmedServiceChoice;
 import de.bacnetz.stack.ErrorClass;
 import de.bacnetz.stack.ErrorCode;
+import de.bacnetz.stack.LinkLayerType;
 import de.bacnetz.stack.NPDU;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.PDUType;
@@ -53,13 +54,15 @@ public class DefaultMessageFactory implements MessageFactory {
      * <br />
      * Used to test segmentation assembly/dissasembly.
      */
-    private static final boolean TEST_SEGMENTATION = true;
+    private static final boolean TEST_SEGMENTATION = false;
 
     private Map<Integer, String> vendorMap = new HashMap<>();
 
     private final Converter<BACnetDate, byte[]> bacnetDateToByteConverter = new BACnetDateToByteConverter();
 
     private final Converter<BACnetTime, byte[]> bacnetTimeToByteConverter = new BACnetTimeToByteConverter();
+
+    private LinkLayerType linkLayerType = LinkLayerType.IP;
 
     @Override
     public Message create(final Object... args) {
@@ -250,7 +253,9 @@ public class DefaultMessageFactory implements MessageFactory {
         apdu.getServiceParameters().add(closingTagServiceParameter);
 
         final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
         result.setNpdu(npdu);
         result.setApdu(apdu);
 
@@ -336,7 +341,9 @@ public class DefaultMessageFactory implements MessageFactory {
         apdu.getServiceParameters().add(closingTagServiceParameter);
 
         final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
         result.setNpdu(npdu);
         result.setApdu(apdu);
 
@@ -475,7 +482,9 @@ public class DefaultMessageFactory implements MessageFactory {
         apdu.getServiceParameters().add(closingTagServiceParameter);
 
         final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
         result.setNpdu(npdu);
         result.setApdu(apdu);
 
@@ -555,7 +564,9 @@ public class DefaultMessageFactory implements MessageFactory {
         apdu.getServiceParameters().add(closingTagServiceParameter);
 
         final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
         result.setNpdu(npdu);
         result.setApdu(apdu);
 
@@ -611,7 +622,9 @@ public class DefaultMessageFactory implements MessageFactory {
         apdu.getServiceParameters().add(errorCodeServiceParameter);
 
         final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
         result.setNpdu(npdu);
         result.setApdu(apdu);
 
@@ -828,7 +841,9 @@ public class DefaultMessageFactory implements MessageFactory {
         apdu.getServiceParameters().add(closingTagServiceParameter);
 
         final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
         result.setNpdu(npdu);
         result.setApdu(apdu);
 
@@ -917,7 +932,9 @@ public class DefaultMessageFactory implements MessageFactory {
         apdu.getServiceParameters().add(closingTagServiceParameter);
 
         final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
         result.setNpdu(npdu);
         result.setApdu(apdu);
 
@@ -996,7 +1013,9 @@ public class DefaultMessageFactory implements MessageFactory {
         apdu.getServiceParameters().add(closingTagServiceParameter);
 
         final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
         result.setNpdu(npdu);
         result.setApdu(apdu);
 
@@ -1027,14 +1046,16 @@ public class DefaultMessageFactory implements MessageFactory {
         apdu.setPduType(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU);
         apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.WHO_IS);
 
-        final DefaultMessage defaultMessage = new DefaultMessage();
-        defaultMessage.setVirtualLinkControl(virtualLinkControl);
-        defaultMessage.setNpdu(npdu);
-        defaultMessage.setApdu(apdu);
+        final DefaultMessage result = new DefaultMessage();
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
+        result.setNpdu(npdu);
+        result.setApdu(apdu);
 
-        virtualLinkControl.setLength(defaultMessage.getDataLength());
+        virtualLinkControl.setLength(result.getDataLength());
 
-        return defaultMessage;
+        return result;
     }
 
     @Override
@@ -1076,7 +1097,9 @@ public class DefaultMessageFactory implements MessageFactory {
         apdu.getServiceParameters().add(upperBoundServiceParameter);
 
         final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
         result.setNpdu(npdu);
         result.setApdu(apdu);
 
@@ -1155,7 +1178,9 @@ public class DefaultMessageFactory implements MessageFactory {
         apdu.getServiceParameters().add(closingTagServiceParameter);
 
         final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
         result.setNpdu(npdu);
         result.setApdu(apdu);
 
@@ -1221,7 +1246,6 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(invokeId);
-//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
@@ -1231,14 +1255,13 @@ public class DefaultMessageFactory implements MessageFactory {
         apdu.getServiceParameters().add(closingTagServiceParameter);
 
         final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
         result.setNpdu(npdu);
         result.setApdu(apdu);
 
         virtualLinkControl.setLength(result.getDataLength());
-
-//		final byte[] bytes = result.getBytes();
-//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
         return result;
     }
@@ -1298,7 +1321,6 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(invokeId);
-//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
@@ -1308,14 +1330,13 @@ public class DefaultMessageFactory implements MessageFactory {
         apdu.getServiceParameters().add(closingTagServiceParameter);
 
         final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
         result.setNpdu(npdu);
         result.setApdu(apdu);
 
         virtualLinkControl.setLength(result.getDataLength());
-
-//		final byte[] bytes = result.getBytes();
-//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
         return result;
     }
@@ -1347,7 +1368,6 @@ public class DefaultMessageFactory implements MessageFactory {
         }
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-//        objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
@@ -1382,7 +1402,6 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
@@ -1392,7 +1411,9 @@ public class DefaultMessageFactory implements MessageFactory {
         apdu.getServiceParameters().add(closingTagServiceParameter);
 
         final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
         result.setNpdu(npdu);
         result.setApdu(apdu);
 
@@ -1428,7 +1449,6 @@ public class DefaultMessageFactory implements MessageFactory {
         }
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-//        objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
@@ -1458,7 +1478,6 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
@@ -1468,14 +1487,13 @@ public class DefaultMessageFactory implements MessageFactory {
         apdu.getServiceParameters().add(closingTagServiceParameter);
 
         final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
         result.setNpdu(npdu);
         result.setApdu(apdu);
 
         virtualLinkControl.setLength(result.getDataLength());
-
-//		final byte[] bytes = result.getBytes();
-//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
         return result;
     }
@@ -1584,7 +1602,6 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(outwardObjectIdentifierServiceParameter);
@@ -1616,14 +1633,13 @@ public class DefaultMessageFactory implements MessageFactory {
         apdu.getServiceParameters().add(closingTagServiceParameter);
 
         final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
         result.setNpdu(npdu);
         result.setApdu(apdu);
 
         virtualLinkControl.setLength(result.getDataLength());
-
-//      final byte[] bytes = result.getBytes();
-//      LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
         return result;
     }
@@ -1719,7 +1735,6 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
@@ -1737,14 +1752,13 @@ public class DefaultMessageFactory implements MessageFactory {
         apdu.getServiceParameters().add(closingTagServiceParameter3);
 
         final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
         result.setNpdu(npdu);
         result.setApdu(apdu);
 
         virtualLinkControl.setLength(result.getDataLength());
-
-//      final byte[] bytes = result.getBytes();
-//      LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
         return result;
     }
@@ -1780,8 +1794,6 @@ public class DefaultMessageFactory implements MessageFactory {
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
-//        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-//        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
         objectIdentifierServiceParameter.setObjectType(device.getObjectType());
         objectIdentifierServiceParameter.setInstanceNumber(device.getId());
 
@@ -1804,7 +1816,6 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
@@ -1814,14 +1825,13 @@ public class DefaultMessageFactory implements MessageFactory {
         apdu.getServiceParameters().add(closingTagServiceParameter3);
 
         final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
         result.setNpdu(npdu);
         result.setApdu(apdu);
 
         virtualLinkControl.setLength(result.getDataLength());
-
-//      final byte[] bytes = result.getBytes();
-//      LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
         return result;
     }
@@ -1879,7 +1889,6 @@ public class DefaultMessageFactory implements MessageFactory {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-//      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
@@ -1893,14 +1902,13 @@ public class DefaultMessageFactory implements MessageFactory {
         apdu.getServiceParameters().add(closingTagServiceParameter3);
 
         final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
         result.setNpdu(npdu);
         result.setApdu(apdu);
 
         virtualLinkControl.setLength(result.getDataLength());
-
-//      final byte[] bytes = result.getBytes();
-//      LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
         return result;
     }
@@ -1940,7 +1948,7 @@ public class DefaultMessageFactory implements MessageFactory {
 
         final APDU outApdu = new APDU();
         outApdu.setPduType(PDUType.CONFIRMED_SERVICE_REQUEST_PDU);
-        outApdu.setInvokeId(1);
+        outApdu.setInvokeId(-1);
         outApdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
 
         // this message is segmented, yes or no
@@ -1975,14 +1983,16 @@ public class DefaultMessageFactory implements MessageFactory {
         outApdu.getServiceParameters().add(objectIdentifierServiceParameter);
         outApdu.getServiceParameters().add(propertyIdentifierServiceParameter);
 
-        final DefaultMessage outMessage = new DefaultMessage();
-        outMessage.setVirtualLinkControl(virtualLinkControl);
-        outMessage.setNpdu(outNpdu);
-        outMessage.setApdu(outApdu);
+        final DefaultMessage result = new DefaultMessage();
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
+        result.setNpdu(outNpdu);
+        result.setApdu(outApdu);
 
-        virtualLinkControl.setLength(outMessage.getDataLength());
+        virtualLinkControl.setLength(result.getDataLength());
 
-        return outMessage;
+        return result;
     }
 
     public Map<Integer, String> getVendorMap() {
@@ -1992,6 +2002,14 @@ public class DefaultMessageFactory implements MessageFactory {
     @Override
     public void setVendorMap(final Map<Integer, String> vendorMap) {
         this.vendorMap = vendorMap;
+    }
+
+    public LinkLayerType getLinkLayerType() {
+        return linkLayerType;
+    }
+
+    public void setLinkLayerType(final LinkLayerType linkLayerType) {
+        this.linkLayerType = linkLayerType;
     }
 
 }

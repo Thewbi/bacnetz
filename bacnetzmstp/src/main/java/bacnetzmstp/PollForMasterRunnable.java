@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.bacnetz.devices.DefaultDevice;
+import de.bacnetz.devices.Device;
 
 public class PollForMasterRunnable implements Runnable {
 
@@ -15,11 +15,13 @@ public class PollForMasterRunnable implements Runnable {
 
     private static final Logger LOG = LogManager.getLogger(PollForMasterRunnable.class);
 
-    private DefaultDevice masterDevice;
+    private Device masterDevice;
 
     private OutputStream outputStream;
 
     private int maxMaster;
+
+    private boolean onceOnly = false;
 
     @Override
     public void run() {
@@ -46,14 +48,18 @@ public class PollForMasterRunnable implements Runnable {
                 try {
                     outputStream.write(requestAsBytes);
                 } catch (final IOException e) {
-                    e.printStackTrace();
+                    LOG.error(e.getMessage(), e);
                 }
 
                 try {
                     Thread.sleep(SLEEP_IN_BETWEEN_IN_MS);
                 } catch (final InterruptedException e) {
-                    e.printStackTrace();
+                    LOG.error(e.getMessage(), e);
                 }
+            }
+
+            if (onceOnly) {
+                return;
             }
         }
     }
@@ -74,12 +80,20 @@ public class PollForMasterRunnable implements Runnable {
         this.maxMaster = maxMaster;
     }
 
-    public DefaultDevice getMasterDevice() {
+    public Device getMasterDevice() {
         return masterDevice;
     }
 
-    public void setMasterDevice(final DefaultDevice masterDevice) {
+    public void setMasterDevice(final Device masterDevice) {
         this.masterDevice = masterDevice;
+    }
+
+    public boolean isOnceOnly() {
+        return onceOnly;
+    }
+
+    public void setOnceOnly(final boolean onceOnly) {
+        this.onceOnly = onceOnly;
     }
 
 }

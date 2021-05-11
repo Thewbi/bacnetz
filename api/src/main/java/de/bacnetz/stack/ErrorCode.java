@@ -1,8 +1,13 @@
 package de.bacnetz.stack;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public enum ErrorCode {
 
     // @formatter:off
+    
+    UNKNOWN_ERROR(0xFF, "unknown-error"),
     
     UNKNOWN_OBJECT(0x1f, "unknown-object"),
 
@@ -13,6 +18,8 @@ public enum ErrorCode {
     public static final int UNKNOWN_OBJECT_CODE = 0x1f;
 
     public static final int UNKNOWN_PROPERTY_CODE = 0x20;
+
+    private static final Logger LOG = LogManager.getLogger(ErrorCode.class);
 
     private int code;
 
@@ -34,7 +41,9 @@ public enum ErrorCode {
             return UNKNOWN_PROPERTY;
 
         default:
-            throw new RuntimeException("Unknown id " + id);
+//            throw new RuntimeException("Unknown id " + id);
+            LOG.error("Unknown error code " + id);
+            return UNKNOWN_ERROR;
         }
     }
 

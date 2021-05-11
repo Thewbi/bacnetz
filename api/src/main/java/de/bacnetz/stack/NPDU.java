@@ -426,4 +426,14 @@ public class NPDU {
         this.networkLayerMessageType = networkLayerMessageType;
     }
 
+    @Override
+    public String toString() {
+        return "NPDU [version=" + version + ", control=" + control + ", destinationNetworkNumber="
+                + destinationNetworkNumber + ", destinationMACLayerAddressLength=" + destinationMACLayerAddressLength
+                + ", destinationMac=" + destinationMac + ", destinationHopCount=" + destinationHopCount
+                + ", sourceNetworkAddress=" + sourceNetworkAddress + ", sourceMacLayerAddressLength="
+                + sourceMacLayerAddressLength + ", sourceMac=" + sourceMac + ", networkLayerMessageType="
+                + networkLayerMessageType + "]";
+    }
+
 }

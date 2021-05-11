@@ -133,7 +133,7 @@ public class APDU {
         }
 
         // invoke id
-        if (invokeId >= 0) {
+        if (invokeId >= -1) {
             dataLength++;
         }
 
@@ -226,7 +226,7 @@ public class APDU {
         }
 
         // 1 Byte: invoke ID
-        if (invokeId >= 0) {
+        if (invokeId >= -1) {
             data[offset + index++] = (byte) invokeId;
         }
 
@@ -925,8 +925,12 @@ public class APDU {
 
         stringBuffer.append("PDU Type: ").append(pduType.toString()).append("\n");
 
+        stringBuffer.append("Invoke ID: ").append(getInvokeId()).append("\n");
+
+        stringBuffer.append("Segmentation: ").append(isSegmentation()).append("\n");
+        stringBuffer.append("SegmentationControl: ").append(getSegmentationControl()).append("\n");
+
         if (confirmedServiceChoice != null) {
-            stringBuffer.append(confirmedServiceChoice);
             stringBuffer.append("ConfirmedServiceChoice: ").append(confirmedServiceChoice).append("\n");
         }
         if (unconfirmedServiceChoice != null) {

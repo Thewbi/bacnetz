@@ -33,7 +33,6 @@ import de.bacnetz.configuration.DefaultConfigurationManager;
 import de.bacnetz.controller.DefaultMessage;
 import de.bacnetz.controller.DefaultMessageController;
 import de.bacnetz.controller.Message;
-import de.bacnetz.factory.DefaultMessageFactory;
 import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.factory.MessageType;
 import de.bacnetz.services.CommunicationService;
@@ -89,7 +88,9 @@ public class DefaultDevice implements Device, CommunicationService {
 
     private String location;
 
-    private final MessageFactory messageFactory = new DefaultMessageFactory();
+//    private final MessageFactory messageFactory = new DefaultMessageFactory();
+
+    private MessageFactory messageFactory;
 
     private Map<Integer, String> vendorMap = new HashMap<>();
 
@@ -1915,6 +1916,10 @@ public class DefaultDevice implements Device, CommunicationService {
     @Override
     public Map<ObjectIdentifierServiceParameter, Device> getDeviceMap() {
         return deviceMap;
+    }
+
+    public void setMessageFactory(final MessageFactory messageFactory) {
+        this.messageFactory = messageFactory;
     }
 
 }

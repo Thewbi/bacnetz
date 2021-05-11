@@ -95,6 +95,7 @@ public class DefaultStateMachine {
 
             // TODO: check header CRC
             if (!header.checkCRC()) {
+                LOG.warn("Invalid CRC!");
 //                throw new RuntimeException(
 //                        "Invalid header CRC " + Utils.bytesToHex(headerBuffer, 0, headerBufferIndex));
                 backToIdle();
@@ -147,6 +148,7 @@ public class DefaultStateMachine {
             final int computedCRC2 = ((crcValue & 0xFF00) >> 8);
 
             if ((computedCRC1 != dataCRC1) || (computedCRC2 != dataCRC2)) {
+                LOG.warn("Invalid CRC!");
                 // throw new RuntimeException("Invalid data CRC");
                 backToIdle();
                 return;
