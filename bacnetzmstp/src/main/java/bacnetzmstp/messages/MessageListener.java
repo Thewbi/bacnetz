@@ -3,10 +3,10 @@ package bacnetzmstp.messages;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import bacnetzmstp.Header;
 import de.bacnetz.controller.Message;
 import de.bacnetz.controller.MessageController;
 import de.bacnetz.devices.DeviceService;
+import de.bacnetz.mstp.Header;
 
 public interface MessageListener {
 

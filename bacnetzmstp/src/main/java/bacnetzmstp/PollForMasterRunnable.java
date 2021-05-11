@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.bacnetz.devices.Device;
+import de.bacnetz.mstp.Header;
 
 public class PollForMasterRunnable implements Runnable {
 
@@ -47,6 +48,7 @@ public class PollForMasterRunnable implements Runnable {
 
                 try {
                     outputStream.write(requestAsBytes);
+                    outputStream.flush();
                 } catch (final IOException e) {
                     LOG.error(e.getMessage(), e);
                 }

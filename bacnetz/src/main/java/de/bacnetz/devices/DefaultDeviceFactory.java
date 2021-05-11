@@ -74,6 +74,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
+        childDevice.setMessageFactory(messageFactory);
         addPropertiesToModuleTypeDevice(childDevice);
         device.getChildDevices().add(childDevice);
         // 4 = four door solution
@@ -93,6 +94,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
+        childDevice.setMessageFactory(messageFactory);
         addPropertiesToAlarmStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(1);
@@ -109,6 +111,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
+        childDevice.setMessageFactory(messageFactory);
         addPropertiesToNotificationClassDevice(childDevice);
         device.getChildDevices().add(childDevice);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
@@ -140,6 +143,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
+        childDevice.setMessageFactory(messageFactory);
         addPropertiesToDoorCloseStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(new byte[] { 1 });
@@ -156,6 +160,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
+        childDevice.setMessageFactory(messageFactory);
         addPropertiesToDoorCommandStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(1);
@@ -177,6 +182,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.getStates().add("lock");
         childDevice.getStates().add("short time released");
         childDevice.getStates().add("time switch active");
+        childDevice.setMessageFactory(messageFactory);
         addPropertiesToDoorStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(1);
@@ -202,6 +208,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
+        childDevice.setMessageFactory(messageFactory);
         addPropertiesToDoorCloseStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(new byte[] { 1 });
@@ -217,6 +224,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setName("door2_command");
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
+        childDevice.setMessageFactory(messageFactory);
         addPropertiesToDoorCommandStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(1);
@@ -237,6 +245,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.getStates().add("lock");
         childDevice.getStates().add("short time released");
         childDevice.getStates().add("time switch active");
+        childDevice.setMessageFactory(messageFactory);
         addPropertiesToDoorStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(1);
@@ -261,6 +270,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
+        childDevice.setMessageFactory(messageFactory);
         addPropertiesToDoorCloseStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(new byte[] { 1 });
@@ -275,6 +285,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setId(8);
         childDevice.setName("door3_command");
         childDevice.setDescription("no entry");
+        childDevice.setMessageFactory(messageFactory);
         addPropertiesToDoorCommandStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(1);
@@ -295,6 +306,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.getStates().add("lock");
         childDevice.getStates().add("short time released");
         childDevice.getStates().add("time switch active");
+        childDevice.setMessageFactory(messageFactory);
         addPropertiesToDoorStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(1);
@@ -321,6 +333,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
+        childDevice.setMessageFactory(messageFactory);
         addPropertiesToDoorCloseStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(new byte[] { 1 });
@@ -338,6 +351,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
+        childDevice.setMessageFactory(messageFactory);
         addPropertiesToDoorCommandStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(1);
@@ -361,6 +375,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.getStates().add("lock");
         childDevice.getStates().add("short time released");
         childDevice.getStates().add("time switch active");
+        childDevice.setMessageFactory(messageFactory);
         addPropertiesToDoorStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(1);
@@ -385,6 +400,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
+        childDevice.setMessageFactory(messageFactory);
         addPropertiesToDoorCloseStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(new byte[] { 1 });
@@ -406,6 +422,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
         childDevice.setVendorMap(vendorMap);
+        childDevice.setMessageFactory(messageFactory);
         addPropertiesToDoorCommandStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(1);
@@ -427,6 +444,7 @@ public class DefaultDeviceFactory implements Factory<Device> {
         childDevice.getStates().add("lock");
         childDevice.getStates().add("short time released");
         childDevice.getStates().add("time switch active");
+        childDevice.setMessageFactory(messageFactory);
         addPropertiesToDoorStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
         childDevice.setPresentValue(1);

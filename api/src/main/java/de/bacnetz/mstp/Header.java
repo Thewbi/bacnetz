@@ -1,4 +1,4 @@
-package bacnetzmstp;
+package de.bacnetz.mstp;
 
 import de.bacnetz.common.utils.Utils;
 
@@ -145,6 +145,12 @@ public class Header {
         data[7] = (byte) onesComplement(tempCRC);
 
         return HEADER_LENGTH;
+    }
+
+    @Override
+    public String toString() {
+        return "Header [frameType=" + frameType + ", destinationAddress=" + destinationAddress + ", sourceAddress="
+                + sourceAddress + ", length1=" + length1 + ", length2=" + length2 + ", crc=" + crc + "]";
     }
 
     public int getFrameType() {

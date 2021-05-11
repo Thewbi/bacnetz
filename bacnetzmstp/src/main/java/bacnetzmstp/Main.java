@@ -39,13 +39,14 @@ public class Main {
     private static final int MASTER_DEVICE_ID = 2;
 
 //    private static final int MAX_MASTER = 127;
-    private static final int MAX_MASTER = 25;
+    private static final int MAX_MASTER = 10;
     // private static final int MAX_MASTER = 9;
 
     // private static final String COM_PORT = "COM8";
 //    private static final String COM_PORT = "COM27";
 
     private static final String COM_PORT = "/dev/tty.usbserial-AR0KCOCB";
+//    private static final String COM_PORT = "/dev/cu.usbserial-AR0KCOCB";
 
     private static final int MSTP_BAUD_RATE = 76800;
 
@@ -103,6 +104,7 @@ public class Main {
         deviceService.setDeviceFactory(deviceFactory);
 
         final DefaultMessageController defaultMessageController = new DefaultMessageController();
+        defaultMessageController.setLinkLayerType(LinkLayerType.MSTP);
         defaultMessageController.setDeviceService(deviceService);
         defaultMessageController.setMessageFactory(messageFactory);
 

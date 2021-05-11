@@ -26,7 +26,9 @@ import de.bacnetz.devices.Device;
 import de.bacnetz.devices.DeviceProperty;
 import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.devices.DeviceService;
+import de.bacnetz.devices.ObjectType;
 import de.bacnetz.factory.MessageFactory;
+import de.bacnetz.mstp.Header;
 import de.bacnetz.services.CommunicationService;
 import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.BACnetDate;
@@ -35,6 +37,7 @@ import de.bacnetz.stack.ConfirmedServiceChoice;
 import de.bacnetz.stack.DefaultCOVSubscription;
 import de.bacnetz.stack.ErrorClass;
 import de.bacnetz.stack.ErrorCode;
+import de.bacnetz.stack.LinkLayerType;
 import de.bacnetz.stack.NPDU;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.PDUType;
@@ -94,12 +97,19 @@ public class DefaultMessageController implements MessageController {
 
     private final Converter<BACnetTime, byte[]> bacnetTimeToByteConverter = new BACnetTimeToByteConverter();
 
+    private LinkLayerType linkLayerType = LinkLayerType.IP;
+
     @Override
     public List<Message> processMessage(final Message message) {
+        return processMessage(null, message);
+    }
+
+    @Override
+    public List<Message> processMessage(final Header mstpHeader, final Message message) {
         if (message.getApdu() == null) {
             return processNonAPDUMessage(message);
         } else {
-            return processAPDUMessage(message);
+            return processAPDUMessage(mstpHeader, message);
         }
     }
 
@@ -145,7 +155,7 @@ public class DefaultMessageController implements MessageController {
         }
     }
 
-    private List<Message> processAPDUMessage(final Message message) {
+    private List<Message> processAPDUMessage(final Header mstpHeader, final Message message) {
 
         final ConfirmedServiceChoice confirmedServiceChoice = message.getApdu().getConfirmedServiceChoice();
         if (confirmedServiceChoice != null) {
@@ -154,11 +164,11 @@ public class DefaultMessageController implements MessageController {
 
             case READ_PROPERTY:
                 LOG.trace(">>> READ_PROPERTY received!");
-                return processReadProperty(message);
+                return processReadProperty(mstpHeader, message);
 
             case READ_PROPERTY_MULTIPLE:
                 LOG.trace(">>> READ_PROPERTY_MULTIPLE received!");
-                return processReadPropertyMultiple(message);
+                return processReadPropertyMultiple(mstpHeader, message);
 
             case WRITE_PROPERTY:
                 LOG.trace(">>> WRITE_PROPERTY received!");
@@ -285,7 +295,9 @@ public class DefaultMessageController implements MessageController {
         apdu.setVendorMap(vendorMap);
 
         final DefaultMessage message = new DefaultMessage();
-        message.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            message.setVirtualLinkControl(virtualLinkControl);
+        }
         message.setNpdu(npdu);
         message.setApdu(apdu);
 
@@ -363,7 +375,9 @@ public class DefaultMessageController implements MessageController {
         apdu.setVendorMap(vendorMap);
 
         final DefaultMessage message = new DefaultMessage();
-        message.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            message.setVirtualLinkControl(virtualLinkControl);
+        }
         message.setNpdu(npdu);
         message.setApdu(apdu);
 
@@ -422,27 +436,21 @@ public class DefaultMessageController implements MessageController {
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
         apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.REINITIALIZE_DEVICE);
         apdu.setVendorMap(vendorMap);
-//        apdu.getServiceParameters().add(resultObjectIdentifierServiceParameter);
 
         final DefaultMessage message = new DefaultMessage();
-        message.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            message.setVirtualLinkControl(virtualLinkControl);
+        }
         message.setNpdu(npdu);
         message.setApdu(apdu);
 
         virtualLinkControl.setLength(message.getDataLength());
-
-//		final byte[] bytes = result.getBytes();
-//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
         final List<Message> result = new ArrayList<>();
         result.add(message);
 
         return result;
     }
-
-//    private Message processDeviceCommunicationControl(final Message requestMessage) {
-//        throw new RuntimeException("Not implemented!");
-//    }
 
     /**
      * Answer Who-Is with I-Am.
@@ -464,7 +472,7 @@ public class DefaultMessageController implements MessageController {
 
         filteredDevices.stream().forEach(d -> {
             try {
-                d.sendIamMessage();
+                d.sendIamMessage(linkLayerType);
             } catch (final IOException e) {
                 LOG.error(e.getMessage(), e);
             }
@@ -522,7 +530,7 @@ public class DefaultMessageController implements MessageController {
         // @formatter:on
     }
 
-    public static Message retrieveIamMessage(final Device device) {
+    public static Message retrieveIamMessage(final Device device, final LinkLayerType linkLayerType) {
 
         // return Unconfirmed request i-Am device,10001
 
@@ -543,7 +551,6 @@ public class DefaultMessageController implements MessageController {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU);
         apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.I_AM);
-//        apdu.setVendorMap(vendorMap);
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
@@ -557,7 +564,6 @@ public class DefaultMessageController implements MessageController {
         maximumAPDUServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         maximumAPDUServiceParameter.setTagNumber(ServiceParameter.UNSIGNED_INTEGER_CODE);
         maximumAPDUServiceParameter.setLengthValueType(2);
-//        maximumAPDUServiceParameter.setPayload(new byte[] { (byte) 0x01, (byte) 0xE0 }); // 0x01E0 = 480
         maximumAPDUServiceParameter.setPayload(new byte[] { (byte) 0x05, (byte) 0xC4 }); // 0x05C4 = 1476
         apdu.getServiceParameters().add(maximumAPDUServiceParameter);
 
@@ -582,14 +588,13 @@ public class DefaultMessageController implements MessageController {
         apdu.getServiceParameters().add(vendorIdServiceParameter);
 
         final DefaultMessage result = new DefaultMessage();
-        result.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            result.setVirtualLinkControl(virtualLinkControl);
+        }
         result.setNpdu(npdu);
         result.setApdu(apdu);
 
         virtualLinkControl.setLength(virtualLinkControl.getDataLength() + npdu.getDataLength() + apdu.getDataLength());
-
-//        final byte[] bytes = result.getBytes();
-//        LOG.trace(Utils.byteArrayToStringNoPrefix(bytes));
 
         return result;
     }
@@ -652,14 +657,13 @@ public class DefaultMessageController implements MessageController {
         apdu.setVendorMap(vendorMap);
 
         final DefaultMessage message = new DefaultMessage();
-        message.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            message.setVirtualLinkControl(virtualLinkControl);
+        }
         message.setNpdu(npdu);
         message.setApdu(apdu);
 
         virtualLinkControl.setLength(message.getDataLength());
-
-//		final byte[] bytes = result.getBytes();
-//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
         final List<Message> result = new ArrayList<>();
         result.add(message);
@@ -667,7 +671,7 @@ public class DefaultMessageController implements MessageController {
         return result;
     }
 
-    private List<Message> processReadProperty(final Message requestMessage) {
+    private List<Message> processReadProperty(final Header mstpHeader, final Message requestMessage) {
 
         LOG.info("processReadProperty()");
 
@@ -693,13 +697,32 @@ public class DefaultMessageController implements MessageController {
         if (targetDevice != null) {
             result.add(targetDevice.getPropertyValue(requestMessage, propertyIdentifierCode));
         } else {
+
+            // find the parent device via the mstp header's destination address
+            // and the use the APDU's object identifier to identify the child device
+            if (mstpHeader != null) {
+
+                final Device childDevice = retrieveChildViaMSTPHeader(mstpHeader, objectIdentifierServiceParameter);
+
+                result.add(childDevice.getPropertyValue(requestMessage, propertyIdentifierCode));
+            }
+
             LOG.warn("No device found for OID: {}", objectIdentifierServiceParameter);
         }
 
         return result;
     }
 
-    private List<Message> processReadPropertyMultiple(final Message requestMessage) {
+    private Device retrieveChildViaMSTPHeader(final Header mstpHeader,
+            final ObjectIdentifierServiceParameter objectIdentifierServiceParameter) {
+        final ObjectIdentifierServiceParameter parentOID = ObjectIdentifierServiceParameter
+                .createFromTypeAndInstanceNumber(ObjectType.DEVICE, mstpHeader.getDestinationAddress());
+        final Device parentDevice = deviceService.getDeviceMap().get(parentOID);
+        final Device childDevice = parentDevice.getDeviceMap().get(objectIdentifierServiceParameter);
+        return childDevice;
+    }
+
+    private List<Message> processReadPropertyMultiple(final Header mstpHeader, final Message requestMessage) {
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
         virtualLinkControl.setType(0x81);
@@ -721,8 +744,8 @@ public class DefaultMessageController implements MessageController {
             if (serviceParameter instanceof ObjectIdentifierServiceParameter) {
 
                 final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = (ObjectIdentifierServiceParameter) serviceParameter;
-                index = processDevice(objectIdentifierServiceParameter, index, sourceApdu.getServiceParameters(),
-                        targetApdu);
+                index = processDevice(mstpHeader, objectIdentifierServiceParameter, index,
+                        sourceApdu.getServiceParameters(), targetApdu);
             }
         }
 
@@ -741,7 +764,9 @@ public class DefaultMessageController implements MessageController {
         }
 
         final DefaultMessage message = new DefaultMessage();
-        message.setVirtualLinkControl(virtualLinkControl);
+        if (linkLayerType != LinkLayerType.MSTP) {
+            message.setVirtualLinkControl(virtualLinkControl);
+        }
         message.setNpdu(npdu);
         message.setApdu(targetApdu);
 
@@ -768,14 +793,25 @@ public class DefaultMessageController implements MessageController {
         return result;
     }
 
-    private int processDevice(final ObjectIdentifierServiceParameter targetObjectIdentifierServiceParameter,
+    private int processDevice(final Header mstpHeader,
+            final ObjectIdentifierServiceParameter targetObjectIdentifierServiceParameter,
             final int sourceServiceParameterIndex, final List<ServiceParameter> serviceParameters,
             final APDU targetApdu) {
 
         // find device
-        final Device targetDevice = deviceService.getDeviceMap().get(targetObjectIdentifierServiceParameter);
+        Device targetDevice = deviceService.getDeviceMap().get(targetObjectIdentifierServiceParameter);
+
         if (targetDevice == null) {
             LOG.error("Cannot retrieve device for objectIdentifier: '{}'", targetObjectIdentifierServiceParameter);
+
+            // find the parent device via the mstp header's destination address
+            // and the use the APDU's object identifier to identify the child device
+            if (mstpHeader != null) {
+
+                final Device childDevice = retrieveChildViaMSTPHeader(mstpHeader,
+                        targetObjectIdentifierServiceParameter);
+                targetDevice = childDevice;
+            }
         }
 
         if (targetDevice != null) {
@@ -1249,6 +1285,14 @@ public class DefaultMessageController implements MessageController {
 
     public void setMessageFactory(final MessageFactory messageFactory) {
         this.messageFactory = messageFactory;
+    }
+
+    public LinkLayerType getLinkLayerType() {
+        return linkLayerType;
+    }
+
+    public void setLinkLayerType(final LinkLayerType linkLayerType) {
+        this.linkLayerType = linkLayerType;
     }
 
 }

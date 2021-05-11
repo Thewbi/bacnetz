@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import bacnetzmstp.messages.MessageListener;
+import de.bacnetz.mstp.Header;
 
 public class DefaultStateMachine {
 

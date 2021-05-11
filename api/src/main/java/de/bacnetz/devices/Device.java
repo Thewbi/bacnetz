@@ -10,8 +10,10 @@ import java.util.Map;
 import java.util.Set;
 
 import de.bacnetz.controller.Message;
+import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.stack.BACnetServicesSupportedBitString;
 import de.bacnetz.stack.COVSubscription;
+import de.bacnetz.stack.LinkLayerType;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.ServiceParameter;
 
@@ -93,8 +95,10 @@ public interface Device {
 
     void cleanUp();
 
-    void sendIamMessage() throws IOException;
+    void sendIamMessage(LinkLayerType linkLayerType) throws IOException;
 
     Map<ObjectIdentifierServiceParameter, Device> getDeviceMap();
+
+    void setMessageFactory(MessageFactory messageFactory);
 
 }

@@ -44,6 +44,7 @@ import de.bacnetz.stack.COVSubscription;
 import de.bacnetz.stack.ConfirmedServiceChoice;
 import de.bacnetz.stack.ErrorClass;
 import de.bacnetz.stack.ErrorCode;
+import de.bacnetz.stack.LinkLayerType;
 import de.bacnetz.stack.NPDU;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.PDUType;
@@ -1780,8 +1781,8 @@ public class DefaultDevice implements Device, CommunicationService {
     }
 
     @Override
-    public void sendIamMessage() throws IOException {
-        final Message retrieveIamMessage = DefaultMessageController.retrieveIamMessage(this);
+    public void sendIamMessage(final LinkLayerType linkLayerType) throws IOException {
+        final Message retrieveIamMessage = DefaultMessageController.retrieveIamMessage(this, linkLayerType);
         broadcastMessage(retrieveIamMessage);
     }
 
@@ -1918,6 +1919,7 @@ public class DefaultDevice implements Device, CommunicationService {
         return deviceMap;
     }
 
+    @Override
     public void setMessageFactory(final MessageFactory messageFactory) {
         this.messageFactory = messageFactory;
     }

@@ -73,6 +73,7 @@ public class TestRequestRunnable implements Runnable {
                     LOG.info(Utils.bytesToHex(frame));
 
                     outputStream.write(frame);
+                    outputStream.flush();
                 } catch (final BACnetzException | IOException e) {
                     LOG.error(e.getMessage(), e);
                 }

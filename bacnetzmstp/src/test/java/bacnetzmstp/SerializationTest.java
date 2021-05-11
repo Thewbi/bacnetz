@@ -6,6 +6,7 @@ import de.bacnetz.common.utils.Utils;
 import de.bacnetz.controller.DefaultMessage;
 import de.bacnetz.devices.ObjectType;
 import de.bacnetz.factory.DefaultMessageFactory;
+import de.bacnetz.mstp.Header;
 
 public class SerializationTest {
 

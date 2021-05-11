@@ -21,6 +21,7 @@ import de.bacnetz.common.utils.Utils;
 import de.bacnetz.controller.Message;
 import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.devices.ObjectType;
+import de.bacnetz.mstp.Header;
 import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.ConfirmedServiceChoice;
 import de.bacnetz.stack.ErrorClass;

@@ -10,7 +10,6 @@ import org.apache.logging.log4j.Logger;
 
 import bacnetzmstp.DataCRC;
 import bacnetzmstp.FrameType;
-import bacnetzmstp.Header;
 import de.bacnetz.common.utils.Utils;
 import de.bacnetz.controller.DefaultMessage;
 import de.bacnetz.controller.DefaultMessageController;
@@ -21,7 +20,9 @@ import de.bacnetz.devices.Device;
 import de.bacnetz.devices.DeviceService;
 import de.bacnetz.devices.ObjectType;
 import de.bacnetz.factory.DefaultMessageFactory;
+import de.bacnetz.mstp.Header;
 import de.bacnetz.stack.ConfirmedServiceChoice;
+import de.bacnetz.stack.LinkLayerType;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.UnconfirmedServiceChoice;
 
@@ -115,6 +116,7 @@ public class DefaultMessageListener implements MessageListener {
                 responseHeader.setCrc(reply[7]);
 
                 outputStream.write(reply);
+                outputStream.flush();
             }
             break;
 
@@ -127,7 +129,7 @@ public class DefaultMessageListener implements MessageListener {
         case 5:
             LOG.info(">>> Message received - BACNET_DATA_EXPECTING_REPLY");
 
-            LOG.trace("Header: " + Utils.bytesToHex(header.toBytes()));
+            LOG.info("Header: " + header + " " + Utils.bytesToHex(header.toBytes()));
             LOG.trace("Payload: " + Utils.bytesToHex(payloadBuffer, 0, payloadDataRead));
 
             defaultMessage = new DefaultMessage();
@@ -183,13 +185,14 @@ public class DefaultMessageListener implements MessageListener {
 
                     switch (confirmedServiceChoice) {
 
+                    case READ_PROPERTY_MULTIPLE:
                     case READ_PROPERTY:
 
-                        final List<Message> processMessage = messageController.processMessage(defaultMessage);
+                        final List<Message> processMessage = messageController.processMessage(header, defaultMessage);
 
                         for (final Message message : processMessage) {
 
-                            final byte[] frame = createFrame(1, 2, message);
+                            final byte[] frame = createFrame(header.getSourceAddress(), masterDevice.getId(), message);
                             outputStream.write(frame);
                         }
 
@@ -254,11 +257,11 @@ public class DefaultMessageListener implements MessageListener {
 
                     case WHO_IS:
 
-                        LOG.info("<<< Sending message - I AM to {}, deviceId {} from {}", header.getSourceAddress(), 25,
-                                masterDevice.getId());
+                        LOG.info("<<< Sending message - I AM to {}, deviceId {} from {}", header.getSourceAddress(),
+                                header.getSourceAddress(), masterDevice.getId());
 
                         final byte[] response = createIAM(masterDevice, header.getSourceAddress(), masterDevice.getId(),
-                                25);
+                                masterDevice.getId());
                         outputStream.write(response);
 
                         onceOnly = true;
@@ -305,7 +308,7 @@ public class DefaultMessageListener implements MessageListener {
     private byte[] createIAM(final Device device, final int destinationAddress, final int sourceAddress,
             final int deviceId) {
 
-        final Message iamMessage = DefaultMessageController.retrieveIamMessage(device);
+        final Message iamMessage = DefaultMessageController.retrieveIamMessage(device, LinkLayerType.MSTP);
 
 //        final DefaultMessageFactory defaultMessageFactory = new DefaultMessageFactory();
 //        final DefaultMessage requestObjectListMessage = (DefaultMessage) defaultMessageFactory
