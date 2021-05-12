@@ -1,6 +1,6 @@
 package de.bacnetz.mstp;
 
-import de.bacnetz.common.utils.Utils;
+import de.bacnetz.common.APIUtils;
 
 /**
  * https://sourceforge.net/p/bacnet/mailman/message/1259086/
@@ -54,8 +54,7 @@ public class Header {
 
         case 4:
             length2 = data;
-//            length = (lengthTemp << 8) + data;
-            length = Utils.bytesToUnsignedShort((byte) length1, (byte) length2, true);
+            length = APIUtils.bytesToUnsignedShort((byte) length1, (byte) length2, true);
             headerOctetCount++;
             break;
         }

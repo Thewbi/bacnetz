@@ -36,16 +36,16 @@ public class Main {
 //    private static final boolean PASSIVE_MODE = true;
     private static final boolean PASSIVE_MODE = false;
 
-    private static final int MASTER_DEVICE_ID = 2;
+    private static final int MASTER_DEVICE_ID = 69;
 
 //    private static final int MAX_MASTER = 127;
     private static final int MAX_MASTER = 10;
     // private static final int MAX_MASTER = 9;
 
-    // private static final String COM_PORT = "COM8";
+    private static final String COM_PORT = "COM8";
 //    private static final String COM_PORT = "COM27";
 
-    private static final String COM_PORT = "/dev/tty.usbserial-AR0KCOCB";
+//    private static final String COM_PORT = "/dev/tty.usbserial-AR0KCOCB";
 //    private static final String COM_PORT = "/dev/cu.usbserial-AR0KCOCB";
 
     private static final int MSTP_BAUD_RATE = 76800;
@@ -135,13 +135,14 @@ public class Main {
             //
 
             final TestRequestRunnable testRequestRunnable = new TestRequestRunnable();
+            testRequestRunnable.setMessageFactory(messageFactory);
             testRequestRunnable.setMessageController(defaultMessageController);
             testRequestRunnable.setMasterDevice(masterDevice);
 //        testRequestRunnable.setMaxMaster(MAX_MASTER);
             testRequestRunnable.setOutputStream(outputStream);
 
             final Thread testRequestRunnableThread = new Thread(testRequestRunnable);
-//            testRequestRunnableThread.start();
+            testRequestRunnableThread.start();
         }
 
         final MessageListener messageListener = new DefaultMessageListener();

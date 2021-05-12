@@ -11,10 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.factory.Factory;
+import de.bacnetz.stack.LinkLayerType;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.VendorType;
 
 public class DefaultDeviceService implements DeviceService {
+
+    private static final int WILDCARD_MSTP_DEVICE_INSTANCE_NUMBER = 255;
 
     private final List<Device> devices = new ArrayList<Device>();
 
@@ -90,6 +93,38 @@ public class DefaultDeviceService implements DeviceService {
 //        device.bindSocket(localIp, deviceId);
 
         return devices;
+    }
+
+    @Override
+    public List<Device> findDevice(final ObjectIdentifierServiceParameter objectIdentifierServiceParameter,
+            final LinkLayerType linkLayerType) {
+
+        Device device = null;
+
+        final ArrayList<Device> result = new ArrayList<>();
+
+        switch (linkLayerType) {
+
+        case IP:
+            device = getDeviceMap().get(objectIdentifierServiceParameter);
+            if (device != null) {
+                result.add(device);
+            }
+            break;
+
+        case MSTP:
+            if (objectIdentifierServiceParameter.getInstanceNumber() == WILDCARD_MSTP_DEVICE_INSTANCE_NUMBER) {
+                result.addAll(getDeviceMap().values());
+            } else {
+                device = getDeviceMap().get(objectIdentifierServiceParameter);
+                if (device != null) {
+                    result.add(device);
+                }
+            }
+            break;
+        }
+
+        return result;
     }
 
     @Override

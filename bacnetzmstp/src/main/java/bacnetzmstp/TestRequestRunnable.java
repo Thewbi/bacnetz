@@ -15,6 +15,7 @@ import de.bacnetz.controller.MessageController;
 import de.bacnetz.devices.Device;
 import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.devices.ObjectType;
+import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.stack.APDU;
 import de.bacnetz.stack.ConfirmedServiceChoice;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
@@ -22,6 +23,7 @@ import de.bacnetz.stack.exception.BACnetzException;
 
 public class TestRequestRunnable implements Runnable {
 
+    private static final int DEVICE_OID = 69;
     private static final int SLEEP_IN_BETWEEN_IN_MS = 10000;
 //    private static final int SLEEP_IN_BETWEEN_IN_MS = 500;
 
@@ -33,6 +35,8 @@ public class TestRequestRunnable implements Runnable {
 
     private MessageController messageController;
 
+    private MessageFactory messageFactory;
+
     @Override
     public void run() {
 
@@ -40,48 +44,70 @@ public class TestRequestRunnable implements Runnable {
 
             LOG.info("<<< TestRequest");
 
-//            final byte[] requestAsBytes = DefaultMessageListener.createObjectListRequest(25, masterDevice.getId(), 25);
-//            try {
-//                outputStream.write(requestAsBytes);
-//            } catch (final IOException e) {
-//                e.printStackTrace();
-//            }
+//            test1();
 
-            final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = ObjectIdentifierServiceParameter
-                    .createFromTypeAndInstanceNumber(ObjectType.DEVICE, 2);
-
-            final APDU apdu = new APDU();
-            apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
-            apdu.setPropertyIdentifier(DevicePropertyType.OBJECT_LIST.getCode());
-            apdu.getServiceParameters().add(objectIdentifierServiceParameter);
-
-            final DefaultMessage defaultMessage = new DefaultMessage();
-            defaultMessage.setApdu(apdu);
-
-            final List<Message> processMessage = messageController.processMessage(defaultMessage);
-            for (final Message message : processMessage) {
-                try {
-//                    final byte[] bytes = message.getBytes();
-////                    LOG.info(Utils.bytesToHex(bytes));
-//
-//                    final byte[] testBytes = { 0x01, 0x02, 0x03, 0x04, 0x05 };
-//                    LOG.info(Utils.bytesToHex(testBytes));
-//
-//                    outputStream.write(testBytes);
-
-                    final byte[] frame = DefaultMessageListener.createFrame(1, 2, message);
-                    LOG.info(Utils.bytesToHex(frame));
-
-                    outputStream.write(frame);
-                    outputStream.flush();
-                } catch (final BACnetzException | IOException e) {
-                    LOG.error(e.getMessage(), e);
-                }
+            try {
+                testWhoIs();
+            } catch (final IOException e) {
+                LOG.error(e.getMessage(), e);
             }
 
             try {
                 Thread.sleep(SLEEP_IN_BETWEEN_IN_MS);
             } catch (final InterruptedException e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+    }
+
+    private void testWhoIs() throws IOException {
+        final Message whoIsMessage = messageFactory.whoIsMessage();
+
+        final byte[] frame = DefaultMessageListener.createFrame(0, DEVICE_OID, whoIsMessage);
+
+        LOG.info(Utils.bytesToHex(frame));
+
+        outputStream.write(frame);
+        outputStream.flush();
+    }
+
+    private void test1() {
+        final byte[] requestAsBytes = DefaultMessageListener.createObjectListRequest(25, masterDevice.getId(),
+                DEVICE_OID);
+//      try {
+//          outputStream.write(requestAsBytes);
+//      } catch (final IOException e) {
+//          e.printStackTrace();
+//      }
+
+        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = ObjectIdentifierServiceParameter
+                .createFromTypeAndInstanceNumber(ObjectType.DEVICE, 2);
+
+        final APDU apdu = new APDU();
+        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
+        apdu.setPropertyIdentifier(DevicePropertyType.OBJECT_LIST.getCode());
+        apdu.getServiceParameters().add(objectIdentifierServiceParameter);
+
+        final DefaultMessage defaultMessage = new DefaultMessage();
+        defaultMessage.setApdu(apdu);
+
+        final List<Message> processMessage = messageController.processMessage(defaultMessage);
+        for (final Message message : processMessage) {
+            try {
+//              final byte[] bytes = message.getBytes();
+////              LOG.info(Utils.bytesToHex(bytes));
+//
+//              final byte[] testBytes = { 0x01, 0x02, 0x03, 0x04, 0x05 };
+//              LOG.info(Utils.bytesToHex(testBytes));
+//
+//              outputStream.write(testBytes);
+
+                final byte[] frame = DefaultMessageListener.createFrame(1, DEVICE_OID, message);
+                LOG.info(Utils.bytesToHex(frame));
+
+                outputStream.write(frame);
+                outputStream.flush();
+            } catch (final BACnetzException | IOException e) {
                 LOG.error(e.getMessage(), e);
             }
         }
@@ -105,6 +131,14 @@ public class TestRequestRunnable implements Runnable {
 
     public void setMessageController(final MessageController messageController) {
         this.messageController = messageController;
+    }
+
+    public MessageFactory getMessageFactory() {
+        return messageFactory;
+    }
+
+    public void setMessageFactory(final MessageFactory messageFactory) {
+        this.messageFactory = messageFactory;
     }
 
 }

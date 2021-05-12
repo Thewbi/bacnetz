@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import de.bacnetz.factory.Factory;
+import de.bacnetz.stack.LinkLayerType;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 
 public interface DeviceService {
@@ -18,5 +19,8 @@ public interface DeviceService {
     Map<ObjectIdentifierServiceParameter, Device> getDeviceMap();
 
     void setDeviceFactory(Factory<Device> deviceFactory);
+
+    List<Device> findDevice(ObjectIdentifierServiceParameter objectIdentifierServiceParameter,
+            LinkLayerType linkLayerType);
 
 }

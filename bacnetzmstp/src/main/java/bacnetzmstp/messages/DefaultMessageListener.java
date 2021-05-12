@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,7 +41,7 @@ public class DefaultMessageListener implements MessageListener {
 
     private DeviceService deviceService;
 
-    private boolean onceOnly = false;
+//    private final boolean onceOnly = false;
 
     private boolean passiveMode = false;
 
@@ -241,13 +242,19 @@ public class DefaultMessageListener implements MessageListener {
 
             lastMessage = defaultMessage;
 
+            LOG.info("PassiveMode: " + passiveMode);
+            LOG.info("Header: " + header);
             LOG.info(defaultMessage);
 
             if (!passiveMode) {
 
-//                final Device masterDevice = masterDevices.get(header.getDestinationAddress());
-                masterDevice = deviceService.getDeviceMap().get(ObjectIdentifierServiceParameter
-                        .createFromTypeAndInstanceNumber(ObjectType.DEVICE, header.getDestinationAddress()));
+                final ObjectIdentifierServiceParameter whoIsObjectIdentifierServiceParameter = ObjectIdentifierServiceParameter
+                        .createFromTypeAndInstanceNumber(ObjectType.DEVICE, header.getDestinationAddress());
+
+                final List<Device> devices = deviceService.findDevice(whoIsObjectIdentifierServiceParameter,
+                        LinkLayerType.MSTP);
+
+//                masterDevice = deviceService.getDeviceMap().get();
 
                 final UnconfirmedServiceChoice unconfirmedServiceChoice = defaultMessage.getApdu()
                         .getUnconfirmedServiceChoice();
@@ -257,14 +264,22 @@ public class DefaultMessageListener implements MessageListener {
 
                     case WHO_IS:
 
-                        LOG.info("<<< Sending message - I AM to {}, deviceId {} from {}", header.getSourceAddress(),
-                                header.getSourceAddress(), masterDevice.getId());
+                        if (CollectionUtils.isNotEmpty(devices)) {
 
-                        final byte[] response = createIAM(masterDevice, header.getSourceAddress(), masterDevice.getId(),
-                                masterDevice.getId());
-                        outputStream.write(response);
+                            for (final Device device : devices) {
 
-                        onceOnly = true;
+                                LOG.info("Header: " + header + " masterDevice " + device);
+
+                                LOG.info("<<< Sending message - I AM to {}, deviceId {} from {}",
+                                        header.getSourceAddress(), header.getSourceAddress(), device.getId());
+
+                                final byte[] response = createIAM(device, header.getSourceAddress(), device.getId(),
+                                        device.getId());
+                                outputStream.write(response);
+
+//                            onceOnly = true;
+                            }
+                        }
                         break;
 
                     default:
