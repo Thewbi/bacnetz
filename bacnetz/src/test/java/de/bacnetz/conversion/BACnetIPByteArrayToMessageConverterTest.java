@@ -26,6 +26,69 @@ public class BACnetIPByteArrayToMessageConverterTest {
     private static final Logger LOG = LogManager.getLogger(BACnetIPByteArrayToMessageConverterTest.class);
 
     @Test
+    public void testParseWriteProperty_MultiStateValue_PresentValue() {
+
+        //
+        // Arrange
+        //
+
+        // 81 0a 00 15 01 04 02 45 26 0f 0c 04 c0 00 04 19 55 3e 21 03 3f
+        final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810a001501040245260f0c04c0000419553e21033f");
+
+        final BACnetIPByteArrayToMessageConverter byteArrayToMessageConverter = new BACnetIPByteArrayToMessageConverter();
+        byteArrayToMessageConverter.setPayloadOffset(0);
+        byteArrayToMessageConverter.setPayloadLength(21);
+
+        //
+        // Act
+        //
+
+        final DefaultMessage defaultMessage = byteArrayToMessageConverter.convert(hexStringToByteArray);
+
+        LOG.info(Utils.bytesToHex(defaultMessage.getApdu().getPayload()));
+
+        final byte[] payload = defaultMessage.getApdu().getPayload();
+
+        // After all segments have been reassembled...
+        //
+        // process service parameters inside the APDU. The APDU will parse the service
+        // parameters dump them to the console and store them in it's service parameter
+        // list for further processing
+        final int startIndex = 0;
+        final int offset = 0;
+        defaultMessage.getApdu().processPayload(payload, startIndex, payload.length, offset);
+
+        //
+        // Assert
+        //
+
+        assertEquals(PDUType.CONFIRMED_SERVICE_REQUEST_PDU, defaultMessage.getApdu().getPduType());
+        assertEquals(ConfirmedServiceChoice.WRITE_PROPERTY, defaultMessage.getApdu().getConfirmedServiceChoice());
+
+        final List<ServiceParameter> serviceParameters = defaultMessage.getApdu().getServiceParameters();
+        assertEquals(5, serviceParameters.size());
+
+        final ServiceParameter serviceParaemter = serviceParameters.get(0);
+        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter(
+                serviceParaemter);
+        assertEquals(ObjectType.DEVICE, objectIdentifierServiceParameter.getObjectType());
+        assertEquals(10000, objectIdentifierServiceParameter.getInstanceNumber());
+
+        final ServiceParameter maxAPDULengthSegmentedServiceParameter = serviceParameters.get(1);
+        final short maxAPDULengthAccepted = (short) Utils.bytesToUnsignedShort(
+                maxAPDULengthSegmentedServiceParameter.getPayload()[0],
+                maxAPDULengthSegmentedServiceParameter.getPayload()[1], true);
+        assertEquals(480, maxAPDULengthAccepted);
+
+        final ServiceParameter segmentationSupportedServiceParameter = serviceParameters.get(2);
+        assertEquals(0, segmentationSupportedServiceParameter.getPayload()[0]);
+
+        final ServiceParameter vendorIdServiceParameter = serviceParameters.get(3);
+        assertEquals(178, (vendorIdServiceParameter.getPayload()[0]) & 0xFF);
+
+    }
+
+    @Test
     public void testParseIAMResponse() {
 
         //

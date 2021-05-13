@@ -475,7 +475,7 @@ public class APDU {
                 break;
 
             case WRITE_PROPERTY:
-                structureLength += processObjectAndPropertyIdentifier(startIndex + offset, data);
+                structureLength += processWriteProperty(startIndex + offset, data);
                 break;
 
             case REINITIALIZE_DEVICE:
@@ -495,6 +495,38 @@ public class APDU {
 
             }
         }
+    }
+
+    private int processWriteProperty(final int offset, final byte[] data) {
+
+        int tempOffset = offset;
+
+        // objectIdentifier
+        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+        tempOffset += objectIdentifierServiceParameter.fromBytes(data, tempOffset);
+        serviceParameters.add(objectIdentifierServiceParameter);
+
+        // property identifier service parameter
+        final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
+        tempOffset += propertyIdentifierServiceParameter.fromBytes(data, tempOffset);
+        serviceParameters.add(propertyIdentifierServiceParameter);
+
+        // {[?] bracket open
+        final ServiceParameter bracketOpenServiceParameter = new ServiceParameter();
+        serviceParameters.add(bracketOpenServiceParameter);
+        tempOffset += bracketOpenServiceParameter.fromBytes(data, tempOffset);
+
+        final ServiceParameter presentValueServiceParameter = new ServiceParameter();
+        serviceParameters.add(presentValueServiceParameter);
+        tempOffset += presentValueServiceParameter.fromBytes(data, tempOffset);
+
+        // }[?] bracket close
+        final ServiceParameter tempBracketCloseServiceParameter = new ServiceParameter();
+        serviceParameters.add(tempBracketCloseServiceParameter);
+        tempOffset += tempBracketCloseServiceParameter.fromBytes(data, tempOffset);
+
+        return tempOffset - offset;
+
     }
 
     private int processAddListElement(final int offset, final byte[] data) {
