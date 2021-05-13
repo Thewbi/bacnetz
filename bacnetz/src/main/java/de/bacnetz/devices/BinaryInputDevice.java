@@ -14,8 +14,8 @@ public class BinaryInputDevice extends DefaultDevice {
 
         final int value = ((boolean) getPresentValue()) ? 1 : 0;
 
-        return getMessageFactory().createEnumeratedProperty(this, requestMessage.getApdu().getInvokeId(),
-                deviceProperty.getPropertyKey(), new byte[] { (byte) value });
+        return getMessageFactory().createEnumeratedProperty(this, requestMessage, deviceProperty.getPropertyKey(),
+                new byte[] { (byte) value });
     }
 
     @Override

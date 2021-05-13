@@ -102,12 +102,13 @@ public class ToggleDoorOpenStateThread implements Runnable {
 
             // destination network information
             npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+            npdu.setDestinationNetworkAddress(NetworkUtils.DESTINATION_NETWORK_NUMBER);
             npdu.setDestinationMACLayerAddressLength(3);
             npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
 
             npdu.setDestinationHopCount(255);
         }
+//        npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.CONFIRMED_SERVICE_REQUEST_PDU);

@@ -163,23 +163,23 @@ public class DefaultMessageController implements MessageController {
             switch (confirmedServiceChoice) {
 
             case READ_PROPERTY:
-                LOG.trace(">>> READ_PROPERTY received!");
+                LOG.info(">>> READ_PROPERTY received!");
                 return processReadProperty(mstpHeader, message);
 
             case READ_PROPERTY_MULTIPLE:
-                LOG.trace(">>> READ_PROPERTY_MULTIPLE received!");
+                LOG.info(">>> READ_PROPERTY_MULTIPLE received!");
                 return processReadPropertyMultiple(mstpHeader, message);
 
             case WRITE_PROPERTY:
-                LOG.trace(">>> WRITE_PROPERTY received!");
+                LOG.info(">>> WRITE_PROPERTY received!");
                 return processWriteProperty(message);
 
             case REINITIALIZE_DEVICE:
-                LOG.trace(">>> REINITIALIZE_DEVICE received!");
+                LOG.info(">>> REINITIALIZE_DEVICE received!");
                 return processReinitializeDevice(message);
 
             case SUBSCRIBE_COV:
-                LOG.trace(">>> SUBSCRIBE_COV received!");
+                LOG.info(">>> SUBSCRIBE_COV received!");
                 return processSubscribeCov(message);
 
             case ADD_LIST_ELEMENT:
@@ -200,6 +200,7 @@ public class DefaultMessageController implements MessageController {
 
             case I_AM:
                 LOG.info(">>> I_AM received!");
+                LOG.trace(message);
                 return processIAMMessage(message);
 
             /** 20.1.3 BACnet-Unconfirmed-Request-PDU */
@@ -250,6 +251,10 @@ public class DefaultMessageController implements MessageController {
                 LOG.info(">>> WRITE_GROUP received!");
                 return null;
 
+            case UNKNOWN_SERVICE_CHOICE:
+                LOG.info(">>> UNKNOWN_SERVICE_CHOICE received!");
+                return null;
+
 //            case DEVICE_COMMUNICATION_CONTROL:
 //                LOG.trace(">>> DEVICE_COMMUNICATION_CONTROL received!");
 //                return processDeviceCommunicationControl(message);
@@ -277,16 +282,17 @@ public class DefaultMessageController implements MessageController {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.SIMPLE_ACK_PDU);
@@ -357,16 +363,17 @@ public class DefaultMessageController implements MessageController {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.SIMPLE_ACK_PDU);
@@ -412,16 +419,17 @@ public class DefaultMessageController implements MessageController {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkAddress(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         // TODO this parameter is not used
         final ObjectIdentifierServiceParameter resultObjectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
@@ -543,7 +551,7 @@ public class DefaultMessageController implements MessageController {
         final NPDU npdu = new NPDU();
         npdu.setVersion(0x01);
         npdu.setControl(0x20);
-        npdu.setDestinationNetworkNumber(NetworkUtils.BROADCAST_NETWORK_NUMBER);
+        npdu.setDestinationNetworkAddress(NetworkUtils.BROADCAST_NETWORK_NUMBER);
         // indicates broadcast on destination network
         npdu.setDestinationMACLayerAddressLength(0);
         npdu.setDestinationHopCount(255);
@@ -551,6 +559,7 @@ public class DefaultMessageController implements MessageController {
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU);
         apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.I_AM);
+        apdu.setInvokeId(Integer.MIN_VALUE);
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
@@ -639,16 +648,17 @@ public class DefaultMessageController implements MessageController {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.SIMPLE_ACK_PDU);
@@ -754,14 +764,15 @@ public class DefaultMessageController implements MessageController {
         // no additional information
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//            npdu.setDestinationHopCount(255);
+//        }
+        npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         final DefaultMessage message = new DefaultMessage();
         if (linkLayerType != LinkLayerType.MSTP) {
@@ -1094,15 +1105,16 @@ public class DefaultMessageController implements MessageController {
 
         // TODO: copy message.VirtualLinkControl
 
-        // TODO: copy message.NPDU including all service parameters
-        // TODO: change NPDU.control to contain a destination specifier
-        resultMessage.getNpdu().setControl(0x20);
-        resultMessage.getNpdu().setDestinationNetworkNumber(302);
-        resultMessage.getNpdu().setDestinationMACLayerAddressLength(3);
-        resultMessage.getNpdu().setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-        // TODO: copy NPDU
-        // TODO: add hopCount, set it to 255 0xFF
-        resultMessage.getNpdu().setDestinationHopCount(0xFF);
+//        // TODO: copy message.NPDU including all service parameters
+//        // TODO: change NPDU.control to contain a destination specifier
+//        resultMessage.getNpdu().setControl(0x20);
+//        resultMessage.getNpdu().setDestinationNetworkNumber(302);
+//        resultMessage.getNpdu().setDestinationMACLayerAddressLength(3);
+//        resultMessage.getNpdu().setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//        // TODO: copy NPDU
+//        // TODO: add hopCount, set it to 255 0xFF
+//        resultMessage.getNpdu().setDestinationHopCount(0xFF);
+        resultMessage.getNpdu().copyNetworkInformation(message.getNpdu());
 
         // APDU
         resultMessage.getApdu().setPduType(PDUType.COMPLEX_ACK_PDU);
@@ -1181,8 +1193,13 @@ public class DefaultMessageController implements MessageController {
 
         // TODO: add node into UI tree for this newly discovered device
 
-        // TODO: send a message
+//        sendResponseToIAM(sourceInetSocketAddress, objectIdentifierServiceParameter);
 
+        return null;
+    }
+
+    private void sendResponseToIAM(final InetSocketAddress sourceInetSocketAddress,
+            final ServiceParameter objectIdentifierServiceParameter) {
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
         virtualLinkControl.setType(0x81);
         virtualLinkControl.setFunction(0x0A);
@@ -1239,14 +1256,13 @@ public class DefaultMessageController implements MessageController {
 //      LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
         try {
+            LOG.info("Address: {}, Port: {}", sourceInetSocketAddress.getAddress(), sourceInetSocketAddress.getPort());
             final Socket socket = new Socket(sourceInetSocketAddress.getAddress(), sourceInetSocketAddress.getPort());
             final DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
             outputStream.write(outMessage.getBytes());
         } catch (final IOException e) {
             LOG.error(e.getMessage(), e);
         }
-
-        return null;
     }
 
     public Map<Integer, String> getVendorMap() {

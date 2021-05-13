@@ -453,6 +453,9 @@ public class APDU {
                 structureLength += processUnconfirmedCOVNotification(startIndex + offset, data, payloadLength);
                 break;
 
+            case UNKNOWN_SERVICE_CHOICE:
+                break;
+
             default:
                 LOG.warn("Not implemented: " + unconfirmedServiceChoice.name());
             }

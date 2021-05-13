@@ -26,7 +26,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.bacnetz.common.utils.BACnetUtils;
-import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.common.utils.Utils;
 import de.bacnetz.configuration.ConfigurationManager;
 import de.bacnetz.configuration.DefaultConfigurationManager;
@@ -425,16 +424,17 @@ public class DefaultDevice implements Device, CommunicationService {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         final ObjectIdentifierServiceParameter outwardObjectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         outwardObjectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -664,16 +664,17 @@ public class DefaultDevice implements Device, CommunicationService {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -772,16 +773,17 @@ public class DefaultDevice implements Device, CommunicationService {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         // this object identifier has to be context specific. I do not know why
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
@@ -852,16 +854,17 @@ public class DefaultDevice implements Device, CommunicationService {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         // this object identifier has to be context specific. I do not know why
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
@@ -932,16 +935,17 @@ public class DefaultDevice implements Device, CommunicationService {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         // this object identifier has to be context specific. I do not know why
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
@@ -1036,16 +1040,17 @@ public class DefaultDevice implements Device, CommunicationService {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         final ObjectIdentifierServiceParameter outwardObjectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         outwardObjectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -1112,16 +1117,17 @@ public class DefaultDevice implements Device, CommunicationService {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
@@ -1799,8 +1805,10 @@ public class DefaultDevice implements Device, CommunicationService {
         final String multicastIP = configurationManager
                 .getPropertyAsString(ConfigurationManager.MULTICAST_IP_CONFIG_KEY);
 
-        LOG.trace(
-                ">>> Broadcast Sending to " + multicastIP + ":" + port + ": " + Utils.byteArrayToStringNoPrefix(bytes));
+        LOG.info(
+                "<<< Broadcast Sending to " + multicastIP + ":" + port + ": " + Utils.byteArrayToStringNoPrefix(bytes));
+
+        LOG.info(message);
 
         final SocketAddress socketAddress = new InetSocketAddress(multicastIP, port);
         final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, socketAddress);

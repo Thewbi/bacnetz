@@ -51,7 +51,7 @@ public class NPDUTest {
         assertEquals(NetworkPriority.NORMAL_MESSAGE, npdu.getNetworkPriority());
 
         // destination network information
-        assertEquals(0xFFFF, npdu.getDestinationNetworkNumber());
+        assertEquals(0xFFFF, npdu.getDestinationNetworkAddress());
         assertEquals(0x00, npdu.getDestinationMACLayerAddressLength());
         assertEquals(0xFF, npdu.getDestinationHopCount());
     }
@@ -77,7 +77,7 @@ public class NPDUTest {
         assertEquals(NetworkPriority.NORMAL_MESSAGE, npdu.getNetworkPriority());
 
         // destination network information
-        assertEquals(0x00, npdu.getDestinationNetworkNumber());
+        assertEquals(0x00, npdu.getDestinationNetworkAddress());
         assertEquals(0x00, npdu.getDestinationMACLayerAddressLength());
         assertEquals(0x00, npdu.getDestinationHopCount());
 

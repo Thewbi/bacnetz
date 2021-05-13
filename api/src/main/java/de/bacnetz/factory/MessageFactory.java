@@ -9,7 +9,7 @@ import de.bacnetz.stack.LinkLayerType;
 
 public interface MessageFactory extends Factory<Message> {
 
-    Message createEnumeratedProperty(Device device, int invokeId, int propertyKey, byte[] payload);
+    Message createEnumeratedProperty(Device device, Message requestMessage, int propertyKey, byte[] payload);
 
     void setVendorMap(Map<Integer, String> vendorMap);
 

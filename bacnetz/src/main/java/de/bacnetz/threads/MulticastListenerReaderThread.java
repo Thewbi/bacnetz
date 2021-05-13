@@ -80,7 +80,6 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
 
         } catch (final SocketException e) {
             LOG.error(e.getMessage(), e);
-
             LOG.error(
                     "Cannot bind! Please close all other bacnet applications (Yabe, VTS, ...) that might be running on this PC!");
             return;
@@ -113,10 +112,10 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
             }
 
             // DEBUG
-            LOG.info("<<< Received from inetAddress: " + datagramPacketAddress + " From socketAddress "
+            LOG.trace(">>> Received from inetAddress: " + datagramPacketAddress + " From socketAddress "
                     + datagramPacketSocketAddress + " Data: "
                     + Utils.byteArrayToStringNoPrefix(datagramPacket.getData()));
-            LOG.trace("<<< " + Utils.byteArrayToStringNoPrefix(data));
+            LOG.trace(">>> " + Utils.byteArrayToStringNoPrefix(data));
 
             List<Message> response = null;
             Message request = null;
@@ -246,7 +245,7 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
         final String multicastIP = configurationManager
                 .getPropertyAsString(ConfigurationManager.MULTICAST_IP_CONFIG_KEY);
 
-        LOG.trace(
+        LOG.info(
                 ">>> Broadcast Sending to " + multicastIP + ":" + port + ": " + Utils.byteArrayToStringNoPrefix(bytes));
 
         final SocketAddress socketAddress = new InetSocketAddress(multicastIP, port);

@@ -796,7 +796,7 @@ public class DefaultStateMachineTest {
 
         // check NPDU
         assertEquals(255, defaultMessage.getNpdu().getDestinationHopCount());
-        assertEquals(888, defaultMessage.getNpdu().getDestinationNetworkNumber());
+        assertEquals(888, defaultMessage.getNpdu().getDestinationNetworkAddress());
         assertEquals(6, defaultMessage.getNpdu().getDestinationMACLayerAddressLength());
 
         // invoke

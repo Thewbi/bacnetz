@@ -34,10 +34,11 @@ public class NetworkUtils {
 
     public static final String OBJECT_IDENTIFIER = "OBJECT_DEVICE:10001";
 
-//    public static final boolean ADD_ADDITIONAL_NETWORK_INFORMATION = true;
-    public static final boolean ADD_ADDITIONAL_NETWORK_INFORMATION = false;
+    public static final boolean ADD_ADDITIONAL_NETWORK_INFORMATION = true;
+//    public static final boolean ADD_ADDITIONAL_NETWORK_INFORMATION = false;
 
-    public static final int DESTINATION_NETWORK_NUMBER = 302;
+//    public static final int DESTINATION_NETWORK_NUMBER = 302;
+    public static final int DESTINATION_NETWORK_NUMBER = 801;
 
     public static final String OBJECT_DESCRIPTION = "no entry";
 

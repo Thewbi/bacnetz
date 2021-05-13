@@ -58,13 +58,13 @@ public enum UnconfirmedServiceChoice {
 
     DEVICE_COMMUNICATION_CONTROL(0x11),
 
-    UNNOWN_SERVICE_CHOICE(0xFFFFFFFF),
+    UNKNOWN_SERVICE_CHOICE(0xFFFFFFFF),
 
-    UNNOWN_SERVICE_CHOICE_128(0x80),
+    UNKNOWN_SERVICE_CHOICE_128(0x80),
 
-    UNNOWN_SERVICE_CHOICE_129(0x81),
+    UNKNOWN_SERVICE_CHOICE_129(0x81),
 
-    UNNOWN_SERVICE_CHOICE_130(0x82),
+    UNKNOWN_SERVICE_CHOICE_130(0x82),
 
     CONFIRMED_COV_NOTIFICATION(0x01);
 
@@ -109,13 +109,13 @@ public enum UnconfirmedServiceChoice {
 
     public static final int WRITE_PROPERTY_CODE = 0x0F;
 
-    public static final int UNNOWN_SERVICE_CHOICE_CODE = 0xFFFFFFFF; // 128
+    public static final int UNKNOWN_SERVICE_CHOICE_CODE = 0xFFFFFFFF; // 128
 
-    public static final int UNNOWN_SERVICE_CHOICE_128_CODE = 0x80; // 128
+    public static final int UNKNOWN_SERVICE_CHOICE_128_CODE = 0x80; // 128
 
-    public static final int UNNOWN_SERVICE_CHOICE_129_CODE = 0x81; // 129
+    public static final int UNKNOWN_SERVICE_CHOICE_129_CODE = 0x81; // 129
 
-    public static final int UNNOWN_SERVICE_CHOICE_130_CODE = 0x82; // 130
+    public static final int UNKNOWN_SERVICE_CHOICE_130_CODE = 0x82; // 130
 
     private final int id;
 
@@ -160,21 +160,21 @@ public enum UnconfirmedServiceChoice {
         case WRITE_GROUP_CODE:
             return WRITE_GROUP;
 
-        case UNNOWN_SERVICE_CHOICE_CODE:
-            return UNNOWN_SERVICE_CHOICE;
+        case UNKNOWN_SERVICE_CHOICE_CODE:
+            return UNKNOWN_SERVICE_CHOICE;
 
-        case UNNOWN_SERVICE_CHOICE_128_CODE:
-            return UNNOWN_SERVICE_CHOICE_128;
+        case UNKNOWN_SERVICE_CHOICE_128_CODE:
+            return UNKNOWN_SERVICE_CHOICE_128;
 
-        case UNNOWN_SERVICE_CHOICE_129_CODE:
-            return UNNOWN_SERVICE_CHOICE_129;
+        case UNKNOWN_SERVICE_CHOICE_129_CODE:
+            return UNKNOWN_SERVICE_CHOICE_129;
 
-        case UNNOWN_SERVICE_CHOICE_130_CODE:
-            return UNNOWN_SERVICE_CHOICE_130;
+        case UNKNOWN_SERVICE_CHOICE_130_CODE:
+            return UNKNOWN_SERVICE_CHOICE_130;
 
         default:
             LOG.warn("Unknown id " + id);
-            return UNNOWN_SERVICE_CHOICE;
+            return UNKNOWN_SERVICE_CHOICE;
         }
     }
 

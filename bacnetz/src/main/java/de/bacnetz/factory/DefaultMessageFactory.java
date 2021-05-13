@@ -143,19 +143,19 @@ public class DefaultMessageFactory implements MessageFactory {
                 }
 
             case UNSIGNED_INTEGER:
-                return returnIntegerProperty(device, requestMessage.getApdu().getInvokeId(),
-                        deviceProperty.getPropertyKey(), deviceProperty.getValueAsByteArray());
+                return returnIntegerProperty(device, requestMessage, deviceProperty.getPropertyKey(),
+                        deviceProperty.getValueAsByteArray());
 
             case BOOLEAN:
-                return returnBooleanProperty(device, requestMessage.getApdu().getInvokeId(),
-                        deviceProperty.getPropertyKey(), (Boolean) deviceProperty.getValue());
+                return returnBooleanProperty(device, requestMessage, deviceProperty.getPropertyKey(),
+                        (Boolean) deviceProperty.getValue());
 
             case ENUMERATED:
-                return createEnumeratedProperty(device, requestMessage.getApdu().getInvokeId(),
-                        deviceProperty.getPropertyKey(), deviceProperty.getValueAsByteArray());
+                return createEnumeratedProperty(device, requestMessage, deviceProperty.getPropertyKey(),
+                        deviceProperty.getValueAsByteArray());
 
             case SINGED_INTEGER_TWOS_COMPLEMENT_NOTATION:
-                return returnSignedIntegerTwosComplementNotationProperty(device, requestMessage.getApdu().getInvokeId(),
+                return returnSignedIntegerTwosComplementNotationProperty(device, requestMessage,
                         deviceProperty.getPropertyKey(), deviceProperty.getValueAsByteArray());
 
             case CHARACTER_STRING:
@@ -197,16 +197,17 @@ public class DefaultMessageFactory implements MessageFactory {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        copyNetworkInformation(npdu, requestMessage.getNpdu());
 
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
@@ -282,16 +283,17 @@ public class DefaultMessageFactory implements MessageFactory {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        copyNetworkInformation(npdu, requestMessage.getNpdu());
 
         final ObjectIdentifierServiceParameter outwardObjectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         outwardObjectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -399,16 +401,17 @@ public class DefaultMessageFactory implements MessageFactory {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        copyNetworkInformation(npdu, requestMessage.getNpdu());
 
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
@@ -512,16 +515,17 @@ public class DefaultMessageFactory implements MessageFactory {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        copyNetworkInformation(npdu, requestMessage.getNpdu());
 
         final ObjectIdentifierServiceParameter outwardObjectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         outwardObjectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -590,16 +594,17 @@ public class DefaultMessageFactory implements MessageFactory {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        copyNetworkInformation(npdu, requestMessage.getNpdu());
 
         final ServiceParameter errorClassServiceParameter = new ServiceParameter();
         errorClassServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
@@ -738,16 +743,17 @@ public class DefaultMessageFactory implements MessageFactory {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        copyNetworkInformation(npdu, requestMessage.getNpdu());
 
         // this object identifier has to be context specific. I do not know why
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
@@ -871,16 +877,17 @@ public class DefaultMessageFactory implements MessageFactory {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        copyNetworkInformation(npdu, requestMessage.getNpdu());
 
         // this object identifier has to be context specific. I do not know why
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
@@ -946,7 +953,7 @@ public class DefaultMessageFactory implements MessageFactory {
         return result;
     }
 
-    private Message returnSignedIntegerTwosComplementNotationProperty(final Device device, final int invokeId,
+    private Message returnSignedIntegerTwosComplementNotationProperty(final Device device, final Message requestMessage,
             final int propertyKey, final byte[] payload) {
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
@@ -960,16 +967,17 @@ public class DefaultMessageFactory implements MessageFactory {
         // no additional information
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        copyNetworkInformation(npdu, requestMessage.getNpdu());
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -1002,7 +1010,7 @@ public class DefaultMessageFactory implements MessageFactory {
 
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
-        apdu.setInvokeId(invokeId);
+        apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
 //      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
@@ -1072,7 +1080,7 @@ public class DefaultMessageFactory implements MessageFactory {
         final NPDU npdu = new NPDU();
         npdu.setVersion(0x01);
         npdu.setControl(0x28);
-        npdu.setDestinationNetworkNumber(NetworkUtils.BROADCAST_NETWORK_NUMBER);
+        npdu.setDestinationNetworkAddress(NetworkUtils.BROADCAST_NETWORK_NUMBER);
         npdu.setDestinationMACLayerAddressLength(0x00);
         npdu.setSourceMacLayerAddressLength(0x03);
         npdu.setSourceMac(NetworkUtils.DEVICE_MAC_ADDRESS);
@@ -1109,7 +1117,7 @@ public class DefaultMessageFactory implements MessageFactory {
     }
 
     @Override
-    public Message createEnumeratedProperty(final Device device, final int invokeId, final int propertyKey,
+    public Message createEnumeratedProperty(final Device device, final Message requestMessage, final int propertyKey,
             final byte[] payload) {
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
@@ -1123,16 +1131,17 @@ public class DefaultMessageFactory implements MessageFactory {
         // no additional information
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        copyNetworkInformation(npdu, requestMessage.getNpdu());
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -1167,7 +1176,7 @@ public class DefaultMessageFactory implements MessageFactory {
 
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
-        apdu.setInvokeId(invokeId);
+        apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
 //      apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.READ_PROPERTY);
         apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
@@ -1192,7 +1201,7 @@ public class DefaultMessageFactory implements MessageFactory {
         return result;
     }
 
-    private Message returnBooleanProperty(final Device device, final int invokeId, final int propertyKey,
+    private Message returnBooleanProperty(final Device device, final Message requestMessage, final int propertyKey,
             final boolean payload) {
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
@@ -1204,16 +1213,17 @@ public class DefaultMessageFactory implements MessageFactory {
         npdu.setVersion(0x01);
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        copyNetworkInformation(npdu, requestMessage.getNpdu());
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -1245,7 +1255,7 @@ public class DefaultMessageFactory implements MessageFactory {
 
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
-        apdu.setInvokeId(invokeId);
+        apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
         apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
@@ -1266,7 +1276,7 @@ public class DefaultMessageFactory implements MessageFactory {
         return result;
     }
 
-    private Message returnIntegerProperty(final Device device, final int invokeId, final int propertyKey,
+    private Message returnIntegerProperty(final Device device, final Message requestMessage, final int propertyKey,
             final byte[] payload) {
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
@@ -1278,16 +1288,17 @@ public class DefaultMessageFactory implements MessageFactory {
         npdu.setVersion(0x01);
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        copyNetworkInformation(npdu, requestMessage.getNpdu());
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -1320,7 +1331,7 @@ public class DefaultMessageFactory implements MessageFactory {
 
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
-        apdu.setInvokeId(invokeId);
+        apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
         apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
         apdu.setVendorMap(vendorMap);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
@@ -1356,16 +1367,19 @@ public class DefaultMessageFactory implements MessageFactory {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+////            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMACLayerAddressLength(1);
+////            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+////            npdu.setDestinationHopCount(255);
+//        }
 
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+        copyNetworkInformation(npdu, requestMessage.getNpdu());
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -1437,16 +1451,17 @@ public class DefaultMessageFactory implements MessageFactory {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        copyNetworkInformation(npdu, requestMessage.getNpdu());
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -1575,16 +1590,17 @@ public class DefaultMessageFactory implements MessageFactory {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        copyNetworkInformation(npdu, requestMessage.getNpdu());
 
         final ObjectIdentifierServiceParameter outwardObjectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         outwardObjectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -1659,16 +1675,17 @@ public class DefaultMessageFactory implements MessageFactory {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        copyNetworkInformation(npdu, requestMessage.getNpdu());
 
         // this object identifier has to be context specific. I do not know why
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
@@ -1778,16 +1795,17 @@ public class DefaultMessageFactory implements MessageFactory {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        copyNetworkInformation(npdu, requestMessage.getNpdu());
 
         // this object identifier has to be context specific. I do not know why
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
@@ -1851,16 +1869,17 @@ public class DefaultMessageFactory implements MessageFactory {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
-        }
+//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+//
+//            // destination network information
+//            npdu.setControl(0x20);
+//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+//            npdu.setDestinationMACLayerAddressLength(3);
+//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//
+//            npdu.setDestinationHopCount(255);
+//        }
+        copyNetworkInformation(npdu, requestMessage.getNpdu());
 
         // this object identifier has to be context specific. I do not know why
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
@@ -1995,6 +2014,10 @@ public class DefaultMessageFactory implements MessageFactory {
         return result;
     }
 
+    private void copyNetworkInformation(final NPDU destinationNPDU, final NPDU sourceNPDU) {
+        destinationNPDU.copyNetworkInformation(sourceNPDU);
+    }
+
     public Map<Integer, String> getVendorMap() {
         return vendorMap;
     }
@@ -2004,10 +2027,12 @@ public class DefaultMessageFactory implements MessageFactory {
         this.vendorMap = vendorMap;
     }
 
+    @Override
     public LinkLayerType getLinkLayerType() {
         return linkLayerType;
     }
 
+    @Override
     public void setLinkLayerType(final LinkLayerType linkLayerType) {
         this.linkLayerType = linkLayerType;
     }

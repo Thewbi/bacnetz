@@ -95,11 +95,15 @@ import de.bacnetz.vendor.VendorMap;
  * app. It takes about 15 minutes.)
  * </ol>
  * 
+ * bacnet || bvlc || bacapp
  */
 public class App {
 
 //    private static final boolean RUN_TOGGLE_DOOR_THREAD = false;
 //    private static final boolean RUN_TOGGLE_DOOR_THREAD = true;
+
+//    private static final int START_DEVICE_ID = 20000;
+    private static final int START_DEVICE_ID = 70;
 
     private static final int AMOUNT_OF_DEVICES = 1;
     private static final Logger LOG = LogManager.getLogger(App.class);
@@ -120,8 +124,11 @@ public class App {
 
         final Map<Integer, String> vendorMap = VendorMap.processVendorMap();
 
+        final MessageFactory messageFactory = new DefaultMessageFactory();
+
         final DefaultDeviceFactory deviceFactory = new DefaultDeviceFactory();
         deviceFactory.setConfigurationManager(configurationManager);
+        deviceFactory.setMessageFactory(messageFactory);
 
         final DeviceService deviceService = new DefaultDeviceService();
         deviceService.setDeviceFactory(deviceFactory);
@@ -130,15 +137,15 @@ public class App {
 
         final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
         deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
-        deviceCreationDescriptor.setStartDeviceId(20000);
+        deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID);
         deviceCreationDescriptor.setDeviceIdIncrement(1);
         deviceCreationDescriptor.setDeviceIdOffset(0);
 
         final List<Device> devices = deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
 
-        startListenerThread(configurationManager, deviceService, vendorMap);
+        startListenerThread(configurationManager, deviceService, messageFactory, vendorMap);
 
-        runWhoIsThread();
+//        runWhoIsThread();
 
 //        runMain(defaultConfigurationManager);
 //		runFixVendorCSV();
@@ -186,8 +193,8 @@ public class App {
     }
 
     private static void startListenerThread(final ConfigurationManager configurationManager,
-            final DeviceService deviceService, final Map<Integer, String> vendorMap)
-            throws FileNotFoundException, IOException {
+            final DeviceService deviceService, final MessageFactory messageFactory,
+            final Map<Integer, String> vendorMap) throws FileNotFoundException, IOException {
 
         final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
         multicastListenerReaderThread.setConfigurationManager(configurationManager);
@@ -204,6 +211,7 @@ public class App {
         defaultMessageController.setDeviceService(deviceService);
 
 //        deviceService.getDevices().addAll(devices);
+        defaultMessageController.setMessageFactory(messageFactory);
         defaultMessageController.setVendorMap(vendorMap);
         defaultMessageController.setCommunicationService(multicastListenerReaderThread);
 
@@ -238,7 +246,9 @@ public class App {
 //            new Thread(toggleDoorOpenStateThread).start();
 //        }
 
-        startListenerThread(configurationManager, deviceService, vendorMap);
+        final MessageFactory messageFactory = new DefaultMessageFactory();
+
+        startListenerThread(configurationManager, deviceService, messageFactory, vendorMap);
 
         final String localIp = configurationManager.getPropertyAsString(ConfigurationManager.LOCAL_IP_CONFIG_KEY);
 
@@ -322,7 +332,7 @@ public class App {
 
     private static void runBroadcast() throws SocketException {
 
-        LOG.info("runBroadcast() ...");
+        LOG.info("runBroadcast() for WHO-IS ...");
 
         // create the who-is message
         final MessageFactory messageFactory = new DefaultMessageFactory();
@@ -343,12 +353,12 @@ public class App {
             }
         });
 
-        LOG.info("runBroadcast() done.");
+        LOG.info("runBroadcast() for WHO-IS done.");
     }
 
     public static void broadcast(final byte[] buffer, final InetAddress address) throws IOException {
 
-        LOG.info(">>> broadcast: " + Utils.byteArrayToStringNoPrefix(buffer) + " to address: " + address);
+        LOG.info("<<< broadcast: " + Utils.byteArrayToStringNoPrefix(buffer) + " to address: " + address);
 
         // this socket does not bind on a specific port
         final DatagramSocket socket = new DatagramSocket();

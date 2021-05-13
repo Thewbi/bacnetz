@@ -54,7 +54,7 @@ public class NPDU {
 
     private int control;
 
-    private int destinationNetworkNumber;
+    private int destinationNetworkAddress;
 
     /** 0 indicates Broadcast on Destination Network */
     private int destinationMACLayerAddressLength;
@@ -80,7 +80,7 @@ public class NPDU {
     public NPDU(final NPDU other) {
         this.version = other.version;
         this.control = other.control;
-        this.destinationNetworkNumber = other.destinationNetworkNumber;
+        this.destinationNetworkAddress = other.destinationNetworkAddress;
         this.destinationMACLayerAddressLength = other.destinationMACLayerAddressLength;
         this.destinationHopCount = other.destinationHopCount;
         this.sourceNetworkAddress = other.sourceNetworkAddress;
@@ -102,7 +102,7 @@ public class NPDU {
 
         if (isDestinationSpecifierPresent()) {
 
-            destinationNetworkNumber = APIUtils.bytesToUnsignedShort(data[startIndex + offset++],
+            destinationNetworkAddress = APIUtils.bytesToUnsignedShort(data[startIndex + offset++],
                     data[startIndex + offset++], true);
             structureLength += 2;
 
@@ -211,7 +211,7 @@ public class NPDU {
         if (isDestinationSpecifierPresent()) {
 
             // 2 byte destination network number
-            APIUtils.addShortToBuffer(data, offset + index, (short) destinationNetworkNumber);
+            APIUtils.addShortToBuffer(data, offset + index, (short) destinationNetworkAddress);
             index += 2;
 
             data[offset + index++] = (byte) destinationMACLayerAddressLength;
@@ -358,12 +358,12 @@ public class NPDU {
         this.control = control;
     }
 
-    public int getDestinationNetworkNumber() {
-        return destinationNetworkNumber;
+    public int getDestinationNetworkAddress() {
+        return destinationNetworkAddress;
     }
 
-    public void setDestinationNetworkNumber(final int destinationNetworkNumber) {
-        this.destinationNetworkNumber = destinationNetworkNumber;
+    public void setDestinationNetworkAddress(final int destinationNetworkAddress) {
+        this.destinationNetworkAddress = destinationNetworkAddress;
     }
 
     public int getDestinationMACLayerAddressLength() {
@@ -428,12 +428,22 @@ public class NPDU {
 
     @Override
     public String toString() {
-        return "NPDU [version=" + version + ", control=" + control + ", destinationNetworkNumber="
-                + destinationNetworkNumber + ", destinationMACLayerAddressLength=" + destinationMACLayerAddressLength
+        return "NPDU [version=" + version + ", control=" + control + ", destinationNetworkAddress="
+                + destinationNetworkAddress + ", destinationMACLayerAddressLength=" + destinationMACLayerAddressLength
                 + ", destinationMac=" + destinationMac + ", destinationHopCount=" + destinationHopCount
                 + ", sourceNetworkAddress=" + sourceNetworkAddress + ", sourceMacLayerAddressLength="
                 + sourceMacLayerAddressLength + ", sourceMac=" + sourceMac + ", networkLayerMessageType="
                 + networkLayerMessageType + "]";
+    }
+
+    public void copyNetworkInformation(final NPDU sourceNpdu) {
+        if (sourceNpdu.getSourceNetworkAddress() > 0) {
+            setControl(0x20);
+            setDestinationNetworkAddress(sourceNpdu.getSourceNetworkAddress());
+            setDestinationMACLayerAddressLength(sourceNpdu.getSourceMacLayerAddressLength());
+            setDestinationMac(sourceNpdu.getSourceMac());
+//            setDestinationHopCount(255);
+        }
     }
 
 }

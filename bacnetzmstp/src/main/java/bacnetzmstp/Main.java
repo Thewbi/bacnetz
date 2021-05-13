@@ -30,6 +30,10 @@ import de.bacnetz.vendor.VendorMap;
 
 /**
  * Installation of jrxtx
+ * 
+ * baudrate 78600 (1, 8, 1)
+ * 
+ * !(mstp.frame_type == 2) && !(mstp.frame_type == 1) && !(mstp.frame_type == 0)
  */
 public class Main {
 
