@@ -64,6 +64,7 @@ public class BACnetIPByteArrayToMessageConverterTest {
 
         assertEquals(PDUType.CONFIRMED_SERVICE_REQUEST_PDU, defaultMessage.getApdu().getPduType());
         assertEquals(ConfirmedServiceChoice.WRITE_PROPERTY, defaultMessage.getApdu().getConfirmedServiceChoice());
+        assertEquals(DevicePropertyType.PRESENT_VALUE.getCode(), defaultMessage.getApdu().getPropertyIdentifier());
 
         final List<ServiceParameter> serviceParameters = defaultMessage.getApdu().getServiceParameters();
         assertEquals(5, serviceParameters.size());
@@ -71,20 +72,11 @@ public class BACnetIPByteArrayToMessageConverterTest {
         final ServiceParameter serviceParaemter = serviceParameters.get(0);
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter(
                 serviceParaemter);
-        assertEquals(ObjectType.DEVICE, objectIdentifierServiceParameter.getObjectType());
-        assertEquals(10000, objectIdentifierServiceParameter.getInstanceNumber());
+        assertEquals(ObjectType.MULTI_STATE_VALUE, objectIdentifierServiceParameter.getObjectType());
+        assertEquals(4, objectIdentifierServiceParameter.getInstanceNumber());
 
-        final ServiceParameter maxAPDULengthSegmentedServiceParameter = serviceParameters.get(1);
-        final short maxAPDULengthAccepted = (short) Utils.bytesToUnsignedShort(
-                maxAPDULengthSegmentedServiceParameter.getPayload()[0],
-                maxAPDULengthSegmentedServiceParameter.getPayload()[1], true);
-        assertEquals(480, maxAPDULengthAccepted);
-
-        final ServiceParameter segmentationSupportedServiceParameter = serviceParameters.get(2);
-        assertEquals(0, segmentationSupportedServiceParameter.getPayload()[0]);
-
-        final ServiceParameter vendorIdServiceParameter = serviceParameters.get(3);
-        assertEquals(178, (vendorIdServiceParameter.getPayload()[0]) & 0xFF);
+        final ServiceParameter presentValueServiceParameter = serviceParameters.get(3);
+        assertEquals(3, (presentValueServiceParameter.getPayload()[0]) & 0xFF);
 
     }
 
