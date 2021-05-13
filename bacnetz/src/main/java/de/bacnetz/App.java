@@ -110,6 +110,7 @@ public class App {
     private static final int START_DEVICE_ID = 70;
 
     private static final int AMOUNT_OF_DEVICES = 1;
+
     private static final Logger LOG = LogManager.getLogger(App.class);
 
     public static void main(final String[] args) throws IOException, ParseException {

@@ -48,7 +48,8 @@ public class DefaultDeviceService implements DeviceService {
             // device listens, BACnet IP communication partners will directly talk to that
             // port. On that port, BACnet is able to perfectly correlate the id's because
             // there is only a single device listening on that port!
-            device.bindSocket(localIp, deviceId);
+            final int port = deviceId < 1024 ? 1024 + deviceId : deviceId;
+            device.bindSocket(localIp, port);
 
             deviceIdOffset += deviceCreationDescriptor.getDeviceIdIncrement();
         }

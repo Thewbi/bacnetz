@@ -468,12 +468,24 @@ public class DefaultMessageController implements MessageController {
      */
     private List<Message> processWhoIsMessage(final Message message) {
 
+        final int lowerBound = lowerBound(message);
+        final int upperBound = upperBound(message);
         final List<Device> filteredDevices = filterDevices(message);
 
         if (CollectionUtils.isEmpty(filteredDevices)) {
+
             LOG.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             LOG.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            LOG.info("No devices available in this server! Will not answer WHO-IS! Add devices!");
+
+            if ((lowerBound != -1) || (upperBound != -1)) {
+                LOG.info(
+                        "No devices available in this server in the range {} to {}! Will not answer WHO-IS! Add devices!",
+                        lowerBound, upperBound);
+            } else {
+
+                LOG.info("No devices available in this server! Will not answer WHO-IS! Add devices!");
+            }
+
             LOG.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             LOG.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         }
@@ -489,17 +501,15 @@ public class DefaultMessageController implements MessageController {
         return null;
     }
 
-    private List<Device> filterDevices(final Message message) {
-
+    private int lowerBound(final Message message) {
         final List<ServiceParameter> serviceParameters = message.getApdu().getServiceParameters();
         if (CollectionUtils.isEmpty(serviceParameters)) {
-            return deviceService.getDevices();
+            return -1;
         }
 
-        final ServiceParameter lowerBoundServiceParameter = serviceParameters.get(0);
-        final ServiceParameter upperBoundServiceParameter = serviceParameters.get(1);
-
         final boolean bigEndian = true;
+
+        final ServiceParameter lowerBoundServiceParameter = serviceParameters.get(0);
 
         // find lower bound as integer
         final int lowerBound = (lowerBoundServiceParameter.getPayload().length == 1)
@@ -507,35 +517,40 @@ public class DefaultMessageController implements MessageController {
                 : Utils.bytesToUnsignedShort(lowerBoundServiceParameter.getPayload()[0],
                         lowerBoundServiceParameter.getPayload()[1], bigEndian);
 
+        return lowerBound;
+    }
+
+    private int upperBound(final Message message) {
+        final List<ServiceParameter> serviceParameters = message.getApdu().getServiceParameters();
+        if (CollectionUtils.isEmpty(serviceParameters)) {
+            return -1;
+        }
+
+        final boolean bigEndian = true;
+
+        final ServiceParameter upperBoundServiceParameter = serviceParameters.get(1);
+
         // find upper bound as integer
         final int upperBound = (upperBoundServiceParameter.getPayload().length == 1)
                 ? upperBoundServiceParameter.getPayload()[0]
                 : Utils.bytesToUnsignedShort(upperBoundServiceParameter.getPayload()[0],
                         upperBoundServiceParameter.getPayload()[1], bigEndian);
 
-        LOG.trace("Who-Is lower-bound: {} ({})",
-                Utils.byteArrayToStringNoPrefix(lowerBoundServiceParameter.getPayload()), lowerBound);
-        LOG.trace("Who-Is upper-bound: {} ({})",
-                Utils.byteArrayToStringNoPrefix(upperBoundServiceParameter.getPayload()), upperBound);
+        return upperBound;
+    }
 
-//        // do not process message if it is bounded and the device's id is out of bounds!
-//        if ((lowerBound > NetworkUtils.DEVICE_INSTANCE_NUMBER)
-//                || (NetworkUtils.DEVICE_INSTANCE_NUMBER > upperBound)) {
-//
-//            // TODO: wrong instance number used!
-//            LOG.info("Ignoring Who-Is! DeviceID: {}, [{} - {}]", NetworkUtils.DEVICE_INSTANCE_NUMBER, lowerBound,
-//                    upperBound);
-//            return null;
-//        }
+    private List<Device> filterDevices(final Message message) {
 
-        // @formatter:off
-        
-        return deviceService.getDevices()
-                .stream()
-                .filter(d -> (lowerBound <= d.getId() && d.getId() <= upperBound))
+        final List<ServiceParameter> serviceParameters = message.getApdu().getServiceParameters();
+        if (CollectionUtils.isEmpty(serviceParameters)) {
+            return deviceService.getDevices();
+        }
+
+        final int lowerBound = lowerBound(message);
+        final int upperBound = upperBound(message);
+
+        return deviceService.getDevices().stream().filter(d -> (lowerBound <= d.getId() && d.getId() <= upperBound))
                 .collect(Collectors.toCollection(ArrayList::new));
-        
-        // @formatter:on
     }
 
     public static Message retrieveIamMessage(final Device device, final LinkLayerType linkLayerType) {
@@ -610,9 +625,9 @@ public class DefaultMessageController implements MessageController {
 
     private List<Message> processWriteProperty(final Message requestMessage) {
 
-        LOG.trace("processWriteProperty()");
+        LOG.info("processWriteProperty()");
         final int propertyIdentifier = requestMessage.getApdu().getPropertyIdentifier();
-        LOG.trace("Property Identifier: {}", propertyIdentifier);
+        LOG.info("Property Identifier: {}", propertyIdentifier);
         final int propertyIdentifierCode = propertyIdentifier;
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()
@@ -621,20 +636,59 @@ public class DefaultMessageController implements MessageController {
                 DevicePropertyType.getByCode(propertyIdentifierCode).getName(),
                 objectIdentifierServiceParameter.toString());
 
-        switch (propertyIdentifier) {
+        final DevicePropertyType devicePropertyType = DevicePropertyType.getByCode(propertyIdentifier);
+
+        switch (devicePropertyType) {
 
         // 0xCA = 202d
-        case 0xCA:
+        case RESTART_NOTIFICATION_RECIPIENTS:
             LOG.info("<<< WRITE_PROP: restart notification recipients ({})", propertyIdentifierCode);
             return processWriteRestartNotificationRecipientsProperty(propertyIdentifierCode, requestMessage);
 
+        case PRESENT_VALUE:
+            return processWritePresentValue(propertyIdentifierCode, requestMessage);
+
         default:
-            return processWriteRestartNotificationRecipientsProperty(propertyIdentifierCode, requestMessage);
+//            return processWriteRestartNotificationRecipientsProperty(propertyIdentifierCode, requestMessage);
+            LOG.warn("Cannot write property: " + devicePropertyType + " (" + propertyIdentifierCode + ")");
+            return null;
         }
+    }
+
+    private List<Message> processWritePresentValue(final int propertyIdentifierCode, final Message requestMessage) {
+
+        LOG.info(requestMessage);
+
+        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = (ObjectIdentifierServiceParameter) requestMessage
+                .getApdu().getServiceParameters().get(0);
+
+        final List<Device> findDevice = deviceService.findDevice(objectIdentifierServiceParameter, LinkLayerType.IP);
+        LOG.info(findDevice);
+
+        final ServiceParameter serviceParameter = requestMessage.getApdu().getServiceParameters().get(3);
+        final byte[] payload = serviceParameter.getPayload();
+
+        LOG.info(Utils.bytesToHex(payload));
+
+        final DefaultMessage message = simpleAck(requestMessage, ConfirmedServiceChoice.WRITE_PROPERTY);
+        final List<Message> result = new ArrayList<>();
+        result.add(message);
+
+        return result;
     }
 
     private List<Message> processWriteRestartNotificationRecipientsProperty(final int propertyIdentifierCode,
             final Message requestMessage) {
+
+        final DefaultMessage message = simpleAck(requestMessage, ConfirmedServiceChoice.WRITE_PROPERTY);
+        final List<Message> result = new ArrayList<>();
+        result.add(message);
+
+        return result;
+    }
+
+    private DefaultMessage simpleAck(final Message requestMessage,
+            final ConfirmedServiceChoice confirmedServiceChoice) {
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
         virtualLinkControl.setType(0x81);
@@ -647,23 +701,12 @@ public class DefaultMessageController implements MessageController {
         // no additional information
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
-
-//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-//
-//            // destination network information
-//            npdu.setControl(0x20);
-//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-//            npdu.setDestinationMACLayerAddressLength(3);
-//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-//
-//            npdu.setDestinationHopCount(255);
-//        }
         npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.SIMPLE_ACK_PDU);
         apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.WRITE_PROPERTY);
+        apdu.setConfirmedServiceChoice(confirmedServiceChoice);
         apdu.setVendorMap(vendorMap);
 
         final DefaultMessage message = new DefaultMessage();
@@ -674,11 +717,7 @@ public class DefaultMessageController implements MessageController {
         message.setApdu(apdu);
 
         virtualLinkControl.setLength(message.getDataLength());
-
-        final List<Message> result = new ArrayList<>();
-        result.add(message);
-
-        return result;
+        return message;
     }
 
     private List<Message> processReadProperty(final Header mstpHeader, final Message requestMessage) {
