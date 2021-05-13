@@ -35,62 +35,23 @@ public class DefaultDeviceService implements DeviceService {
         for (int i = 0; i < deviceCreationDescriptor.getAmountOfDevices(); i++) {
 
             final int deviceId = deviceCreationDescriptor.getStartDeviceId() + deviceIdOffset;
-            final Device device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
-                    VendorType.GEZE_GMBH.getCode());
+            final Device device = deviceFactory.create(DeviceType.TZ320, deviceMap, vendorMap, deviceId,
+                    NetworkUtils.OBJECT_NAME, VendorType.GEZE_GMBH.getCode());
             devices.add(device);
+
+            // device starts it's own server on it's own port, because BACnet Ids are not
+            // globally unique but only locally unique within a device. One server cannot
+            // host several devices because for any incoming Id, it does not know to which
+            // device to send the messages because ids are not globally unique!
+            //
+            // When the Virtual Link Layer contains the address and port to on which the
+            // device listens, BACnet IP communication partners will directly talk to that
+            // port. On that port, BACnet is able to perfectly correlate the id's because
+            // there is only a single device listening on that port!
             device.bindSocket(localIp, deviceId);
 
             deviceIdOffset += deviceCreationDescriptor.getDeviceIdIncrement();
         }
-
-//        deviceIdOffset += deviceIdIncrement;
-//        deviceId = startDeviceId + deviceIdOffset;
-//        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
-//                VendorType.GEZE_GMBH.getCode());
-//        devices.add(device);
-//        device.bindSocket(localIp, deviceId);
-//
-//        deviceIdOffset += deviceIdIncrement;
-//        deviceId = startDeviceId + deviceIdOffset;
-//        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
-//                VendorType.GEZE_GMBH.getCode());
-//        devices.add(device);
-//        device.bindSocket(localIp, deviceId);
-//
-//        deviceIdOffset += deviceIdIncrement;
-//        deviceId = startDeviceId + deviceIdOffset;
-//        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
-//                VendorType.GEZE_GMBH.getCode());
-//        devices.add(device);
-//        device.bindSocket(localIp, deviceId);
-//
-//        deviceIdOffset += deviceIdIncrement;
-//        deviceId = startDeviceId + deviceIdOffset;
-//        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
-//                VendorType.GEZE_GMBH.getCode());
-//        devices.add(device);
-//        device.bindSocket(localIp, deviceId);
-//
-//        deviceIdOffset += deviceIdIncrement;
-//        deviceId = startDeviceId + deviceIdOffset;
-//        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
-//                VendorType.GEZE_GMBH.getCode());
-//        devices.add(device);
-//        device.bindSocket(localIp, deviceId);
-//
-//        deviceIdOffset += deviceIdIncrement;
-//        deviceId = startDeviceId + deviceIdOffset;
-//        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
-//                VendorType.GEZE_GMBH.getCode());
-//        devices.add(device);
-//        device.bindSocket(localIp, deviceId);
-//
-//        deviceIdOffset += deviceIdIncrement;
-//        deviceId = startDeviceId + deviceIdOffset;
-//        device = deviceFactory.create(deviceMap, vendorMap, deviceId, NetworkUtils.OBJECT_NAME,
-//                VendorType.GEZE_GMBH.getCode());
-//        devices.add(device);
-//        device.bindSocket(localIp, deviceId);
 
         return devices;
     }
