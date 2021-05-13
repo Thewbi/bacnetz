@@ -77,7 +77,7 @@ public class APDU {
 
     private int structureLength;
 
-    private int propertyIdentifier;
+    private int propertyIdentifier = -1;
 
     /**
      * "Serial number" used by the requester to associate the response with the
@@ -279,17 +279,9 @@ public class APDU {
 
         // bit 3 is the segmentation bit
         segmentation = 0 < (data[startIndex + offset] & 0x08);
-//        if (segmentation) {
-//            // TODO: if there is segmentation, there are special segmentation bytes present
-//            // in the APDU that have to be parsed.
-//            throw new RuntimeException("Not implemented yet!");
-//        }
 
         // bit 2 is the moreSegmentsFollow bit
         moreSegmentsFollow = 0 < (data[startIndex + offset] & 0x04);
-//        if (moreSegmentsFollow) {
-//            throw new RuntimeException("Not implemented yet!");
-//        }
 
         // bit 1 is the segmentedResponseAccepted bit
         segmentedResponseAccepted = 0 < (data[startIndex + offset] & 0x02);
@@ -429,10 +421,6 @@ public class APDU {
         structureLength++;
 
         payload = Arrays.copyOfRange(data, startIndex + offset, payloadLength);
-
-        // LOG.info(Utils.bytesToHex(payload));
-
-//        processPayload(data, startIndex, payloadLength, offset);
     }
 
     public void processPayload(final byte[] data, final int startIndex, final int payloadLength, final int offset) {
@@ -475,7 +463,7 @@ public class APDU {
                 break;
 
             case WRITE_PROPERTY:
-                structureLength += processWriteProperty(startIndex + offset, data);
+                structureLength += readServiceParameters(startIndex + offset, data, payloadLength);
                 break;
 
             case REINITIALIZE_DEVICE:
@@ -497,38 +485,6 @@ public class APDU {
         }
     }
 
-    private int processWriteProperty(final int offset, final byte[] data) {
-
-        int tempOffset = offset;
-
-        // objectIdentifier
-        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-        tempOffset += objectIdentifierServiceParameter.fromBytes(data, tempOffset);
-        serviceParameters.add(objectIdentifierServiceParameter);
-
-        // property identifier service parameter
-        final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
-        tempOffset += propertyIdentifierServiceParameter.fromBytes(data, tempOffset);
-        serviceParameters.add(propertyIdentifierServiceParameter);
-
-        // {[?] bracket open
-        final ServiceParameter bracketOpenServiceParameter = new ServiceParameter();
-        serviceParameters.add(bracketOpenServiceParameter);
-        tempOffset += bracketOpenServiceParameter.fromBytes(data, tempOffset);
-
-        final ServiceParameter presentValueServiceParameter = new ServiceParameter();
-        serviceParameters.add(presentValueServiceParameter);
-        tempOffset += presentValueServiceParameter.fromBytes(data, tempOffset);
-
-        // }[?] bracket close
-        final ServiceParameter tempBracketCloseServiceParameter = new ServiceParameter();
-        serviceParameters.add(tempBracketCloseServiceParameter);
-        tempOffset += tempBracketCloseServiceParameter.fromBytes(data, tempOffset);
-
-        return tempOffset - offset;
-
-    }
-
     private int processAddListElement(final int offset, final byte[] data) {
 
         int tempOffset = offset;
@@ -547,7 +503,6 @@ public class APDU {
         final ServiceParameter bracketOpenServiceParameter = new ServiceParameter();
         serviceParameters.add(bracketOpenServiceParameter);
         tempOffset += bracketOpenServiceParameter.fromBytes(data, tempOffset);
-//        serviceParameters.add(bracketOpenServiceParameter);
 
         ServiceParameter serviceParameter = null;
         while (true) {
@@ -556,7 +511,6 @@ public class APDU {
             final ServiceParameter tempBracketOpenServiceParameter = new ServiceParameter();
             serviceParameters.add(tempBracketOpenServiceParameter);
             tempOffset += tempBracketOpenServiceParameter.fromBytes(data, tempOffset);
-//            serviceParameters.add(tempBracketOpenServiceParameter);
 
             // if the outer closing bracket was read, abort
             if (APIUtils.isClosingServiceParameter(tempBracketOpenServiceParameter,
@@ -568,25 +522,17 @@ public class APDU {
             serviceParameter = new ServiceParameter();
             serviceParameters.add(serviceParameter);
             tempOffset += serviceParameter.fromBytes(data, tempOffset);
-//            serviceParameters.add(serviceParameter);
 
             // mac address
             serviceParameter = new ServiceParameter();
             serviceParameters.add(serviceParameter);
             tempOffset += serviceParameter.fromBytes(data, tempOffset);
-//            serviceParameters.add(serviceParameter);
 
             // }[?] bracket close
             final ServiceParameter tempBracketCloseServiceParameter = new ServiceParameter();
             serviceParameters.add(tempBracketCloseServiceParameter);
             tempOffset += tempBracketCloseServiceParameter.fromBytes(data, tempOffset);
-//            serviceParameters.add(tempBracketCloseServiceParameter);
         }
-
-//        // }[?] bracket close
-//        final ServiceParameter tempBracketCloseServiceParameter = new ServiceParameter();
-//        getServiceParameters().add(tempBracketCloseServiceParameter);
-//        tempOffset += tempBracketCloseServiceParameter.fromBytes(data, offset + tempOffset);
 
         return tempOffset - offset;
     }

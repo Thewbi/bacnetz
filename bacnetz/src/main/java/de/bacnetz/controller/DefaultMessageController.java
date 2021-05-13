@@ -157,6 +157,8 @@ public class DefaultMessageController implements MessageController {
 
     private List<Message> processAPDUMessage(final Header mstpHeader, final Message message) {
 
+        LOG.info(message);
+
         final ConfirmedServiceChoice confirmedServiceChoice = message.getApdu().getConfirmedServiceChoice();
         if (confirmedServiceChoice != null) {
 
@@ -281,17 +283,6 @@ public class DefaultMessageController implements MessageController {
         // no additional information
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
-
-//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-//
-//            // destination network information
-//            npdu.setControl(0x20);
-//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-//            npdu.setDestinationMACLayerAddressLength(3);
-//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-//
-//            npdu.setDestinationHopCount(255);
-//        }
         npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         final APDU apdu = new APDU();
@@ -662,8 +653,9 @@ public class DefaultMessageController implements MessageController {
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = (ObjectIdentifierServiceParameter) requestMessage
                 .getApdu().getServiceParameters().get(0);
 
-        final List<Device> findDevice = deviceService.findDevice(objectIdentifierServiceParameter, LinkLayerType.IP);
-        LOG.info(findDevice);
+        final List<Device> devices = deviceService.findDevice(objectIdentifierServiceParameter, LinkLayerType.IP);
+        final Device device = devices.get(0);
+        LOG.info(device);
 
         final ServiceParameter serviceParameter = requestMessage.getApdu().getServiceParameters().get(3);
         final byte[] payload = serviceParameter.getPayload();
@@ -673,6 +665,8 @@ public class DefaultMessageController implements MessageController {
         final DefaultMessage message = simpleAck(requestMessage, ConfirmedServiceChoice.WRITE_PROPERTY);
         final List<Message> result = new ArrayList<>();
         result.add(message);
+
+        device.setPresentValue((int) payload[0]);
 
         return result;
     }
@@ -1312,14 +1306,6 @@ public class DefaultMessageController implements MessageController {
         this.vendorMap = vendorMap;
         messageFactory.setVendorMap(vendorMap);
     }
-
-//    public Device getDevice() {
-//        return device;
-//    }
-//
-//    public void setDevice(final Device device) {
-//        this.device = device;
-//    }
 
     public CommunicationService getCommunicationService() {
         return communicationService;
