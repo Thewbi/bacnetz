@@ -99,7 +99,19 @@ import de.bacnetz.vendor.VendorMap;
  * <h1>Wireshark display filter bacnet ip</h1>
  * 
  * <pre>
+ * -- bacnet without spam:
+ * (bacnet || bvlc || bacapp) && !(bacapp.unconfirmed_service == 8) && !(bacapp.unconfirmed_service == 0)
+ * 
+ * -- only bacnet traffic
  * bacnet || bvlc || bacapp
+ * 
+ * -- https://www.thes4group.com/articles/tool-box-essentials-using-wireshark-to-troubleshoot-bacnet-ip-issues
+ * 
+ * -- filter out who-is
+ * (bacnet || bvlc || bacapp) && !(bacapp.unconfirmed_service == 8)
+ * 
+ * -- filter out i-am
+ * (bacnet || bvlc || bacapp) && !(bacapp.unconfirmed_service == 0)
  * </pre>
  */
 public class App {
