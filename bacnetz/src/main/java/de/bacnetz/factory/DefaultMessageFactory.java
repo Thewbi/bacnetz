@@ -1538,17 +1538,6 @@ public class DefaultMessageFactory implements MessageFactory {
         // no additional information
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
-
-//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-//
-//            // destination network information
-//            npdu.setControl(0x20);
-//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-//            npdu.setDestinationMACLayerAddressLength(3);
-//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-//
-//            npdu.setDestinationHopCount(255);
-//        }
         copyNetworkInformation(npdu, requestMessage.getNpdu());
 
         // this object identifier has to be context specific. I do not know why

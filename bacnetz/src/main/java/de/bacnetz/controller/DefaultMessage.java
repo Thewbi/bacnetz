@@ -121,15 +121,10 @@ public class DefaultMessage implements Message {
         LOG.info("MergedPayload: " + Utils.bytesToHex(mergedPayload));
 
         apdu.setPayload(mergedPayload);
-
-//        apdu.processPayload(apdu.getPayload(), 0, apdu.getPayload().length, 0);
     }
 
     @Override
     public String toString() {
-//        return "DefaultMessage [sourceInetSocketAddress=" + sourceInetSocketAddress + ", virtualLinkControl="
-//                + virtualLinkControl + ", npdu=" + npdu + ", apdu=" + apdu + "]";
-
         final StringBuilder stringBuilder = new StringBuilder();
 
         stringBuilder.append("\n");
@@ -151,6 +146,7 @@ public class DefaultMessage implements Message {
         return virtualLinkControl;
     }
 
+    @Override
     public void setVirtualLinkControl(final VirtualLinkControl virtualLinkControl) {
         this.virtualLinkControl = virtualLinkControl;
     }

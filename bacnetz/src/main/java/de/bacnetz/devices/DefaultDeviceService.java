@@ -34,8 +34,6 @@ public class DefaultDeviceService implements DeviceService {
 
         for (int i = 0; i < deviceCreationDescriptor.getAmountOfDevices(); i++) {
 
-//            DeviceType deviceType = DeviceType.TZ320;
-//            DeviceType deviceType = DeviceType.FOUR_DOOR_SOLUTION;
             final DeviceType deviceType = deviceCreationDescriptor.getDeviceType();
 
             final int deviceId = deviceCreationDescriptor.getStartDeviceId() + deviceIdOffset;

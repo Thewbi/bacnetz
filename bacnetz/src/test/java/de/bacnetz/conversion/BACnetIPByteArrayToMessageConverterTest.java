@@ -1,6 +1,7 @@
 package de.bacnetz.conversion;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.List;
@@ -15,6 +16,8 @@ import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.devices.ObjectType;
 import de.bacnetz.devices.SystemStatus;
 import de.bacnetz.stack.ConfirmedServiceChoice;
+import de.bacnetz.stack.NPDU;
+import de.bacnetz.stack.NetworkLayerMessageType;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.PDUType;
 import de.bacnetz.stack.ServiceParameter;
@@ -26,7 +29,51 @@ public class BACnetIPByteArrayToMessageConverterTest {
     private static final Logger LOG = LogManager.getLogger(BACnetIPByteArrayToMessageConverterTest.class);
 
     @Test
-    public void test() {
+    public void testBrokenMessage2() {
+
+        //
+        // Arrange
+        //
+
+        // @formatter:off
+        
+        final String data = "810A0011010402757D0509011C00C00002000000000000000000000000";
+        
+        // @formatter:on
+
+        final byte[] hexStringToByteArray = Utils.hexStringToByteArray(data);
+
+        final BACnetIPByteArrayToMessageConverter byteArrayToMessageConverter = new BACnetIPByteArrayToMessageConverter();
+        byteArrayToMessageConverter.setPayloadOffset(0);
+        byteArrayToMessageConverter.setPayloadLength(data.length() / 2);
+
+        //
+        // Act
+        //
+
+        final DefaultMessage defaultMessage = byteArrayToMessageConverter.convert(hexStringToByteArray);
+
+        //
+        // Assert
+        //
+
+        LOG.info(Utils.bytesToHex(defaultMessage.getApdu().getPayload()));
+
+        final byte[] payload = defaultMessage.getApdu().getPayload();
+
+        // After all segments have been reassembled...
+        //
+        // process service parameters inside the APDU. The APDU will parse the service
+        // parameters dump them to the console and store them in it's service parameter
+        // list for further processing
+        final int startIndex = 0;
+        final int offset = 0;
+        defaultMessage.getApdu().processPayload(payload, startIndex, payload.length, offset);
+
+    }
+
+    @Test
+    public void testBrokenMessage1() {
 
         //
         // Arrange
@@ -50,6 +97,10 @@ public class BACnetIPByteArrayToMessageConverterTest {
 
         final DefaultMessage defaultMessage = byteArrayToMessageConverter.convert(hexStringToByteArray);
 
+        //
+        // Assert
+        //
+
         LOG.info(Utils.bytesToHex(defaultMessage.getApdu().getPayload()));
 
         final byte[] payload = defaultMessage.getApdu().getPayload();
@@ -63,9 +114,44 @@ public class BACnetIPByteArrayToMessageConverterTest {
         final int offset = 0;
         defaultMessage.getApdu().processPayload(payload, startIndex, payload.length, offset);
 
+    }
+
+    @Test
+    public void testNetworkLayerMessage() {
+
+        //
+        // Arrange
+        //
+
+        // @formatter:off
+        
+        final String data = "810B00070180000000000000000000";
+        
+        // @formatter:on
+
+        final byte[] hexStringToByteArray = Utils.hexStringToByteArray(data);
+
+        final BACnetIPByteArrayToMessageConverter byteArrayToMessageConverter = new BACnetIPByteArrayToMessageConverter();
+        byteArrayToMessageConverter.setPayloadOffset(0);
+        byteArrayToMessageConverter.setPayloadLength(data.length() / 2);
+
+        //
+        // Act
+        //
+
+        final DefaultMessage defaultMessage = byteArrayToMessageConverter.convert(hexStringToByteArray);
+
         //
         // Assert
         //
+
+        final NPDU npdu = defaultMessage.getNpdu();
+        assertNotNull(npdu);
+        assertEquals(-128, npdu.getControl());
+        assertEquals(NetworkLayerMessageType.WHO_IS_ROUTER_TO_NETWORK, npdu.getNetworkLayerMessageType());
+
+        assertNull(defaultMessage.getApdu());
+
     }
 
     @Test

@@ -53,6 +53,11 @@ public class VirtualLinkControl {
         return bytes;
     }
 
+    @Override
+    public String toString() {
+        return "VirtualLinkControl [type=" + type + ", function=" + function + ", length=" + length + "]";
+    }
+
     public int getType() {
         return type;
     }

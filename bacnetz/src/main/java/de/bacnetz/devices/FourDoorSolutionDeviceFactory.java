@@ -24,7 +24,6 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
             final Map<Integer, String> vendorMap, final int deviceId, final String objectName, final int vendorId) {
 
         final DefaultDevice device = new DefaultDevice();
-        // object-identifier (8, deviceId)
         device.setObjectType(ObjectType.DEVICE);
         device.setId(deviceId);
         device.setName(objectName);

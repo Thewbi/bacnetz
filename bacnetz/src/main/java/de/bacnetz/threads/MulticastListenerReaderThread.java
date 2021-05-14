@@ -262,6 +262,7 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
      * @throws UnknownHostException
      * @throws IOException
      */
+    @SuppressWarnings("unused")
     private void sendViaMulticastSocket(final Message message) throws UnknownHostException, IOException {
 
 //		final InetAddress group = InetAddress.getByName(NetworkUtils.BACNET_MULTICAST_IP);
@@ -298,6 +299,10 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
 
         final DefaultMessage defaultMessage = converter.convert(data);
 
+        if (defaultMessage.getApdu() == null) {
+            return null;
+        }
+
         // After all segments have been reassembled...
         //
         // process service parameters inside the APDU. The APDU will parse the service
@@ -325,6 +330,7 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
         return null;
     }
 
+    @SuppressWarnings("unused")
     private void runMultiCastListener() throws IOException {
 
         final InetSocketAddress inetSocketAddress = new InetSocketAddress(NetworkUtils.retrieveLocalIP(), bindPort);

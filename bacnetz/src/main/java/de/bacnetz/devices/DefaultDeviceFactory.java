@@ -22,6 +22,8 @@ public class DefaultDeviceFactory implements Factory<Device> {
 
     private TZ320DeviceFactory tz320DeviceFactory;
 
+    private WatchdogDeviceFactory watchdogDeviceFactory;
+
     @SuppressWarnings("unchecked")
     @Override
     public Device create(final Object... args) {
@@ -45,6 +47,12 @@ public class DefaultDeviceFactory implements Factory<Device> {
             tz320DeviceFactory.setMessageFactory(messageFactory);
         }
 
+        if (watchdogDeviceFactory == null) {
+            watchdogDeviceFactory = new WatchdogDeviceFactory();
+            watchdogDeviceFactory.setConfigurationManager(configurationManager);
+            watchdogDeviceFactory.setMessageFactory(messageFactory);
+        }
+
         switch (deviceType) {
 
         case FOUR_DOOR_SOLUTION:
@@ -53,26 +61,13 @@ public class DefaultDeviceFactory implements Factory<Device> {
         case TZ320:
             return tz320DeviceFactory.create(deviceMap, vendorMap, deviceId, objectName, vendorId);
 
+        case WATCHDOG:
+            return watchdogDeviceFactory.create(deviceMap, vendorMap, deviceId, objectName, vendorId);
+
         default:
             throw new RuntimeException("Unknown DeviceType " + deviceType);
         }
 
-    }
-
-    public ConfigurationManager getConfigurationManager() {
-        return configurationManager;
-    }
-
-    public void setConfigurationManager(final ConfigurationManager configurationManager) {
-        this.configurationManager = configurationManager;
-    }
-
-    public MessageFactory getMessageFactory() {
-        return messageFactory;
-    }
-
-    public void setMessageFactory(final MessageFactory messageFactory) {
-        this.messageFactory = messageFactory;
     }
 
     protected void addPropertiesToModuleTypeDevice(final Device device) {
@@ -164,6 +159,22 @@ public class DefaultDeviceFactory implements Factory<Device> {
         deviceProperty = new DefaultDeviceProperty<Integer>("status-flags", DeviceProperty.STATUS_FLAGS, 0x00,
                 MessageType.UNSIGNED_INTEGER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
+    }
+
+    public ConfigurationManager getConfigurationManager() {
+        return configurationManager;
+    }
+
+    public void setConfigurationManager(final ConfigurationManager configurationManager) {
+        this.configurationManager = configurationManager;
+    }
+
+    public MessageFactory getMessageFactory() {
+        return messageFactory;
+    }
+
+    public void setMessageFactory(final MessageFactory messageFactory) {
+        this.messageFactory = messageFactory;
     }
 
 }

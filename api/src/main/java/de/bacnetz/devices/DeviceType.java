@@ -4,6 +4,8 @@ public enum DeviceType {
 
     FOUR_DOOR_SOLUTION,
 
-    TZ320;
+    TZ320,
+
+    WATCHDOG;
 
 }

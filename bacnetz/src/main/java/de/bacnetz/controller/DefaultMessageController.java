@@ -210,42 +210,42 @@ public class DefaultMessageController implements MessageController {
                 LOG.trace(message);
                 return processIAMMessage(message);
 
-            /** 20.1.3 BACnet-Unconfirmed-Request-PDU */
+            // 20.1.3 BACnet-Unconfirmed-Request-PDU
             case I_HAVE:
                 LOG.info(">>> I_HAVE received!");
                 return null;
 
-            /** 20.1.4 BACnet-SimpleACK-PDU */
+            // 20.1.4 BACnet-SimpleACK-PDU
             case UNCONFIRMED_COV_NOTIFICATION:
                 LOG.info(">>> UNCONFIRMED_COV_NOTIFICATION received!");
                 return null;
 
-            /** 20.1.5 BACnet-ComplexACK-PDU */
+            // 20.1.5 BACnet-ComplexACK-PDU
             case UNCONFIRMED_EVENT_NOTIFICATION:
                 LOG.info(">>> UNCONFIRMED_EVENT_NOTIFICATION received!");
                 return null;
 
-            /** 20.1.6 BACnet-SegmentACK-PDU */
+            // 20.1.6 BACnet-SegmentACK-PDU
             case UNCONFIRMED_PRIVATE_TRANSFER:
                 LOG.info(">>> UNCONFIRMED_PRIVATE_TRANSFER received!");
                 return null;
 
-            /** 20.1.7 BACnet-Error-PDU */
+            // 20.1.7 BACnet-Error-PDU
             case UNCONFIRMED_TEXT_MESSAGE:
                 LOG.info(">>> UNCONFIRMED_TEXT_MESSAGE received!");
                 return null;
 
-            /** 20.1.8 BACnet-Reject-PDU */
+            // 20.1.8 BACnet-Reject-PDU
             case TIME_SYNCHRONIZATION:
                 LOG.info(">>> TIME_SYNCHRONIZATION received!");
                 return null;
 
-            /** 20.1.9 BACnet-Abort-PDU */
+            // 20.1.9 BACnet-Abort-PDU
             case WHO_HAS:
                 LOG.info(">>> WHO_HAS received!");
                 return null;
 
-            /** 20.1.2 BACnet-Confirmed-Request-PDU */
+            // 20.1.2 BACnet-Confirmed-Request-PDU
             case WHO_IS:
                 LOG.trace(">>> WHO_IS received!");
                 return processWhoIsMessage(message);
@@ -325,7 +325,8 @@ public class DefaultMessageController implements MessageController {
 
     private List<Message> processSubscribeCov(final Message requestMessage) {
 
-        ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()
+        // find the device that this COV subscription / deletion is targeted at
+        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()
                 .getFirstObjectIdentifierServiceParameter();
         final Device findDevice = deviceService.getDeviceMap().get(objectIdentifierServiceParameter);
 
@@ -333,28 +334,45 @@ public class DefaultMessageController implements MessageController {
         final String msg = "processSubscribeCov() - COV subscription received! Object: "
                 + objectIdentifierServiceParameter.toString();
         LOG.info(msg);
+        LOG.info(requestMessage);
 
-        // @formatter:off
-		
-		final ServiceParameter subscriberProcessIdServiceParameter = requestMessage.getApdu().getServiceParameters().get(0);
-		objectIdentifierServiceParameter = (ObjectIdentifierServiceParameter) requestMessage.getApdu().getServiceParameters().get(1);
-		final ServiceParameter issueConfirmedNotificationsServiceParameter = requestMessage.getApdu().getServiceParameters().get(2);
-		final ServiceParameter lifetimeServiceParameter = requestMessage.getApdu().getServiceParameters().get(3);
-		
-		// @formatter:on
+        // find which properties have been subscribed / deleted from to
+        final List<ServiceParameter> serviceParameters = requestMessage.getApdu().getServiceParameters();
 
-        // TODO: factory
-        final DefaultCOVSubscription covSubscription = new DefaultCOVSubscription();
-        covSubscription.setClientIp(requestMessage.getSourceInetSocketAddress().getHostString());
-        covSubscription.setCommunicationService(communicationService);
-        covSubscription.setDevice(findDevice);
-        covSubscription.setParentDevice(findDevice.getParentDevice());
-        covSubscription.setLifetime(1000000);
-        covSubscription.setSubscriberProcessId(subscriberProcessIdServiceParameter.getPayload()[0]);
-        covSubscription.setVendorMap(vendorMap);
-        covSubscription.setNpdu(new NPDU(requestMessage.getNpdu()));
+        final ServiceParameter subscriberProcessIdServiceParameter = serviceParameters.get(0);
+//        objectIdentifierServiceParameter = (ObjectIdentifierServiceParameter) serviceParameters.get(1);
 
-        findDevice.getCovSubscriptions().add(covSubscription);
+        // when there are only two service parameters, that means the list of properties
+        // to subscribe to is empty which means no subscription should survive. This
+        // means that a message to delete all COV subscriptions was just received
+        // packaged inside a COV subscription message
+        if (serviceParameters.size() == 2) {
+
+            LOG.info("Deleting all COV subscriptions from device {}", findDevice);
+
+            findDevice.getCovSubscriptions().clear();
+
+        } else {
+
+//		@SuppressWarnings("unused")
+//        final ServiceParameter issueConfirmedNotificationsServiceParameter = requestMessage.getApdu().getServiceParameters().get(2);
+//		@SuppressWarnings("unused")
+//		final ServiceParameter lifetimeServiceParameter = requestMessage.getApdu().getServiceParameters().get(3);
+
+            // TODO: factory
+            final DefaultCOVSubscription covSubscription = new DefaultCOVSubscription();
+            covSubscription.setClientIp(requestMessage.getSourceInetSocketAddress().getHostString());
+            covSubscription.setCommunicationService(communicationService);
+            covSubscription.setDevice(findDevice);
+            covSubscription.setParentDevice(findDevice.getParentDevice());
+            // TODO: lifetime is not correct
+            covSubscription.setLifetime(1000000);
+            covSubscription.setSubscriberProcessId(subscriberProcessIdServiceParameter.getPayload()[0]);
+            covSubscription.setVendorMap(vendorMap);
+            covSubscription.setNpdu(new NPDU(requestMessage.getNpdu()));
+
+            findDevice.getCovSubscriptions().add(covSubscription);
+        }
 
         //
         // Send Acknowledge
@@ -416,26 +434,7 @@ public class DefaultMessageController implements MessageController {
         // no additional information
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
-
-//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-//
-//            // destination network information
-//            npdu.setControl(0x20);
-//            npdu.setDestinationNetworkAddress(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-//            npdu.setDestinationMACLayerAddressLength(3);
-//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-//
-//            npdu.setDestinationHopCount(255);
-//        }
         npdu.copyNetworkInformation(requestMessage.getNpdu());
-
-        // TODO this parameter is not used
-        final ObjectIdentifierServiceParameter resultObjectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-        resultObjectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        resultObjectIdentifierServiceParameter.setTagNumber(0x00);
-        resultObjectIdentifierServiceParameter.setLengthValueType(4);
-        resultObjectIdentifierServiceParameter.setObjectType(findDevice.getObjectType());
-        resultObjectIdentifierServiceParameter.setInstanceNumber(findDevice.getId());
 
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.SIMPLE_ACK_PDU);
@@ -1166,30 +1165,17 @@ public class DefaultMessageController implements MessageController {
         LOG.trace(closingTagServiceParameter);
     }
 
+    @SuppressWarnings("unused")
     private List<Message> processSystemStatusMessage(final Message message) {
 
         final DefaultMessage resultMessage = new DefaultMessage(message);
 
-        // TODO: copy message.VirtualLinkControl
-
-//        // TODO: copy message.NPDU including all service parameters
-//        // TODO: change NPDU.control to contain a destination specifier
-//        resultMessage.getNpdu().setControl(0x20);
-//        resultMessage.getNpdu().setDestinationNetworkNumber(302);
-//        resultMessage.getNpdu().setDestinationMACLayerAddressLength(3);
-//        resultMessage.getNpdu().setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-//        // TODO: copy NPDU
-//        // TODO: add hopCount, set it to 255 0xFF
-//        resultMessage.getNpdu().setDestinationHopCount(0xFF);
         resultMessage.getNpdu().copyNetworkInformation(message.getNpdu());
 
         // APDU
         resultMessage.getApdu().setPduType(PDUType.COMPLEX_ACK_PDU);
 
-        // TODO: add new service parameters into the APDU
-        // opening bracket
-        // system status operational
-        // closing bracket
+        // add new service parameters into the APDU
         final ServiceParameter openingTagServiceParameter = new ServiceParameter();
         openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         openingTagServiceParameter.setTagNumber(0x04);
@@ -1210,13 +1196,8 @@ public class DefaultMessageController implements MessageController {
         closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
         resultMessage.getApdu().getServiceParameters().add(4, closingTagServiceParameter);
 
-        // TODO: set message.VirtualLinkControl.size to the size of the entire message
+        // set message.VirtualLinkControl.size to the size of the entire message
         resultMessage.getVirtualLinkControl().setLength(resultMessage.getDataLength());
-
-//        LOG.info(Utils.byteArrayToStringNoPrefix(resultMessage.getVirtualLinkControl().getBytes()));
-//        LOG.info(Utils.byteArrayToStringNoPrefix(resultMessage.getNpdu().getBytes()));
-//        LOG.info(Utils.byteArrayToStringNoPrefix(resultMessage.getApdu().getBytes()));
-//        LOG.info(Utils.byteArrayToStringNoPrefix(resultMessage.getBytes()));
 
         final List<Message> result = new ArrayList<>();
         result.add(resultMessage);
@@ -1265,6 +1246,7 @@ public class DefaultMessageController implements MessageController {
         return null;
     }
 
+    @SuppressWarnings("unused")
     private void sendResponseToIAM(final InetSocketAddress sourceInetSocketAddress,
             final ServiceParameter objectIdentifierServiceParameter) {
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
@@ -1279,15 +1261,9 @@ public class DefaultMessageController implements MessageController {
         // no additional information
         // this works, if the cp is connected to the device directly via 192.168.2.1
         outNpdu.setControl(0x00);
-        // npdu.setControl(0x2c);
 
-//        // this object identifier has to be context specific. I do not know why
-//        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+        // this object identifier has to be context specific. I do not know why
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-//        objectIdentifierServiceParameter.setTagNumber(0x00);
-//        objectIdentifierServiceParameter.setLengthValueType(4);
-//        objectIdentifierServiceParameter.setObjectType(device.getObjectType());
-//        objectIdentifierServiceParameter.setInstanceNumber(device.getId());
 
         final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
         propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -1319,11 +1295,9 @@ public class DefaultMessageController implements MessageController {
 
         virtualLinkControl.setLength(outMessage.getDataLength());
 
-//      final byte[] bytes = result.getBytes();
-//      LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
-
         try {
             LOG.info("Address: {}, Port: {}", sourceInetSocketAddress.getAddress(), sourceInetSocketAddress.getPort());
+            @SuppressWarnings("resource")
             final Socket socket = new Socket(sourceInetSocketAddress.getAddress(), sourceInetSocketAddress.getPort());
             final DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
             outputStream.write(outMessage.getBytes());
@@ -1371,119 +1345,3 @@ public class DefaultMessageController implements MessageController {
     }
 
 }
-
-//private Message processLastRestartReasonProperty(final int propertyKey, final Message requestMessage) {
-//// coldstart 1
-//return messageFactory.create(MessageType.ENUMERATED, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//      requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
-//}
-//
-//private Message processProtocolVersionProperty(final int propertyKey, final Message requestMessage) {
-//// protocol version 1
-//return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//      requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
-//}
-//
-//private Message processProtocolRevisionProperty(final int propertyKey, final Message requestMessage) {
-//// protocol revision 0x0C = 12d
-//return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//      requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x0C });
-//}
-
-//private Message processDatabaseRevisionProperty(final int propertyKey, final Message requestMessage) {
-//// database revivion 3
-//return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//      requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x03 });
-//}
-//
-//private Message processAPDUSegmentTimeoutProperty(final int propertyKey, final Message requestMessage) {
-//
-//// APDU Segment-Timeout:
-//// Dieser Wert in Millisekunden legt fest, nach welcher Zeitspanne ein
-//// quittierpflichtiges, segmentiertes Telegramm als fehlgeschlagen gewertet
-//// wird, wenn die Segmentbestätigung ausbleibt. Der Standardwert beträgt
-//// 2000 Millisekunden.
-//// 2000d == 0x07D0
-//return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//      requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x07, (byte) 0xD0 });
-//}
-//
-//private Message processMaxSegmentsAcceptedProperty(final int propertyKey, final Message requestMessage) {
-//
-//// APDU Max Segments Accepted:
-//// Legt fest, wie viele Segmente maximal akzeptiert werden.
-//return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//      requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x01 });
-//}
-//
-//private Message processAPDUTimeoutProperty(final int propertyKey, final Message requestMessage) {
-//
-//// ADPU Timeout:
-//// Dieser Wert in Millisekunden legt fest, nach welcher Zeitspanne ein
-//// quittierpflichtiges Telegramm als fehlgeschlagen gewertet wird, wenn die
-//// Bestätigung ausbleibt. Der Standardwert beträgt 3000 ms.
-//// 3000d == 0x0BB8
-//return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//      requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x0B, (byte) 0xB8 });
-//}
-//
-//private Message processMaxAPDULengthAcceptedProperty(final int propertyKey, final Message requestMessage) {
-//
-//// Maximum APDU Length is dependent on the physical layer used, for example the
-//// maximum APDU size for BACnet/IP is 1497 octets, but for BACnet MS/TP
-//// segments, the maximum APDU size is only 480 octets.
-////
-//// 1497d = 0x05D9
-//// 62d = 0x3E
-//return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//      requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x05, (byte) 0xD9 });
-//}
-//
-//private Message processSegmentationSupportedProperty(final int propertyKey, final Message requestMessage) {
-//
-//// segmented-both (0)
-//// segmented-transmit (1)
-//// segmented-receive (2)
-//// no-segmentation (3)
-//return messageFactory.create(MessageType.ENUMERATED, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//      requestMessage.getApdu().getInvokeId(), propertyKey, new byte[] { (byte) 0x00 });
-//}
-
-//// object-list is not part of the 'all' collection
-//if (deviceProperty.getPropertyKey() != DeviceProperty.OBJECT_LIST) {
-//  LOG.info("SKIPPING ServiceParameter for DeviceProperty " + index + ") " + deviceProperty
-//          + " ...");
-//  continue;
-//}
-
-//if (deviceProperty.getPropertyKey() == DeviceProperty.PROPERTY_LIST) {
-//  LOG.info("SKIPPING ServiceParameter for DeviceProperty " + index + ") " + deviceProperty
-//          + " ...");
-//  continue;
-//}
-//
-//if (deviceProperty.getPropertyKey() == DeviceProperty.TIME_OF_STATE_COUNT_RESET) {
-//  LOG.info("SKIPPING ServiceParameter for DeviceProperty " + index + ") " + deviceProperty
-//          + " ...");
-//  continue;
-//}
-
-//if (deviceProperty.getPropertyKey() != DeviceProperty.VENDOR_NAME) {
-//LOG.info("SKIPPING ServiceParameter for DeviceProperty " + index + ") " + deviceProperty
-//        + " ...");
-//continue;
-//}
-
-//if (deviceProperty.getPropertyKey() == DeviceProperty.DAYLIGHT_SAVINGS_STATUS) {
-//LOG.info("test");
-//}
-//
-//if (deviceProperty.getPropertyKey() != DeviceProperty.DAYLIGHT_SAVINGS_STATUS) {
-//continue;
-//}
-
-//if (index != answerLength) {
-//answerLength++;
-//LOG.info("Next length: " + answerLength);
-//break;
-//}

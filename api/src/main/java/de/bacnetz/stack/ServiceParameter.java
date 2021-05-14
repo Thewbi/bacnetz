@@ -12,6 +12,7 @@ import de.bacnetz.factory.MessageType;
 
 public class ServiceParameter {
 
+    @SuppressWarnings("unused")
     private static final Logger LOG = LogManager.getLogger(ServiceParameter.class);
 
     public static final int CLOSING_TAG_CODE = 7;
@@ -45,8 +46,6 @@ public class ServiceParameter {
     public static final int APPLICATION_TAG_DATE = 0x0A;
 
     public static final int APPLICATION_TAG_TIME = 0x0B;
-
-//    public static final int APPLICATION_TAG_OBJECT_IDENTIFIER = 4;
 
     public static final int APPLICATION_TAG_NUMBER_CHARACTER_STRING = 7;
 
@@ -141,8 +140,6 @@ public class ServiceParameter {
 
         }
 
-//        LOG.info(toString());
-
         return length;
     }
 
@@ -182,39 +179,39 @@ public class ServiceParameter {
             switch (tagNumber) {
 
             case APPLICATION_TAG_BOOLEAN:
-                stringBuffer.append("BOOLEAN");
+                stringBuffer.append(" BOOLEAN");
                 break;
 
             case APPLICATION_TAG_REAL:
-                stringBuffer.append("REAL");
+                stringBuffer.append(" REAL");
 //                final float realValue = ByteBuffer.wrap(payload).order(ByteOrder.BIG_ENDIAN).getFloat();
 //                stringBuffer.append(" Value: ").append(realValue);
                 break;
 
             case APPLICATION_TAG_DATE:
-                stringBuffer.append("DATE");
+                stringBuffer.append(" DATE");
                 break;
 
             case APPLICATION_TAG_TIME:
-                stringBuffer.append("TIME");
+                stringBuffer.append(" TIME");
                 break;
 
             case APPLICATION_TAG_NUMBER_CHARACTER_STRING:
                 String temp = new String(payload);
                 temp = StringUtils.trim(temp);
-                stringBuffer.append("Character String (7) '").append(temp).append("'");
+                stringBuffer.append(" Character String (7) '").append(temp).append("'");
                 break;
 
             case UNSIGNED_INTEGER_CODE:
-                stringBuffer.append("Unsigned Integer (2) - VALUE: ").append("" + (payload[0] & 0xFF));
+                stringBuffer.append(" Unsigned Integer (2) - VALUE: ").append("" + (payload[0] & 0xFF));
                 break;
 
             case ENUMERATED_CODE:
-                stringBuffer.append("Enumerated (9)");
+                stringBuffer.append(" Enumerated (9)");
                 break;
 
             case BACNET_OBJECT_IDENTIFIER:
-                stringBuffer.append("BACnetObjectIdentifier (12)");
+                stringBuffer.append(" BACnetObjectIdentifier (12)");
                 // the first ten bit contain the type of object this object identifier describes
                 int objectType = (payload[0] & 0xFF) << 2;
                 objectType += (payload[1] & 0xC0) >> 6;
@@ -267,7 +264,6 @@ public class ServiceParameter {
 
                 default:
                     throw new RuntimeException("Unknown ObjectType: " + objectType);
-//                    LOG.error("Unknown ObjectType: " + objectType);
                 }
 
                 final int instanceNumber = getInstanceNumber();
@@ -290,17 +286,17 @@ public class ServiceParameter {
 
             case 1:
                 final int codeAsUnsignedInt = payload[0] & 0xff;
-                stringBuffer.append("[DeviceProperty:")
+                stringBuffer.append(" [DeviceProperty:")
                         .append(DevicePropertyType.getByCode(codeAsUnsignedInt).getName()).append(", Code: ")
                         .append(codeAsUnsignedInt).append("]");
                 break;
 
             case ServiceParameter.OPENING_TAG_CODE:
-                stringBuffer.append("{[").append(tagNumber).append("]");
+                stringBuffer.append(" {[").append(tagNumber).append("]");
                 break;
 
             case ServiceParameter.CLOSING_TAG_CODE:
-                stringBuffer.append("}[").append(tagNumber).append("]");
+                stringBuffer.append(" }[").append(tagNumber).append("]");
                 break;
 
             case 0x04:
@@ -313,7 +309,7 @@ public class ServiceParameter {
                 break;
 
             default:
-                stringBuffer.append("[Unknown Context Specific Tag: ").append(lengthValueType).append("]");
+                stringBuffer.append(" [Unknown Context Specific Tag: ").append(lengthValueType).append("]");
                 if (lengthValueType == 1) {
                     stringBuffer.append(DevicePropertyType.getByCode(payload[0]));
                 } else if (lengthValueType == 2) {
@@ -326,7 +322,7 @@ public class ServiceParameter {
             break;
 
         default:
-            stringBuffer.append("[UNKNOWN_TAG_CLASS:").append(tagClass).append("]");
+            stringBuffer.append(" [UNKNOWN_TAG_CLASS:").append(tagClass).append("]");
             stringBuffer.append(DevicePropertyType.getByCode(payload[0] & 0xFF));
             break;
         }

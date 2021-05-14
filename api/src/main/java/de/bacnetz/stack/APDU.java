@@ -575,16 +575,30 @@ public class APDU {
         tempOffset += objectIdentifierServiceParameter.fromBytes(data, tempOffset);
         serviceParameters.add(objectIdentifierServiceParameter);
 
-        // issue confirmed notifications - whether or not to send COV updates as
-        // confirmed or unconfirmed messages
-        final ServiceParameter issueConfirmedNotificationsServiceParameter = new ServiceParameter();
-        tempOffset += issueConfirmedNotificationsServiceParameter.fromBytes(data, tempOffset);
-        serviceParameters.add(issueConfirmedNotificationsServiceParameter);
+        // when a COV subscription is deleted in YABE, a COV-Subscription message is
+        // send to the devive that lack the two last service parameters of a
+        // COV-Subscription message that creates a subscription
+        //
+        // when there are only two service parameters, that means the list of properties
+        // to subscribe to
+        // is empty which means no subscription should survive. This means that a
+        // message to delete
+        // all COV subscriptions was just received packaged inside a COV subscription
+        // message
+        if (tempOffset < data.length) {
 
-        // life-time of this subscription
-        final ServiceParameter lifetimeServiceParameter = new ServiceParameter();
-        tempOffset += lifetimeServiceParameter.fromBytes(data, tempOffset);
-        serviceParameters.add(lifetimeServiceParameter);
+            // issue confirmed notifications - whether or not to send COV updates as
+            // confirmed or unconfirmed messages
+            final ServiceParameter issueConfirmedNotificationsServiceParameter = new ServiceParameter();
+            tempOffset += issueConfirmedNotificationsServiceParameter.fromBytes(data, tempOffset);
+            serviceParameters.add(issueConfirmedNotificationsServiceParameter);
+
+            // life-time of this subscription
+            final ServiceParameter lifetimeServiceParameter = new ServiceParameter();
+            tempOffset += lifetimeServiceParameter.fromBytes(data, tempOffset);
+            serviceParameters.add(lifetimeServiceParameter);
+
+        }
 
         return tempOffset - offset;
     }
@@ -666,6 +680,7 @@ public class APDU {
      * @param data
      * @return
      */
+    @SuppressWarnings("unused")
     private int processObjectAndPropertyIdentifier(final int offset, final byte[] data) {
 
         int index = 0;

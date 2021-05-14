@@ -153,18 +153,25 @@ public class App {
 
         final String localIp = configurationManager.getPropertyAsString(ConfigurationManager.LOCAL_IP_CONFIG_KEY);
 
-        final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
-        deviceCreationDescriptor.setDeviceType(DeviceType.TZ320);
-        deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
-        deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID + 70);
-        deviceCreationDescriptor.setDeviceIdIncrement(1);
-        deviceCreationDescriptor.setDeviceIdOffset(0);
+//        final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
+//        deviceCreationDescriptor.setDeviceType(DeviceType.TZ320);
+//        deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
+//        deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID + 70);
+//        deviceCreationDescriptor.setDeviceIdIncrement(1);
+//        deviceCreationDescriptor.setDeviceIdOffset(0);
 
 //        final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
 //        deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
 //        deviceCreationDescriptor.setStartDeviceId(20000);
 //        deviceCreationDescriptor.setDeviceIdIncrement(1);
 //        deviceCreationDescriptor.setDeviceIdOffset(0);
+
+        final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
+        deviceCreationDescriptor.setDeviceType(DeviceType.WATCHDOG);
+        deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
+        deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID + 70);
+        deviceCreationDescriptor.setDeviceIdIncrement(1);
+        deviceCreationDescriptor.setDeviceIdOffset(0);
 
         final List<Device> devices = deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
 
