@@ -8,6 +8,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.bacnetz.common.utils.BACnetUtils;
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.controller.DefaultMessage;
 import de.bacnetz.devices.BinaryInputDevice;
@@ -69,7 +70,7 @@ public class ToggleDoorOpenStateThread implements Runnable {
             // toggle
             binaryInputDevice.setPresentValue(!(Boolean) binaryInputDevice.getPresentValue());
 
-            sendCOV(parentDevice, binaryInputDevice, vendorMap, TARGET_IP, communicationService);
+            sendCOV(parentDevice, binaryInputDevice, vendorMap, TARGET_IP, communicationService, null);
 
             try {
                 Thread.sleep(SLEEP_TIME);
@@ -81,7 +82,7 @@ public class ToggleDoorOpenStateThread implements Runnable {
 
     public static void sendCOV(final Device parentDevice, final Device childDevice,
             final Map<Integer, String> vendorMap, final String targetIp,
-            final CommunicationService communicationService) {
+            final CommunicationService communicationService, final NPDU originalNpdu) {
 
         final String msg = "Sending COV update to targetIp:" + targetIp;
         LOG.info(msg);
@@ -98,17 +99,18 @@ public class ToggleDoorOpenStateThread implements Runnable {
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
 
-        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-
-            // destination network information
-            npdu.setControl(0x20);
-            npdu.setDestinationNetworkAddress(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-            npdu.setDestinationMACLayerAddressLength(3);
-            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-
-            npdu.setDestinationHopCount(255);
+        if (originalNpdu != null) {
+            npdu.copyNetworkInformation(originalNpdu);
+        } else {
+            if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
+                // destination network information
+                npdu.setControl(0x20);
+                npdu.setDestinationNetworkAddress(NetworkUtils.DESTINATION_NETWORK_NUMBER);
+                npdu.setDestinationMACLayerAddressLength(3);
+                npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+                npdu.setDestinationHopCount(255);
+            }
         }
-//        npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.CONFIRMED_SERVICE_REQUEST_PDU);
@@ -174,11 +176,18 @@ public class ToggleDoorOpenStateThread implements Runnable {
 
         final ServiceParameter presentValueServiceParameter = new ServiceParameter();
         presentValueServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-        presentValueServiceParameter.setTagNumber(MessageType.ENUMERATED.getValue());
         presentValueServiceParameter.setLengthValueType(0x01);
-//        presentValueServiceParameter
-//                .setPayload(new byte[] { (byte) ((Boolean) childDevice.getPresentValue() ? 1 : 0) });
-        presentValueServiceParameter.setPayload((byte[]) childDevice.getPresentValue());
+        if (childDevice.getPresentValue() instanceof byte[]) {
+            presentValueServiceParameter.setTagNumber(MessageType.ENUMERATED.getValue());
+            presentValueServiceParameter.setPayload((byte[]) childDevice.getPresentValue());
+        } else if (childDevice.getPresentValue() instanceof Integer) {
+            presentValueServiceParameter.setTagNumber(ServiceParameter.UNSIGNED_INTEGER_CODE);
+            presentValueServiceParameter
+                    .setPayload(BACnetUtils.intToByteArray((Integer) childDevice.getPresentValue()));
+        } else {
+            throw new RuntimeException("Unknown type : " + childDevice.getPresentValue());
+        }
+
         apdu.getServiceParameters().add(presentValueServiceParameter);
 
         // closing }[2]
@@ -227,6 +236,9 @@ public class ToggleDoorOpenStateThread implements Runnable {
         responseMessage.setApdu(apdu);
 
         virtualLinkControl.setLength(responseMessage.getDataLength());
+
+        LOG.info("<<< SENDING COV RESPONSE TO SUBSCRIBER:");
+        LOG.info(responseMessage);
 
         try {
             final InetAddress datagramPacketAddress = InetAddress.getByName(targetIp);

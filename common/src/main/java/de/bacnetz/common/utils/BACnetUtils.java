@@ -9,6 +9,22 @@ public class BACnetUtils {
         // no instances of this class
     }
 
+    public static byte[] retrieveAsString(final byte[] data) {
+
+        final int dataLength = data.length;
+
+        // +1 for the leading zero (maybe this is the encoding code 0x00 for the
+        // encoding ANSI X3.4 / UTF-8 (since 2010))
+        final byte[] result = new byte[dataLength + 1];
+
+        System.arraycopy(data, 0, result, 1, dataLength);
+
+        // add a leading zero
+        result[0] = 0;
+
+        return result;
+    }
+
     public static byte[] retrieveAsString(final String data) {
 
         final int dataLength = data.getBytes().length;

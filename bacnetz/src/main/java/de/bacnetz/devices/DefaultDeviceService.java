@@ -34,8 +34,12 @@ public class DefaultDeviceService implements DeviceService {
 
         for (int i = 0; i < deviceCreationDescriptor.getAmountOfDevices(); i++) {
 
+//            DeviceType deviceType = DeviceType.TZ320;
+//            DeviceType deviceType = DeviceType.FOUR_DOOR_SOLUTION;
+            final DeviceType deviceType = deviceCreationDescriptor.getDeviceType();
+
             final int deviceId = deviceCreationDescriptor.getStartDeviceId() + deviceIdOffset;
-            final Device device = deviceFactory.create(DeviceType.TZ320, deviceMap, vendorMap, deviceId,
+            final Device device = deviceFactory.create(deviceType, deviceMap, vendorMap, deviceId,
                     NetworkUtils.OBJECT_NAME, VendorType.GEZE_GMBH.getCode());
             devices.add(device);
 

@@ -25,41 +25,22 @@ public class BinaryInputDevice extends DefaultDevice {
             return;
         }
 
-//        LOG.info("Set Present Value: " + newPresentValue);
-
+        @SuppressWarnings("unchecked")
         final DeviceProperty<Object> presentValueDeviceProperty = (DeviceProperty<Object>) getProperties()
                 .get(DevicePropertyType.PRESENT_VALUE.getCode());
 
-//        final Integer presentValue = (byte[]) presentValueDeviceProperty.getValue();
-
-//        final boolean valueChanged = false;
         final boolean valueChanged = true;
-
-//        if ((presentValue == null) && (newPresentValue != null)) {
-//
-//            valueChanged = true;
-//
-//        } else if ((presentValue != null) && (newPresentValue == null)) {
-//
-//            valueChanged = true;
-//
-//        } else if ((presentValue != null) && (newPresentValue != null)) {
-//
-//            if (!presentValue.equals(newPresentValue)) {
-//
-//                valueChanged = true;
-//            }
-//        }
-
         if (valueChanged) {
 
             // set new value
             presentValueDeviceProperty.setValue(newPresentValue);
 
-            LOG.info("COV subscriptions: {}", getCovSubscriptions().size());
+            LOG.info("COV subscriptions {} on device: {}", getCovSubscriptions().size(), this);
 
             // send message to all subscribers
             getCovSubscriptions().stream().forEach(s -> {
+                LOG.info("Answering to subscriber IP: {}, SubscriberProcessId: {}", s.getClientIp(),
+                        s.getSubscriberProcessId());
                 s.valueChanged(newPresentValue);
             });
         }

@@ -10,6 +10,8 @@ public class DeviceCreationDescriptor {
 
     private int deviceIdOffset = 0;
 
+    private DeviceType deviceType;
+
     public int getAmountOfDevices() {
         return amountOfDevices;
     }
@@ -40,6 +42,14 @@ public class DeviceCreationDescriptor {
 
     public void setDeviceIdOffset(final int deviceIdOffset) {
         this.deviceIdOffset = deviceIdOffset;
+    }
+
+    public DeviceType getDeviceType() {
+        return deviceType;
+    }
+
+    public void setDeviceType(final DeviceType deviceType) {
+        this.deviceType = deviceType;
     }
 
 }

@@ -169,6 +169,11 @@ public class BACnetServicesSupportedBitString extends BaseBitString {
         return confirmedCOVNotification;
     }
 
+    /**
+     * index 1
+     * 
+     * @param confirmedCOVNotification
+     */
     public void setConfirmedCOVNotification(final boolean confirmedCOVNotification) {
         this.confirmedCOVNotification = confirmedCOVNotification;
         final int start = 1;
@@ -179,6 +184,11 @@ public class BACnetServicesSupportedBitString extends BaseBitString {
         return confirmedEventNotification;
     }
 
+    /**
+     * index 2
+     * 
+     * @param confirmedEventNotification
+     */
     public void setConfirmedEventNotification(final boolean confirmedEventNotification) {
         this.confirmedEventNotification = confirmedEventNotification;
         final int start = 2;
@@ -189,6 +199,11 @@ public class BACnetServicesSupportedBitString extends BaseBitString {
         return getAlarmSummary;
     }
 
+    /**
+     * index 3
+     * 
+     * @param getAlarmSummary
+     */
     public void setGetAlarmSummary(final boolean getAlarmSummary) {
         this.getAlarmSummary = getAlarmSummary;
         final int start = 3;
@@ -199,6 +214,11 @@ public class BACnetServicesSupportedBitString extends BaseBitString {
         return getEnrollmentSummary;
     }
 
+    /**
+     * index 4
+     * 
+     * @param getEnrollmentSummary
+     */
     public void setGetEnrollmentSummary(final boolean getEnrollmentSummary) {
         this.getEnrollmentSummary = getEnrollmentSummary;
         final int start = 4;
@@ -209,6 +229,11 @@ public class BACnetServicesSupportedBitString extends BaseBitString {
         return subscribeCOV;
     }
 
+    /**
+     * index 5
+     * 
+     * @param subscribeCOV
+     */
     public void setSubscribeCOV(final boolean subscribeCOV) {
         this.subscribeCOV = subscribeCOV;
         final int start = 5;
@@ -219,6 +244,11 @@ public class BACnetServicesSupportedBitString extends BaseBitString {
         return atomicReadFile;
     }
 
+    /**
+     * index 6
+     * 
+     * @param atomicReadFile
+     */
     public void setAtomicReadFile(final boolean atomicReadFile) {
         this.atomicReadFile = atomicReadFile;
         final int start = 6;
@@ -229,6 +259,11 @@ public class BACnetServicesSupportedBitString extends BaseBitString {
         return atomicWriteFile;
     }
 
+    /**
+     * index 7
+     * 
+     * @param atomicWriteFile
+     */
     public void setAtomicWriteFile(final boolean atomicWriteFile) {
         this.atomicWriteFile = atomicWriteFile;
         final int start = 7;
@@ -239,6 +274,11 @@ public class BACnetServicesSupportedBitString extends BaseBitString {
         return addListElement;
     }
 
+    /**
+     * index 8
+     * 
+     * @param addListElement
+     */
     public void setAddListElement(final boolean addListElement) {
         this.addListElement = addListElement;
         final int start = 8;

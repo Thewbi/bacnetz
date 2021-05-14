@@ -25,9 +25,45 @@ public class DefaultCOVSubscription implements COVSubscription {
 
     private Map<Integer, String> vendorMap;
 
+    private NPDU npdu;
+
     @Override
     public void valueChanged(final Object newValue) {
-        ToggleDoorOpenStateThread.sendCOV(parentDevice, device, vendorMap, clientIp, communicationService);
+        ToggleDoorOpenStateThread.sendCOV(parentDevice, device, vendorMap, clientIp, communicationService, npdu);
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((clientIp == null) ? 0 : clientIp.hashCode());
+        result = prime * result + ((device == null) ? 0 : device.hashCode());
+        result = prime * result + subscriberProcessId;
+        return result;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        final DefaultCOVSubscription other = (DefaultCOVSubscription) obj;
+        if (clientIp == null) {
+            if (other.clientIp != null)
+                return false;
+        } else if (!clientIp.equals(other.clientIp))
+            return false;
+        if (device == null) {
+            if (other.device != null)
+                return false;
+        } else if (!device.equals(other.device))
+            return false;
+        if (subscriberProcessId != other.subscriberProcessId)
+            return false;
+        return true;
     }
 
     @Override
@@ -102,38 +138,12 @@ public class DefaultCOVSubscription implements COVSubscription {
         this.vendorMap = vendorMap;
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((clientIp == null) ? 0 : clientIp.hashCode());
-        result = prime * result + ((device == null) ? 0 : device.hashCode());
-        result = prime * result + subscriberProcessId;
-        return result;
+    public NPDU getNpdu() {
+        return npdu;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        final DefaultCOVSubscription other = (DefaultCOVSubscription) obj;
-        if (clientIp == null) {
-            if (other.clientIp != null)
-                return false;
-        } else if (!clientIp.equals(other.clientIp))
-            return false;
-        if (device == null) {
-            if (other.device != null)
-                return false;
-        } else if (!device.equals(other.device))
-            return false;
-        if (subscriberProcessId != other.subscriberProcessId)
-            return false;
-        return true;
+    public void setNpdu(final NPDU npdu) {
+        this.npdu = npdu;
     }
 
 }

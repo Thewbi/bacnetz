@@ -2,7 +2,9 @@ package de.bacnetz.devices;
 
 import java.util.Map;
 
+import de.bacnetz.factory.DefaultMessageFactory;
 import de.bacnetz.factory.MessageType;
+import de.bacnetz.stack.BACnetServicesSupportedBitString;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 
 public class TZ320DeviceFactory extends DefaultDeviceFactory {
@@ -80,10 +82,21 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
         // types supported shall be at least Analog Input, Analog Output, Analog Value,
         // Binary Input, Binary Output, and Binary
         // Value.
-//      case 0x60:
-        deviceProperty = new DefaultDeviceProperty<Integer>("protocol-services-supported",
-                DeviceProperty.PROTOCOL_SERVICES_SUPPORTED, 1, MessageType.UNSIGNED_INTEGER);
+        final BACnetServicesSupportedBitString retrieveServicesSupported = device.retrieveServicesSupported();
+        deviceProperty = new DefaultDeviceProperty<byte[]>("protocol-services-supported",
+                DeviceProperty.PROTOCOL_SERVICES_SUPPORTED, DefaultMessageFactory.getSupportedServicesPayload(device),
+                MessageType.CHARACTER_STRING);
+        deviceProperty = new DefaultDeviceProperty<String>("protocol-services-supported",
+                DeviceProperty.PROTOCOL_SERVICES_SUPPORTED, retrieveServicesSupported.getStringValue(),
+                MessageType.CHARACTER_STRING);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
+
+//        final ServiceParameter protocolServicesSupportedBitStringServiceParameter = new ServiceParameter();
+//        protocolServicesSupportedBitStringServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
+//        protocolServicesSupportedBitStringServiceParameter
+//                .setTagNumber(ServiceParameter.APPLICATION_TAG_NUMBER_BIT_STRING);
+//        protocolServicesSupportedBitStringServiceParameter.setLengthValueType(ServiceParameter.EXTENDED_VALUE);
+//        protocolServicesSupportedBitStringServiceParameter.setPayload(getSupportedServicesPayload(device));
 
         // 0x0C = 12d - application-software-version
         // Values: 0x01 == version 1.0

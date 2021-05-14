@@ -88,8 +88,6 @@ public class DefaultDevice implements Device, CommunicationService {
 
     private String location;
 
-//    private final MessageFactory messageFactory = new DefaultMessageFactory();
-
     private MessageFactory messageFactory;
 
     private Map<Integer, String> vendorMap = new HashMap<>();
@@ -254,162 +252,6 @@ public class DefaultDevice implements Device, CommunicationService {
         return messageFactory.create(deviceProperty, this, requestMessage);
     }
 
-    // TODO: move all these properties over into the message factory.
-//		else {
-//
-//			final String msg;
-//
-//			switch (propertyIdentifierCode) {
-
-//            // 0x1C = 28d
-//            case 0x1C:
-//                LOG.trace("<<< READ_PROP: description ({})", propertyIdentifierCode);
-//                return processStringProperty(propertyIdentifierCode, requestMessage, NetworkUtils.OBJECT_DESCRIPTION);
-
-//            // 0x1E = 30d
-//            case 0x1E:
-//                LOG.trace("<<< READ_PROP: device-address-binding ({})", propertyIdentifierCode);
-//                return processAddressBindingProperty(propertyIdentifierCode, requestMessage);
-//
-//            // 0x2C = 44d
-//            case 0x2C:
-//                LOG.trace("<<< READ_PROP: firmware-revision ({})", propertyIdentifierCode);
-//                return processFirmwareRevisionProperty(propertyIdentifierCode, requestMessage);
-//
-//            // 0x38 = 56d
-//            case 0x38:
-//                LOG.trace("<<< READ_PROP: local-date ({})", propertyIdentifierCode);
-//                return processTimeOfDeviceRestartProperty(propertyIdentifierCode, requestMessage, true, false,
-//                        new Date());
-//
-//            // 0x39 = 57d
-//            case 0x39:
-//                LOG.trace("<<< READ_PROP: local-time ({})", propertyIdentifierCode);
-//                return processTimeOfDeviceRestartProperty(propertyIdentifierCode, requestMessage, false, true,
-//                        new Date());
-//
-//            // 0x3A = 58d
-//            case 0x3A:
-//                LOG.trace("<<< READ_PROP: location ({})", propertyIdentifierCode);
-//                return processStringProperty(propertyIdentifierCode, requestMessage, NetworkUtils.OBJECT_LOCATION);
-//
-//            // 0x46 = 70d
-//            case 0x46:
-//                LOG.trace("<<< READ_PROP: model-name ({})", propertyIdentifierCode);
-//                return processStringProperty(propertyIdentifierCode, requestMessage, NetworkUtils.MODEL_NAME);
-//
-//            // 0x4B = 75d
-//            case 0x4B:
-//                LOG.trace("<<< READ_PROP: object-identifier ({})", propertyIdentifierCode);
-//                return processStringProperty(propertyIdentifierCode, requestMessage, objectType + ":" + id);
-//
-//            // 0x4c = 76d (0x4c = 76d) object list
-//            case 0x4c:
-//                LOG.trace("<<< READ_PROP: object-list ({})", propertyIdentifierCode);
-//                return processObjectListRequest(propertyIdentifierCode, requestMessage);
-//
-//            // 0x4d = 77d (0x4d = 77d) object-name
-//            case 0x4d:
-//                LOG.trace("<<< READ_PROP: object-name ({})", propertyIdentifierCode);
-//                return processObjectNameProperty(propertyIdentifierCode, requestMessage);
-//
-//            // 0x55 = 85d, present-value
-//            case 0x55:
-//                LOG.info("<<< READ_PROP: Device: {}, present-value ({})", name + ":" + objectType + ":" + id,
-//                        propertyIdentifierCode);
-//                return processPresentValueProperty(propertyIdentifierCode, requestMessage);
-//
-//            // 0x60 = 96d - protocol-services-supported
-//            //
-//            // H.5.2.13 Protocol_Object_Types_Supported
-//            // This property indicates the BACnet protocol object types supported by this
-//            // device. See 12.10.15. The protocol object
-//            // types supported shall be at least Analog Input, Analog Output, Analog Value,
-//            // Binary Input, Binary Output, and Binary
-//            // Value.
-//            case 0x60:
-//                LOG.trace("<<< READ_PROP: protocol-object-types-supported Property ({})", propertyIdentifierCode);
-//                return processProtocolObjectTypesSupportedServicesProperty(propertyIdentifierCode, requestMessage);
-//
-//            // Supported Services Property
-//            // 0x61 = 97d
-//            case 0x61:
-//                LOG.trace("<<< READ_PROP: supported-services-property ({})", propertyIdentifierCode);
-//                return processSupportedServicesProperty(propertyIdentifierCode, requestMessage);
-//
-//            // 0x6E = 110d state-text
-//            case 0x6E:
-//                LOG.trace("<<< READ_PROP: state-text ({})", propertyIdentifierCode);
-//                return processStateTextProperty(propertyIdentifierCode, requestMessage);
-//
-//            // 0x6F = 111d, status-flags
-//            // see bacnet_device25_object_list.pcapng - message 11702
-//            case 0x6F:
-//                LOG.trace("<<< READ_PROP: status-flags ({})", propertyIdentifierCode);
-//                return processStatusFlagsProperty(propertyIdentifierCode, requestMessage);
-//
-//            // 0x74 = 116d
-//            case 0x74:
-//                LOG.trace("<<< READ_PROP: time-synchronization-recipients ({})", propertyIdentifierCode);
-//                return processTimeSynchronizationRecipientsProperty(propertyIdentifierCode, requestMessage);
-//
-//            // 0x79 = 121d
-//            case 0x79:
-//                LOG.trace("<<< READ_PROP: vendor-name ({})", propertyIdentifierCode);
-//                return processStringProperty(propertyIdentifierCode, requestMessage, NetworkUtils.VENDOR_NAME);
-//
-//            // 0x98 = 152d
-//            case 0x98:
-//                LOG.trace("<<< READ_PROP: active-cov-subscriptions ({})", propertyIdentifierCode);
-//                return processActiveCovSubscriptionsProperty(propertyIdentifierCode, requestMessage);
-//
-//            // 0x9D = 157d
-//            case 0x9D:
-//                LOG.trace("<<< READ_PROP: last-restore-time ({})", propertyIdentifierCode);
-//                return processTimeOfDeviceRestartProperty(propertyIdentifierCode, requestMessage, false, true,
-//                        new Date());
-//
-//            // 0xAA = 170d
-//            case 0xAA:
-//                LOG.trace("<<< READ_PROP: manual-slave-address-binding ({})", propertyIdentifierCode);
-//                return processAddressBindingProperty(propertyIdentifierCode, requestMessage);
-//
-//            // 0xAB = 171d
-//            case 0xAB:
-//                LOG.trace("<<< READ_PROP: slave-address-binding ({})", propertyIdentifierCode);
-//                return processAddressBindingProperty(propertyIdentifierCode, requestMessage);
-//
-//            // 0xCA = 202d
-//            case 0xCA:
-//                LOG.trace("<<< READ_PROP: restart notification recipients ({})", propertyIdentifierCode);
-//                return processRestartNotificationRecipientsProperty(propertyIdentifierCode, requestMessage);
-//
-//            // 0xCB = 203d
-//            case 0xCB:
-//                LOG.trace("<<< READ_PROP: time-of-device-restart ({})", propertyIdentifierCode);
-//                return processTimeOfDeviceRestartProperty(propertyIdentifierCode, requestMessage, true, true,
-//                        new Date());
-//
-//            // 0xCE = 206d
-//            case 0xCE:
-//                LOG.trace("<<< READ_PROP: UTC-time-synchronization-recipients ({})", propertyIdentifierCode);
-//                return processUTCTimeSynchronizationRecipientsProperty(propertyIdentifierCode, requestMessage);
-//
-//            // 0x0173 = 371d property-list
-//            case 0x0173:
-//                LOG.trace("<<< READ_PROP: property list ({})", propertyIdentifierCode);
-//                return processPropertyListProperty(propertyIdentifierCode, requestMessage);
-
-//			default:
-//				msg = "Unknown property! PropertyIdentifier = " + propertyIdentifierCode + " property: "
-//						+ DevicePropertyType.getByCode(propertyIdentifierCode).getName();
-//				LOG.error(msg);
-//
-//				return error(requestMessage.getApdu().getInvokeId());
-//			}
-//		}
-//	}
-
     private Message processStateTextProperty(final int propertyIdentifierCode, final Message requestMessage) {
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
@@ -423,17 +265,6 @@ public class DefaultDevice implements Device, CommunicationService {
         // no additional information
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
-
-//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-//
-//            // destination network information
-//            npdu.setControl(0x20);
-//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-//            npdu.setDestinationMACLayerAddressLength(3);
-//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-//
-//            npdu.setDestinationHopCount(255);
-//        }
         npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         final ObjectIdentifierServiceParameter outwardObjectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
@@ -492,9 +323,6 @@ public class DefaultDevice implements Device, CommunicationService {
 
         virtualLinkControl.setLength(result.getDataLength());
 
-//      final byte[] bytes = result.getBytes();
-//      LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
-
         return result;
     }
 
@@ -529,82 +357,6 @@ public class DefaultDevice implements Device, CommunicationService {
                 deviceProperty.getPropertyKey(), new byte[] { (byte) 0x01 });
     }
 
-//    private Message processStatusFlagsProperty(final int propertyIdentifierCode, final Message requestMessage) {
-//
-//        final int deviceInstanceNumber = NetworkUtils.DEVICE_INSTANCE_NUMBER;
-//
-//        final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
-//        virtualLinkControl.setType(0x81);
-//        virtualLinkControl.setFunction(0x0A);
-//        virtualLinkControl.setLength(0x00);
-//
-//        final NPDU npdu = new NPDU();
-//        npdu.setVersion(0x01);
-//
-//        // no additional information
-//        // this works, if the cp is connected to the device directly via 192.168.2.1
-//        npdu.setControl(0x00);
-//
-//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-//
-//            // destination network information
-//            npdu.setControl(0x20);
-//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-//            npdu.setDestinationMACLayerAddressLength(3);
-//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-//
-//            npdu.setDestinationHopCount(255);
-//        }
-//
-//        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-//        objectIdentifierServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
-//        objectIdentifierServiceParameter.setTagNumber(0x00);
-//        objectIdentifierServiceParameter.setLengthValueType(4);
-//        objectIdentifierServiceParameter.setObjectType(objectType);
-//        objectIdentifierServiceParameter.setInstanceNumber(id);
-//
-//        final ServiceParameter protocolServicesSupportedServiceParameter = new ServiceParameter();
-//        protocolServicesSupportedServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-//        protocolServicesSupportedServiceParameter.setTagNumber(0x01);
-//        protocolServicesSupportedServiceParameter.setLengthValueType(1);
-//        protocolServicesSupportedServiceParameter.setPayload(new byte[] { (byte) propertyIdentifierCode });
-//
-//        final ServiceParameter openingTagServiceParameter = new ServiceParameter();
-//        openingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-//        openingTagServiceParameter.setTagNumber(0x03);
-//        openingTagServiceParameter.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
-//
-//        final ServiceParameter statusFlagsBitStringServiceParameter = getStatusFlagsServiceParameter();
-//
-//        final ServiceParameter closingTagServiceParameter = new ServiceParameter();
-//        closingTagServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-//        closingTagServiceParameter.setTagNumber(0x03);
-//        closingTagServiceParameter.setLengthValueType(ServiceParameter.CLOSING_TAG_CODE);
-//
-//        final APDU apdu = new APDU();
-//        apdu.setPduType(PDUType.COMPLEX_ACK_PDU);
-//        apdu.setInvokeId(requestMessage.getApdu().getInvokeId());
-//        apdu.setConfirmedServiceChoice(ConfirmedServiceChoice.READ_PROPERTY);
-//        apdu.setVendorMap(vendorMap);
-//        apdu.getServiceParameters().add(objectIdentifierServiceParameter);
-//        apdu.getServiceParameters().add(protocolServicesSupportedServiceParameter);
-//        apdu.getServiceParameters().add(openingTagServiceParameter);
-//        apdu.getServiceParameters().add(statusFlagsBitStringServiceParameter);
-//        apdu.getServiceParameters().add(closingTagServiceParameter);
-//
-//        final DefaultMessage result = new DefaultMessage();
-//        result.setVirtualLinkControl(virtualLinkControl);
-//        result.setNpdu(npdu);
-//        result.setApdu(apdu);
-//
-//        virtualLinkControl.setLength(result.getDataLength());
-//
-////		final byte[] bytes = result.getBytes();
-////		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
-//
-//        return result;
-//    }
-
     @Override
     public ServiceParameter getStatusFlagsServiceParameter() {
 
@@ -632,8 +384,6 @@ public class DefaultDevice implements Device, CommunicationService {
 
         // payload
         System.arraycopy(bitSetByteArray, 0, result, 1, bitSetByteArray.length);
-
-//		LOG.trace(Utils.byteArrayToStringNoPrefix(result));
 
         return result;
     }
@@ -663,17 +413,6 @@ public class DefaultDevice implements Device, CommunicationService {
         // no additional information
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
-
-//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-//
-//            // destination network information
-//            npdu.setControl(0x20);
-//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-//            npdu.setDestinationMACLayerAddressLength(3);
-//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-//
-//            npdu.setDestinationHopCount(255);
-//        }
         npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
@@ -693,12 +432,6 @@ public class DefaultDevice implements Device, CommunicationService {
         openingTagServiceParameter3.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         openingTagServiceParameter3.setTagNumber(0x03);
         openingTagServiceParameter3.setLengthValueType(ServiceParameter.OPENING_TAG_CODE);
-
-//		final String description = "CU 420";
-//		final byte payload[] = new byte[description.length() + 2];
-//		System.arraycopy(description.getBytes(), 0, payload, 2, description.length());
-//		payload[0] = (byte) description.length();
-//		payload[1] = 0x00;
 
         final ServiceParameter descriptionServiceParameter = new ServiceParameter();
         descriptionServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
@@ -731,32 +464,8 @@ public class DefaultDevice implements Device, CommunicationService {
 
         virtualLinkControl.setLength(result.getDataLength());
 
-//		final byte[] bytes = result.getBytes();
-//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
-
         return result;
     }
-
-//    private Message processDaylightSavingsStatusProperty(final int propertyIdentifierCode,
-//            final Message requestMessage) {
-//        return messageFactory.create(MessageType.BOOLEAN_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//                requestMessage.getApdu().getInvokeId(), propertyIdentifierCode, new byte[] { (byte) 0x01 });
-//    }
-//
-//    private Message processApplicationSoftwareVersionProperty(final int propertyIdentifierCode,
-//            final Message requestMessage) {
-//        return messageFactory.create(MessageType.INTEGER_PROPERTY, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//                requestMessage.getApdu().getInvokeId(), propertyIdentifierCode, new byte[] { (byte) 0x01 });
-//    }
-//
-//    private Message processSystemStatusProperty(final int propertyIdentifierCode, final Message requestMessage) {
-//
-//        // 0x00 == operational
-//        final int systemStatus = 0x00;
-//
-//        return messageFactory.create(MessageType.ENUMERATED, NetworkUtils.DEVICE_INSTANCE_NUMBER,
-//                requestMessage.getApdu().getInvokeId(), propertyIdentifierCode, new byte[] { (byte) systemStatus });
-//    }
 
     private Message processTimeSynchronizationRecipientsProperty(final int propertyIdentifierCode,
             final Message requestMessage) {
@@ -772,17 +481,6 @@ public class DefaultDevice implements Device, CommunicationService {
         // no additional information
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
-
-//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-//
-//            // destination network information
-//            npdu.setControl(0x20);
-//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-//            npdu.setDestinationMACLayerAddressLength(3);
-//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-//
-//            npdu.setDestinationHopCount(255);
-//        }
         npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         // this object identifier has to be context specific. I do not know why
@@ -790,8 +488,6 @@ public class DefaultDevice implements Device, CommunicationService {
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
-//        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-//        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
         objectIdentifierServiceParameter.setObjectType(objectType);
         objectIdentifierServiceParameter.setInstanceNumber(id);
 
@@ -832,9 +528,6 @@ public class DefaultDevice implements Device, CommunicationService {
         result.setApdu(apdu);
 
         virtualLinkControl.setLength(result.getDataLength());
-
-//		final byte[] bytes = result.getBytes();
-//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
         return result;
     }
@@ -853,17 +546,6 @@ public class DefaultDevice implements Device, CommunicationService {
         // no additional information
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
-
-//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-//
-//            // destination network information
-//            npdu.setControl(0x20);
-//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-//            npdu.setDestinationMACLayerAddressLength(3);
-//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-//
-//            npdu.setDestinationHopCount(255);
-//        }
         npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         // this object identifier has to be context specific. I do not know why
@@ -871,8 +553,6 @@ public class DefaultDevice implements Device, CommunicationService {
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
-//        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-//        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
         objectIdentifierServiceParameter.setObjectType(objectType);
         objectIdentifierServiceParameter.setInstanceNumber(id);
 
@@ -913,9 +593,6 @@ public class DefaultDevice implements Device, CommunicationService {
         result.setApdu(apdu);
 
         virtualLinkControl.setLength(result.getDataLength());
-
-//		final byte[] bytes = result.getBytes();
-//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
 
         return result;
     }
@@ -934,17 +611,6 @@ public class DefaultDevice implements Device, CommunicationService {
         // no additional information
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
-
-//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-//
-//            // destination network information
-//            npdu.setControl(0x20);
-//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-//            npdu.setDestinationMACLayerAddressLength(3);
-//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-//
-//            npdu.setDestinationHopCount(255);
-//        }
         npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         // this object identifier has to be context specific. I do not know why
@@ -952,8 +618,6 @@ public class DefaultDevice implements Device, CommunicationService {
         objectIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
         objectIdentifierServiceParameter.setTagNumber(0x00);
         objectIdentifierServiceParameter.setLengthValueType(4);
-//        objectIdentifierServiceParameter.setObjectType(ObjectIdentifierServiceParameter.OBJECT_TYPE_DEVICE);
-//        objectIdentifierServiceParameter.setInstanceNumber(NetworkUtils.DEVICE_INSTANCE_NUMBER);
         objectIdentifierServiceParameter.setObjectType(objectType);
         objectIdentifierServiceParameter.setInstanceNumber(id);
 
@@ -995,9 +659,6 @@ public class DefaultDevice implements Device, CommunicationService {
 
         virtualLinkControl.setLength(result.getDataLength());
 
-//		final byte[] bytes = result.getBytes();
-//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
-
         return result;
     }
 
@@ -1006,8 +667,9 @@ public class DefaultDevice implements Device, CommunicationService {
     int turnOffK(final int n, final int k) {
 
         // k must be greater than 0
-        if (k <= 0)
+        if (k <= 0) {
             return n;
+        }
 
         // Do & of n with a number with all set bits except
         // the k'th bit
@@ -1039,17 +701,6 @@ public class DefaultDevice implements Device, CommunicationService {
         // no additional information
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
-
-//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-//
-//            // destination network information
-//            npdu.setControl(0x20);
-//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-//            npdu.setDestinationMACLayerAddressLength(3);
-//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-//
-//            npdu.setDestinationHopCount(255);
-//        }
         npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         final ObjectIdentifierServiceParameter outwardObjectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
@@ -1116,17 +767,6 @@ public class DefaultDevice implements Device, CommunicationService {
         // no additional information
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
-
-//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-//
-//            // destination network information
-//            npdu.setControl(0x20);
-//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-//            npdu.setDestinationMACLayerAddressLength(3);
-//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-//
-//            npdu.setDestinationHopCount(255);
-//        }
         npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
@@ -1180,11 +820,6 @@ public class DefaultDevice implements Device, CommunicationService {
         return result;
     }
 
-//	private Message processStructuredObjectListProperty(final int propertyIdentifierCode,
-//			final Message requestMessage) {
-//		return error(requestMessage.getApdu().getInvokeId());
-//	}
-
     private Message processFirmwareRevisionProperty(final int propertyIdentifierCode, final Message requestMessage) {
         return messageFactory.create(MessageType.UNSIGNED_INTEGER, this, requestMessage.getApdu().getInvokeId(),
                 propertyIdentifierCode, new byte[] { (byte) 0x01 });
@@ -1215,15 +850,81 @@ public class DefaultDevice implements Device, CommunicationService {
     @Override
     public BACnetServicesSupportedBitString retrieveServicesSupported() {
 //        return retrieveIO420ServicesSupported();
-        return retrieveIO420ServicesSupportedModified();
+//        return retrieveIO420ServicesSupportedModified();
+//        return retrieveAllSameValueServicesSupported(false);
+        return retrieveTZ320ServicesSupportedModified();
+    }
+
+    private BACnetServicesSupportedBitString retrieveTZ320ServicesSupportedModified() {
+
+        final boolean value = false;
+
+        final BACnetServicesSupportedBitString bacnetServicesSupportedBitString = new BACnetServicesSupportedBitString();
+
+        // byte 1
+        bacnetServicesSupportedBitString.setAcknowledgeAlarm(true);
+        bacnetServicesSupportedBitString.setConfirmedCOVNotification(value);
+        bacnetServicesSupportedBitString.setConfirmedEventNotification(value);
+        bacnetServicesSupportedBitString.setGetAlarmSummary(true);
+
+        bacnetServicesSupportedBitString.setGetEnrollmentSummary(true);
+        bacnetServicesSupportedBitString.setSubscribeCOV(true);
+        bacnetServicesSupportedBitString.setAtomicReadFile(true);
+        bacnetServicesSupportedBitString.setAtomicWriteFile(true);
+
+        // byte 2
+        bacnetServicesSupportedBitString.setAddListElement(true);
+        bacnetServicesSupportedBitString.setRemoveListElement(true);
+        bacnetServicesSupportedBitString.setCreateObject(value);
+        bacnetServicesSupportedBitString.setDeleteObject(value);
+
+        bacnetServicesSupportedBitString.setReadProperty(true);
+        bacnetServicesSupportedBitString.setReadPropertyConditional(value);
+        bacnetServicesSupportedBitString.setReadPropertyMultiple(true);
+        bacnetServicesSupportedBitString.setWriteProperty(true);
+
+        // byte 3
+        bacnetServicesSupportedBitString.setWritePropertyMultiple(true);
+        bacnetServicesSupportedBitString.setDeviceCommunicationControl(true);
+        bacnetServicesSupportedBitString.setConfirmedPrivateTransfer(true);
+        bacnetServicesSupportedBitString.setConfirmedTextMessage(value);
+
+        bacnetServicesSupportedBitString.setReinitializeDevice(true);
+        bacnetServicesSupportedBitString.setVtOpen(value);
+        bacnetServicesSupportedBitString.setVtClose(value);
+        bacnetServicesSupportedBitString.setVtData(value);
+
+        // byte 4
+        bacnetServicesSupportedBitString.setAuthenticate(value);
+        bacnetServicesSupportedBitString.setRequestKey(value);
+        bacnetServicesSupportedBitString.setiAm(true);
+        bacnetServicesSupportedBitString.setiHave(true);
+
+        bacnetServicesSupportedBitString.setUnconfirmedCOVNotification(value);
+        bacnetServicesSupportedBitString.setUnconfirmedEventNotification(value);
+        bacnetServicesSupportedBitString.setUnconfirmedPrivateTransfer(true);
+        bacnetServicesSupportedBitString.setUnconfirmedTextMessage(value);
+
+        // byte 5
+        bacnetServicesSupportedBitString.setTimeSynchronization(true);
+        bacnetServicesSupportedBitString.setWhoHas(true);
+        bacnetServicesSupportedBitString.setWhoIs(true);
+        bacnetServicesSupportedBitString.setReadRange(value);
+
+        bacnetServicesSupportedBitString.setUtcTimeSynchronization(true);
+        bacnetServicesSupportedBitString.setLifeSafetyOperation(value);
+        bacnetServicesSupportedBitString.setSubscribeCOVProperty(value);
+        bacnetServicesSupportedBitString.setGetEventInformation(true);
+
+        return bacnetServicesSupportedBitString;
     }
 
     /**
      * <pre>
-     * Loytex:
+     * Loytec:
      * protocol-services-supported: (Bit String) (FTFFFFTTTTFFTFTTTTFFTFFFFFTFTFFFTTTTTFTF)
      * 
-     * IO-420:
+     * IO-420 FourDoorSolution:
      * protocol-services-supported: (Bit String) (TFFT TTTT TTFF TFTT TTTF TFFF FFTT FFTF TTTF TFFT)
      * </pre>
      * 
@@ -1292,6 +993,63 @@ public class DefaultDevice implements Device, CommunicationService {
         bacnetServicesSupportedBitString.setLifeSafetyOperation(false);
         bacnetServicesSupportedBitString.setSubscribeCOVProperty(true);
         bacnetServicesSupportedBitString.setGetEventInformation(false);
+
+        return bacnetServicesSupportedBitString;
+    }
+
+    private BACnetServicesSupportedBitString retrieveAllSameValueServicesSupported(final boolean value) {
+
+        final BACnetServicesSupportedBitString bacnetServicesSupportedBitString = new BACnetServicesSupportedBitString();
+
+        // byte 1
+        bacnetServicesSupportedBitString.setAcknowledgeAlarm(value);
+        bacnetServicesSupportedBitString.setConfirmedCOVNotification(value);
+        bacnetServicesSupportedBitString.setConfirmedEventNotification(value);
+        bacnetServicesSupportedBitString.setGetAlarmSummary(value);
+        bacnetServicesSupportedBitString.setGetEnrollmentSummary(value);
+        bacnetServicesSupportedBitString.setSubscribeCOV(value);
+        bacnetServicesSupportedBitString.setAtomicReadFile(value);
+        bacnetServicesSupportedBitString.setAtomicWriteFile(value);
+
+        // byte 2
+        bacnetServicesSupportedBitString.setAddListElement(value);
+        bacnetServicesSupportedBitString.setRemoveListElement(value);
+        bacnetServicesSupportedBitString.setCreateObject(value);
+        bacnetServicesSupportedBitString.setDeleteObject(value);
+        bacnetServicesSupportedBitString.setReadProperty(value);
+        bacnetServicesSupportedBitString.setReadPropertyConditional(value);
+        bacnetServicesSupportedBitString.setReadPropertyMultiple(value);
+        bacnetServicesSupportedBitString.setWriteProperty(value);
+
+        // byte 3
+        bacnetServicesSupportedBitString.setWritePropertyMultiple(value);
+        bacnetServicesSupportedBitString.setDeviceCommunicationControl(value);
+        bacnetServicesSupportedBitString.setConfirmedPrivateTransfer(value);
+        bacnetServicesSupportedBitString.setConfirmedTextMessage(value);
+        bacnetServicesSupportedBitString.setReinitializeDevice(value);
+        bacnetServicesSupportedBitString.setVtOpen(value);
+        bacnetServicesSupportedBitString.setVtClose(value);
+        bacnetServicesSupportedBitString.setVtData(value);
+
+        // byte 4
+        bacnetServicesSupportedBitString.setAuthenticate(value);
+        bacnetServicesSupportedBitString.setRequestKey(value);
+        bacnetServicesSupportedBitString.setiAm(value);
+        bacnetServicesSupportedBitString.setiHave(value);
+        bacnetServicesSupportedBitString.setUnconfirmedCOVNotification(value);
+        bacnetServicesSupportedBitString.setUnconfirmedEventNotification(value);
+        bacnetServicesSupportedBitString.setUnconfirmedPrivateTransfer(value);
+        bacnetServicesSupportedBitString.setUnconfirmedTextMessage(value);
+
+        // byte 5
+        bacnetServicesSupportedBitString.setTimeSynchronization(value);
+        bacnetServicesSupportedBitString.setWhoHas(value);
+        bacnetServicesSupportedBitString.setWhoIs(value);
+        bacnetServicesSupportedBitString.setReadRange(value);
+        bacnetServicesSupportedBitString.setUtcTimeSynchronization(value);
+        bacnetServicesSupportedBitString.setLifeSafetyOperation(value);
+        bacnetServicesSupportedBitString.setSubscribeCOVProperty(value);
+        bacnetServicesSupportedBitString.setGetEventInformation(value);
 
         return bacnetServicesSupportedBitString;
     }
@@ -1556,6 +1314,7 @@ public class DefaultDevice implements Device, CommunicationService {
         return properties.get(DevicePropertyType.PRESENT_VALUE.getCode()).getValue();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void setPresentValue(final Object newPresentValue) {
 
@@ -1563,38 +1322,120 @@ public class DefaultDevice implements Device, CommunicationService {
             return;
         }
 
-        LOG.info("Set Present Value: " + newPresentValue);
-
         final DeviceProperty<Object> presentValueDeviceProperty = (DeviceProperty<Object>) properties
                 .get(DevicePropertyType.PRESENT_VALUE.getCode());
 
-        final Integer presentValue = (Integer) presentValueDeviceProperty.getValue();
+        final Object oldPresentValue = presentValueDeviceProperty.getValue();
 
         boolean valueChanged = false;
 
-        if ((presentValue == null) && (newPresentValue != null)) {
+        if ((oldPresentValue == null) && (newPresentValue != null)) {
 
             valueChanged = true;
 
-        } else if ((presentValue != null) && (newPresentValue == null)) {
+        } else if ((oldPresentValue != null) && (newPresentValue == null)) {
 
             valueChanged = true;
 
-        } else if ((presentValue != null) && (newPresentValue != null)) {
+        } else if ((oldPresentValue != null) && (newPresentValue != null)) {
 
-            if (!presentValue.equals(newPresentValue)) {
+            if (!oldPresentValue.equals(newPresentValue)) {
 
                 valueChanged = true;
             }
         }
 
+        LOG.info("NewPresentValue: {}, OldPresentValue: {}, ValueChanged: {}", newPresentValue, oldPresentValue,
+                valueChanged);
+
         if (valueChanged) {
 
             presentValueDeviceProperty.setValue(newPresentValue);
 
+            getParentDevice().onValueChanged(this, presentValueDeviceProperty, newPresentValue, newPresentValue);
+
             covSubscriptions.stream().forEach(s -> {
                 s.valueChanged(newPresentValue);
             });
+        }
+    }
+
+    @Override
+    public void onValueChanged(final Device device, final DeviceProperty<Object> presentValueDeviceProperty,
+            final Object oldPresentValue, final Object newPresentValue) {
+
+        LOG.info("OnValueChange: Device: {}, DeviceProperty: {}, oldValue: {}, newValue: {}", device,
+                presentValueDeviceProperty, oldPresentValue, newPresentValue);
+
+        Device tz320State = null;
+        Device lockState = null;
+        Device closeState = null;
+
+        // TZ320 logic - when the command property changed, also update the state
+        // accordingly
+        // TODO: reset the command property to 1 again!
+        //
+        // id = 4 => command multi_state_value
+        if (device.getId() == 4) {
+
+            final int newValue = (int) newPresentValue;
+            switch (newValue) {
+
+            // unlock
+            case 2:
+                tz320State = this.findDevice(ObjectIdentifierServiceParameter
+                        .createFromTypeAndInstanceNumber(ObjectType.MULTI_STATE_VALUE, 3));
+                tz320State.setPresentValue(1);
+
+                // 1 == locked, 0 == unlocked
+                lockState = this.findDevice(
+                        ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 1));
+                lockState.setPresentValue(0);
+
+                // 1 == closed, 0 == open
+                // lets leave the door close state on 1 always for now
+                closeState = this.findDevice(
+                        ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 2));
+                closeState.setPresentValue(0);
+                break;
+
+            // lock
+            case 3:
+                tz320State = this.findDevice(ObjectIdentifierServiceParameter
+                        .createFromTypeAndInstanceNumber(ObjectType.MULTI_STATE_VALUE, 3));
+                tz320State.setPresentValue(4);
+
+                // 1 == locked, 0 == unlocked
+                lockState = this.findDevice(
+                        ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 1));
+                lockState.setPresentValue(1);
+
+                // 1 == closed, 0 == open
+                closeState = this.findDevice(
+                        ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 2));
+                closeState.setPresentValue(1);
+                break;
+
+            // short time release (Kurzzeitfreigabe, KZF)
+            case 4:
+                tz320State = this.findDevice(ObjectIdentifierServiceParameter
+                        .createFromTypeAndInstanceNumber(ObjectType.MULTI_STATE_VALUE, 3));
+                tz320State.setPresentValue(6);
+
+                // 1 == locked, 0 == unlocked
+                lockState = this.findDevice(
+                        ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 1));
+                lockState.setPresentValue(0);
+
+                // 1 == closed, 0 == open
+                closeState = this.findDevice(
+                        ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 2));
+                closeState.setPresentValue(1);
+                break;
+
+            default:
+                break;
+            }
         }
     }
 
@@ -1805,10 +1646,9 @@ public class DefaultDevice implements Device, CommunicationService {
         final String multicastIP = configurationManager
                 .getPropertyAsString(ConfigurationManager.MULTICAST_IP_CONFIG_KEY);
 
-        LOG.info(
+        LOG.trace(
                 "<<< Broadcast Sending to " + multicastIP + ":" + port + ": " + Utils.byteArrayToStringNoPrefix(bytes));
-
-        LOG.info(message);
+        LOG.trace(message);
 
         final SocketAddress socketAddress = new InetSocketAddress(multicastIP, port);
         final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, socketAddress);
@@ -1932,84 +1772,9 @@ public class DefaultDevice implements Device, CommunicationService {
         this.messageFactory = messageFactory;
     }
 
+    @Override
+    public String toString() {
+        return "DefaultDevice [id=" + id + ", objectType=" + objectType + "]";
+    }
+
 }
-
-//// 0x0A = 10d APDU-Segment-Timeout
-//case 0x0A:
-//	LOG.info("<<< READ_PROP: APDU-Segment-Timeout ({})", propertyIdentifierCode);
-//	return processAPDUSegmentTimeoutProperty(propertyIdentifierCode, requestMessage);
-//
-//// 0x0B = 11d APDU-Timeout
-//case 0x0B:
-//	LOG.info("<<< READ_PROP: APDU-Timeout ({})", propertyIdentifierCode);
-//	return processAPDUTimeoutProperty(propertyIdentifierCode, requestMessage);
-
-//// 0x0C = 12
-//case 0x0C:
-//	LOG.info("<<< READ_PROP: application-software-version ({})", propertyIdentifierCode);
-//	return processApplicationSoftwareVersionProperty(propertyIdentifierCode, requestMessage);
-
-// // 0x14 = 20
-// case 0x14:
-// LOG.info("<<< READ_PROP: ??? ({})", propertyIdentifierCode);
-// return process???Property(propertyIdentifierCode, requestMessage);
-
-//// 0x18 = 24
-//case 0x18:
-//	LOG.info("<<< READ_PROP: daylight-savings-status ({})", propertyIdentifierCode);
-//	return processDaylightSavingsStatusProperty(propertyIdentifierCode, requestMessage);
-
-//// max-apdu-length-accepted
-//// 0x3E = 62d
-//case 0x3E:
-//	LOG.info("<<< READ_PROP: max-apdu-length-accepted ({})", propertyIdentifierCode);
-//	return processMaxAPDULengthAcceptedProperty(propertyIdentifierCode, requestMessage);
-
-//// Segmentation supported
-//// 0x6B = 107d
-//case 0x6B:
-//LOG.info("<<< READ_PROP: Segmentation supported ({})", propertyIdentifierCode);
-//return processSegmentationSupportedProperty(propertyIdentifierCode, requestMessage);
-
-//// 0x70 = 112
-//case 0x70:
-//	LOG.info("<<< READ_PROP: system status ({})", propertyIdentifierCode);
-//	return processSystemStatusProperty(propertyIdentifierCode, requestMessage);
-
-//// max-segments-accepted
-//// 0xA7 = 167d
-//case 0xA7:
-//LOG.info("<<< READ_PROP: max-segments-accepted ({})", propertyIdentifierCode);
-//return processMaxSegmentsAcceptedProperty(propertyIdentifierCode, requestMessage);
-
-//
-//// 0x9B = 155d database-revision (155d = 0x9B) defined in ASHRAE on page 696
-//case 0x9B:
-//LOG.info("<<< READ_PROP: database-revision ({})", propertyIdentifierCode);
-//return processDatabaseRevisionProperty(propertyIdentifierCode, requestMessage);
-//
-//// 0x8B = 139d protocol-revision (0x8B = 139d)
-//case 0x8B:
-//LOG.info("<<< READ_PROP: protocol-revision ({})", propertyIdentifierCode);
-//return processProtocolRevisionProperty(propertyIdentifierCode, requestMessage);
-//
-//// 0x62 = 98d protocol-version
-//case 0x62:
-//LOG.info("<<< READ_PROP: protocol-version ({})", propertyIdentifierCode);
-//return processProtocolVersionProperty(propertyIdentifierCode, requestMessage);
-
-//case DeviceProperty.LAST_RESTART_REASON:
-//LOG.info("<<< READ_PROP: last-restart-reason ({})", propertyIdentifierCode);
-//return processLastRestartReasonProperty(propertyIdentifierCode, requestMessage);
-
-//// 0x27 = 39d, fault-values, optional
-//case 0x27:
-//	LOG.info("<<< READ_PROP: fault-values ({})", propertyIdentifierCode);
-//	msg = "Unknown property! PropertyIdentifier = " + propertyIdentifier;
-//	LOG.error(msg);
-//	throw new NotImplementedException(msg);
-
-// 0xA8 = 168d, profile-name
-//case 0xA8:
-//	LOG.info("<<< READ_PROP: profile-name ({})", propertyIdentifierCode);
-//	return processStringProperty(propertyIdentifierCode, requestMessage, NetworkUtils.PROFILE_NAME);

@@ -101,4 +101,7 @@ public interface Device {
 
     void setMessageFactory(MessageFactory messageFactory);
 
+    void onValueChanged(Device device, DeviceProperty<Object> presentValueDeviceProperty, Object oldPresentValue,
+            Object newPresentValue);
+
 }

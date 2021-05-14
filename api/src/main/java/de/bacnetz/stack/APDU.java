@@ -478,8 +478,14 @@ public class APDU {
                 structureLength += processAddListElement(startIndex + offset, data);
                 break;
 
+            case confirmedCOVNotification:
+                // silently ignore the acknowledge from the subscriber after they have received
+                // this device's COV update.
+                break;
+
             default:
                 LOG.info("Not implemented: " + confirmedServiceChoice.name());
+                break;
 
             }
         }

@@ -75,11 +75,22 @@ public class DefaultDeviceProperty<T> implements DeviceProperty<T> {
             valueAsInteger = (Integer) value;
             return BACnetUtils.intToByteArray(valueAsInteger);
 
+//        case OCTET_STRING:
+//            return BACnetUtils.retrieveAsString((byte[]) value);
+
         case ENUMERATED:
+            if (value instanceof Integer) {
+                valueAsInteger = (Integer) value;
+                return BACnetUtils.intToByteArray(valueAsInteger);
+            }
             return (byte[]) value;
 
         case CHARACTER_STRING:
-            return BACnetUtils.retrieveAsString((String) value);
+            if (value instanceof String) {
+                return BACnetUtils.retrieveAsString((String) value);
+            }
+//            return BACnetUtils.retrieveAsString((byte[]) value);
+            return (byte[]) value;
 
         case SINGED_INTEGER_TWOS_COMPLEMENT_NOTATION:
             return (byte[]) value;
@@ -117,7 +128,7 @@ public class DefaultDeviceProperty<T> implements DeviceProperty<T> {
 
         final StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("DeviceProperty ").append(propertyName).append(" (").append(propertyKey).append(") ")
-                .append(messageType);
+                .append(messageType).append(" present-value: ").append(value);
 
         return stringBuilder.toString();
     }

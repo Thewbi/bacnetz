@@ -410,9 +410,6 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         // types supported shall be at least Analog Input, Analog Output, Analog Value,
         // Binary Input, Binary Output, and Binary
         // Value.
-//      case 0x60:
-//          LOG.trace("<<< READ_PROP: protocol-object-types-supported Property ({})", propertyIdentifierCode);
-//          return processProtocolObjectTypesSupportedServicesProperty(propertyIdentifierCode, requestMessage);
         deviceProperty = new DefaultDeviceProperty<Integer>("protocol-services-supported",
                 DeviceProperty.PROTOCOL_SERVICES_SUPPORTED, 1, MessageType.UNSIGNED_INTEGER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);

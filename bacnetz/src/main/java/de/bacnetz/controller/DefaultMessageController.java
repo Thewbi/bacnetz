@@ -157,7 +157,7 @@ public class DefaultMessageController implements MessageController {
 
     private List<Message> processAPDUMessage(final Header mstpHeader, final Message message) {
 
-        LOG.info(message);
+        LOG.trace(message);
 
         final ConfirmedServiceChoice confirmedServiceChoice = message.getApdu().getConfirmedServiceChoice();
         if (confirmedServiceChoice != null) {
@@ -169,11 +169,11 @@ public class DefaultMessageController implements MessageController {
                 return processReadProperty(mstpHeader, message);
 
             case READ_PROPERTY_MULTIPLE:
-                LOG.info(">>> READ_PROPERTY_MULTIPLE received!");
+                LOG.trace(">>> READ_PROPERTY_MULTIPLE received!");
                 return processReadPropertyMultiple(mstpHeader, message);
 
             case WRITE_PROPERTY:
-                LOG.info(">>> WRITE_PROPERTY received!");
+                LOG.trace(">>> WRITE_PROPERTY received!");
                 return processWriteProperty(message);
 
             case REINITIALIZE_DEVICE:
@@ -181,15 +181,20 @@ public class DefaultMessageController implements MessageController {
                 return processReinitializeDevice(message);
 
             case SUBSCRIBE_COV:
-                LOG.info(">>> SUBSCRIBE_COV received!");
+                LOG.info(">>> SUBSCRIBE_COV received! {}", message);
                 return processSubscribeCov(message);
 
             case ADD_LIST_ELEMENT:
                 LOG.trace(">>> ADD_LIST_ELEMENT received!");
                 return processAddListElement(message);
 
+            case confirmedCOVNotification:
+                return processConfirmedCOVNotification();
+
             default:
-                LOG.trace("Not implemented: {} ", confirmedServiceChoice);
+                LOG.info(message);
+                LOG.info("Not implemented: {} ", confirmedServiceChoice);
+                break;
             }
 
             return null;
@@ -201,7 +206,7 @@ public class DefaultMessageController implements MessageController {
             switch (unconfirmedServiceChoice) {
 
             case I_AM:
-                LOG.info(">>> I_AM received!");
+                LOG.trace(">>> I_AM received!");
                 LOG.trace(message);
                 return processIAMMessage(message);
 
@@ -242,7 +247,7 @@ public class DefaultMessageController implements MessageController {
 
             /** 20.1.2 BACnet-Confirmed-Request-PDU */
             case WHO_IS:
-                LOG.info(">>> WHO_IS received!");
+                LOG.trace(">>> WHO_IS received!");
                 return processWhoIsMessage(message);
 
             case UTC_TIME_SYNCHRONIZATION:
@@ -267,6 +272,18 @@ public class DefaultMessageController implements MessageController {
             }
         }
 
+        return null;
+    }
+
+    /**
+     * After a COV subscriber receives a COV update from this device, the subscriber
+     * acknowledges the COV update. This device silently ignores the Acknowledge
+     * because it is not 100% bacnet conformant and does not care if messages arrive
+     * or not.
+     * 
+     * @return
+     */
+    private List<Message> processConfirmedCOVNotification() {
         return null;
     }
 
@@ -335,6 +352,7 @@ public class DefaultMessageController implements MessageController {
         covSubscription.setLifetime(1000000);
         covSubscription.setSubscriberProcessId(subscriberProcessIdServiceParameter.getPayload()[0]);
         covSubscription.setVendorMap(vendorMap);
+        covSubscription.setNpdu(new NPDU(requestMessage.getNpdu()));
 
         findDevice.getCovSubscriptions().add(covSubscription);
 
@@ -353,17 +371,6 @@ public class DefaultMessageController implements MessageController {
         // no additional information
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
-
-//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-//
-//            // destination network information
-//            npdu.setControl(0x20);
-//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-//            npdu.setDestinationMACLayerAddressLength(3);
-//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-//
-//            npdu.setDestinationHopCount(255);
-//        }
         npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         final APDU apdu = new APDU();
@@ -465,20 +472,20 @@ public class DefaultMessageController implements MessageController {
 
         if (CollectionUtils.isEmpty(filteredDevices)) {
 
-            LOG.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            LOG.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            LOG.trace("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            LOG.trace("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
             if ((lowerBound != -1) || (upperBound != -1)) {
-                LOG.info(
+                LOG.trace(
                         "No devices available in this server in the range {} to {}! Will not answer WHO-IS! Add devices!",
                         lowerBound, upperBound);
             } else {
 
-                LOG.info("No devices available in this server! Will not answer WHO-IS! Add devices!");
+                LOG.trace("No devices available in this server! Will not answer WHO-IS! Add devices!");
             }
 
-            LOG.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            LOG.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            LOG.trace("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            LOG.trace("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         }
 
         filteredDevices.stream().forEach(d -> {
@@ -616,14 +623,14 @@ public class DefaultMessageController implements MessageController {
 
     private List<Message> processWriteProperty(final Message requestMessage) {
 
-        LOG.info("processWriteProperty()");
+        LOG.trace("processWriteProperty()");
         final int propertyIdentifier = requestMessage.getApdu().getPropertyIdentifier();
-        LOG.info("Property Identifier: {}", propertyIdentifier);
+        LOG.trace("Property Identifier: {}", propertyIdentifier);
         final int propertyIdentifierCode = propertyIdentifier;
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()
                 .getFirstObjectIdentifierServiceParameter();
-        LOG.info(">>> Write Identifier: {} ({}) Object Identifier: {}", propertyIdentifierCode,
+        LOG.trace(">>> Write Identifier: {} ({}) Object Identifier: {}", propertyIdentifierCode,
                 DevicePropertyType.getByCode(propertyIdentifierCode).getName(),
                 objectIdentifierServiceParameter.toString());
 
@@ -633,11 +640,17 @@ public class DefaultMessageController implements MessageController {
 
         // 0xCA = 202d
         case RESTART_NOTIFICATION_RECIPIENTS:
-            LOG.info("<<< WRITE_PROP: restart notification recipients ({})", propertyIdentifierCode);
+            LOG.trace("<<< WRITE_PROP: restart notification recipients ({})", propertyIdentifierCode);
             return processWriteRestartNotificationRecipientsProperty(propertyIdentifierCode, requestMessage);
 
         case PRESENT_VALUE:
             return processWritePresentValue(propertyIdentifierCode, requestMessage);
+
+        case DESCRIPTION:
+            return processWriteDescription(propertyIdentifierCode, requestMessage);
+
+        case LOCATION:
+            return processWriteLocation(propertyIdentifierCode, requestMessage);
 
         default:
 //            return processWriteRestartNotificationRecipientsProperty(propertyIdentifierCode, requestMessage);
@@ -646,21 +659,41 @@ public class DefaultMessageController implements MessageController {
         }
     }
 
+    private List<Message> processWriteLocation(final int propertyIdentifierCode, final Message requestMessage) {
+        final DefaultMessage message = simpleAck(requestMessage, ConfirmedServiceChoice.WRITE_PROPERTY);
+        final List<Message> result = new ArrayList<>();
+        result.add(message);
+
+//        device.setPresentValue((int) payload[0]);
+
+        return result;
+    }
+
+    private List<Message> processWriteDescription(final int propertyIdentifierCode, final Message requestMessage) {
+        final DefaultMessage message = simpleAck(requestMessage, ConfirmedServiceChoice.WRITE_PROPERTY);
+        final List<Message> result = new ArrayList<>();
+        result.add(message);
+
+//        device.setPresentValue((int) payload[0]);
+
+        return result;
+    }
+
     private List<Message> processWritePresentValue(final int propertyIdentifierCode, final Message requestMessage) {
 
-        LOG.info(requestMessage);
+        LOG.trace(requestMessage);
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = (ObjectIdentifierServiceParameter) requestMessage
                 .getApdu().getServiceParameters().get(0);
 
         final List<Device> devices = deviceService.findDevice(objectIdentifierServiceParameter, LinkLayerType.IP);
         final Device device = devices.get(0);
-        LOG.info(device);
+        LOG.trace(device);
 
         final ServiceParameter serviceParameter = requestMessage.getApdu().getServiceParameters().get(3);
         final byte[] payload = serviceParameter.getPayload();
 
-        LOG.info(Utils.bytesToHex(payload));
+        LOG.trace(Utils.bytesToHex(payload));
 
         final DefaultMessage message = simpleAck(requestMessage, ConfirmedServiceChoice.WRITE_PROPERTY);
         final List<Message> result = new ArrayList<>();
@@ -797,14 +830,6 @@ public class DefaultMessageController implements MessageController {
         // no additional information
         // this works, if the cp is connected to the device directly via 192.168.2.1
         npdu.setControl(0x00);
-//        if (NetworkUtils.ADD_ADDITIONAL_NETWORK_INFORMATION) {
-//            // destination network information
-//            npdu.setControl(0x20);
-//            npdu.setDestinationNetworkNumber(NetworkUtils.DESTINATION_NETWORK_NUMBER);
-//            npdu.setDestinationMACLayerAddressLength(3);
-//            npdu.setDestinationMac(NetworkUtils.DEVICE_MAC_ADDRESS);
-//            npdu.setDestinationHopCount(255);
-//        }
         npdu.copyNetworkInformation(requestMessage.getNpdu());
 
         final DefaultMessage message = new DefaultMessage();
@@ -828,15 +853,23 @@ public class DefaultMessageController implements MessageController {
 
         virtualLinkControl.setLength(message.getDataLength());
 
-//		final byte[] bytes = result.getBytes();
-//		LOG.info(Utils.byteArrayToStringNoPrefix(bytes));
-
         final List<Message> result = new ArrayList<>();
         result.add(message);
 
         return result;
     }
 
+    /**
+     * This method will assemble ServiceParameters to answer the request and write
+     * those into the specified APDU.
+     * 
+     * @param mstpHeader
+     * @param targetObjectIdentifierServiceParameter
+     * @param sourceServiceParameterIndex
+     * @param serviceParameters
+     * @param targetApdu
+     * @return
+     */
     private int processDevice(final Header mstpHeader,
             final ObjectIdentifierServiceParameter targetObjectIdentifierServiceParameter,
             final int sourceServiceParameterIndex, final List<ServiceParameter> serviceParameters,
@@ -929,7 +962,7 @@ public class DefaultMessageController implements MessageController {
 
                     debugOutputIndex++;
 
-                    LOG.info("Adding ServiceParameter for DeviceProperty " + debugOutputIndex + ") " + deviceProperty
+                    LOG.trace("Adding ServiceParameter for DeviceProperty " + debugOutputIndex + ") " + deviceProperty
                             + " ...");
 
                     if (targetDevice != null) {
@@ -942,8 +975,6 @@ public class DefaultMessageController implements MessageController {
                         propertyIdentifierServiceParameter
                                 .setPayload(new byte[] { (byte) deviceProperty.getPropertyKey() });
                         targetApdu.getServiceParameters().add(propertyIdentifierServiceParameter);
-
-//                        LOG.trace(propertyIdentifierServiceParameter);
                     }
 
                     // add the property value
@@ -1034,6 +1065,8 @@ public class DefaultMessageController implements MessageController {
 
                         final DeviceProperty<?> deviceProperty = targetDevice.getProperties().get(devicePropertyKey);
 
+                        LOG.trace("For Device {} adding property {}", targetDevice, deviceProperty);
+
                         // add the property identifier
                         final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
                         propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
@@ -1048,7 +1081,8 @@ public class DefaultMessageController implements MessageController {
 
                     } else {
 
-                        LOG.info("devicePropertyKey not present! devicePropertyKey: {}", devicePropertyKey);
+                        LOG.trace("deviceProperty {} ({}} not present for device {}",
+                                DevicePropertyType.getByCode(devicePropertyKey), devicePropertyKey, targetDevice);
 
                         // output property error, unknown property
 

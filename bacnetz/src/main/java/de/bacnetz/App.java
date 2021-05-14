@@ -39,6 +39,7 @@ import de.bacnetz.devices.DefaultDeviceService;
 import de.bacnetz.devices.Device;
 import de.bacnetz.devices.DeviceCreationDescriptor;
 import de.bacnetz.devices.DeviceService;
+import de.bacnetz.devices.DeviceType;
 import de.bacnetz.factory.DefaultMessageFactory;
 import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.stack.IPv4Packet;
@@ -106,8 +107,8 @@ public class App {
 //    private static final boolean RUN_TOGGLE_DOOR_THREAD = false;
 //    private static final boolean RUN_TOGGLE_DOOR_THREAD = true;
 
-//    private static final int START_DEVICE_ID = 20000;
-    private static final int START_DEVICE_ID = 70;
+    private static final int START_DEVICE_ID = 20000;
+//    private static final int START_DEVICE_ID = 70;
 
     private static final int AMOUNT_OF_DEVICES = 1;
 
@@ -141,10 +142,17 @@ public class App {
         final String localIp = configurationManager.getPropertyAsString(ConfigurationManager.LOCAL_IP_CONFIG_KEY);
 
         final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
+        deviceCreationDescriptor.setDeviceType(DeviceType.TZ320);
         deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
-        deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID);
+        deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID + 70);
         deviceCreationDescriptor.setDeviceIdIncrement(1);
         deviceCreationDescriptor.setDeviceIdOffset(0);
+
+//        final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
+//        deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
+//        deviceCreationDescriptor.setStartDeviceId(20000);
+//        deviceCreationDescriptor.setDeviceIdIncrement(1);
+//        deviceCreationDescriptor.setDeviceIdOffset(0);
 
         final List<Device> devices = deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
 
