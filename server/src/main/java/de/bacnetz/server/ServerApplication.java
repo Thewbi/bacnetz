@@ -14,7 +14,7 @@ public class ServerApplication {
 
     /**
      * <pre>
-     * npm -i
+     * npm i
      * ng serve
      * http://localhost:4200/
      * </pre>

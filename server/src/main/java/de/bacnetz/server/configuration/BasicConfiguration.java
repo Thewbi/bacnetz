@@ -17,15 +17,18 @@ import de.bacnetz.devices.DeviceDeviceDtoConverter;
 import de.bacnetz.devices.DeviceDto;
 import de.bacnetz.devices.DeviceFacade;
 import de.bacnetz.devices.DeviceService;
+import de.bacnetz.factory.DefaultMessageFactory;
 import de.bacnetz.factory.Factory;
+import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.threads.MulticastListenerReaderThread;
 
 @Component
 public class BasicConfiguration {
 
-    // from application.properties
-    // defines the multicast IP address of the ethernet subnetwork that this BACnet
-    // server takes part in
+    /**
+     * from application.properties defines the multicast IP address of the ethernet
+     * subnetwork that this BACnet server takes part in
+     */
     @Value("${multicast.ip}")
     private String multicastIP;
 
@@ -58,6 +61,11 @@ public class BasicConfiguration {
     @Bean
     public MessageController getDefaultMessageController() {
         return new DefaultMessageController();
+    }
+
+    @Bean
+    public MessageFactory getDefaultMessageFactory() {
+        return new DefaultMessageFactory();
     }
 
     @Bean

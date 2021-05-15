@@ -123,12 +123,23 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
             // parse and process the request message and return a response message
             try {
 
+                LOG.info("datagramPacketSocketAddress: {}, bytesReceived: {}, data: {}", datagramPacketSocketAddress,
+                        bytesReceived, Utils.bytesToHex(data));
+
                 // parse the incoming data into a BACnet request message
+
+                LOG.info("calling parseBuffer() ...");
                 request = parseBuffer(data, bytesReceived);
+                LOG.info("calling parseBuffer() done.");
+
+                LOG.info("calling setSourceInetSocketAddress() ...");
                 request.setSourceInetSocketAddress((InetSocketAddress) datagramPacketSocketAddress);
+                LOG.info("calling setSourceInetSocketAddress() done.");
 
                 // tell the controller to compute a response from the request
+                LOG.info("calling sendMessageToController() ...");
                 response = sendMessageToController(request);
+                LOG.info("calling sendMessageToController() done.");
 
             } catch (final Exception e) {
                 LOG.error("Cannot process buffer: {}", Utils.byteArrayToStringNoPrefix(data));

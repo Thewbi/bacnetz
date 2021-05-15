@@ -15,7 +15,9 @@ import org.springframework.stereotype.Component;
 
 import de.bacnetz.controller.MessageController;
 import de.bacnetz.devices.Device;
+import de.bacnetz.devices.DeviceCreationDescriptor;
 import de.bacnetz.devices.DeviceService;
+import de.bacnetz.devices.DeviceType;
 import de.bacnetz.server.persistence.covsubscriptions.COVSubscriptionData;
 import de.bacnetz.server.persistence.covsubscriptions.COVSubscriptionRepository;
 import de.bacnetz.threads.MulticastListenerReaderThread;
@@ -23,6 +25,10 @@ import de.bacnetz.vendor.VendorMap;
 
 @Component
 public class DefaultApplicationListener implements ApplicationListener<ContextRefreshedEvent> {
+
+    private static final int START_DEVICE_ID = 20000;
+
+    private static final int AMOUNT_OF_DEVICES = 2;
 
     private final static Logger LOG = LoggerFactory.getLogger(DefaultApplicationListener.class);
 
@@ -67,8 +73,15 @@ public class DefaultApplicationListener implements ApplicationListener<ContextRe
 
             final Map<Integer, String> vendorMap = VendorMap.processVendorMap();
 
+            final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
+            deviceCreationDescriptor.setDeviceType(DeviceType.WATCHDOG);
+            deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
+            deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID + 100);
+            deviceCreationDescriptor.setDeviceIdIncrement(1);
+            deviceCreationDescriptor.setDeviceIdOffset(0);
+
             @SuppressWarnings("unused")
-            final List<Device> devices = deviceService.createDevices(vendorMap, bindIp);
+            final List<Device> devices = deviceService.createDevices(vendorMap, bindIp, deviceCreationDescriptor);
 
             multicastListenerReaderThread.getMessageControllers().add(messageController);
             multicastListenerReaderThread.setVendorMap(vendorMap);
