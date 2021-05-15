@@ -20,11 +20,26 @@ import { catchError, retry } from 'rxjs/operators';
  * npm start
  *
  * // update angular to the latest version
+ * npm i -g npm-check-updatesncu -u
+ * ncu -u
+ * npm install
+ * // whenever there is error output, adjust the versions in your local package.json accordingly, until the errors are gone
+ *
  * npm install -g @angular/cli@latest
  * ng update @angular/cli
  * ng update @angular/core @angular/cli
  *
- * ng add @ngrx/store
+ * // install ngrx
+ * // delete the browserslist file from the project!
+ * // update the angular cli version in the file angular-cli.json within the project! This file somehow fixes the ng version!
+ * npm install @ngrx/store --save
+ * ng add @ngrx/store@latest
+ * ng add @ngrx/store-devtools
+ *
+ * npm cache clean --force
+ * npm cache verify
+ *
+ * npm start
  */
 @Component({
   selector: 'app-root',
