@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError, retry } from 'rxjs/operators';
+import { Component } from "@angular/core";
+import { HttpClient, HttpParams } from "@angular/common/http";
+import { Observable, throwError } from "rxjs";
+import { catchError, retry } from "rxjs/operators";
 
 /**
  * nvm
@@ -40,29 +40,51 @@ import { catchError, retry } from 'rxjs/operators';
  * npm cache verify
  *
  * npm start
+ *
+ * http://127.0.0.1:4200/bacnetz/index.html
  */
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  selector: "app-root",
+  templateUrl: "./app.component.html",
+  styleUrls: ["./app.component.css"],
 })
 export class AppComponent {
+  title = "BACnet Simulator";
 
-  title = 'BACnet Simulator';
-
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   onClickMe() {
+    console.log("click");
 
-    console.log('click');
+    //let ws = new WebSocket('ws://127.0.0.1:8182/inac/push');
+    let ws = new WebSocket("ws://192.168.0.234:8182/inac/push");
+
+    console.log("ws");
+
+    ws.onopen = function () {
+      console.log("onOpen");
+
+      //Subscribe to the channel
+      ws.send(
+        JSON.stringify({
+          command: "subscribe",
+          identifier: '{"channel":"ArticlesChannel"}',
+        })
+      );
+    };
+
+    ws.onmessage = function (msg) {
+      console.log(msg);
+    };
 
     // get without parameters
-    this.http.get<string>('http://192.168.0.234:8182/bacnetz/api/device/all')
-    .subscribe(
-       res => console.log('HTTP response', JSON.stringify(res)),
-       err => console.log('HTTP Error', err),
-       () => console.log('complete')
-    );
+    this.http
+      .get<string>("http://192.168.0.234:8182/bacnetz/api/device/all")
+      .subscribe(
+        (res) => console.log("HTTP response", JSON.stringify(res)),
+        (err) => console.log("HTTP Error", err),
+        () => console.log("complete")
+      );
 
     //// get with URL params
     //let params = new HttpParams().set('logNamespace', 'logNamespace');
@@ -110,11 +132,11 @@ export class AppComponent {
 
     // post
     //const url = 'http://127.0.0.1:8182/bacnetz/api/device/toggle';
-    const url = 'http://192.168.0.234:8182/bacnetz/api/device/toggle';
+    const url = "http://192.168.0.234:8182/bacnetz/api/device/toggle";
     this.http.post(url, {}).subscribe(
-        res => console.log('HTTP response', res),
-        err => console.log('HTTP Error', err),
-        () => console.log('complete')
+      (res) => console.log("HTTP response", res),
+      (err) => console.log("HTTP Error", err),
+      () => console.log("complete")
     );
   }
 }
