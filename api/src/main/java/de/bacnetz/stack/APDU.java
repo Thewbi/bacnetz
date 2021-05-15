@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.bacnetz.common.APIUtils;
+import de.bacnetz.common.utils.Utils;
 import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.stack.exception.BACnetzException;
 
@@ -445,7 +446,7 @@ public class APDU {
                 break;
 
             default:
-                LOG.warn("Not implemented: " + unconfirmedServiceChoice.name());
+                LOG.trace("Not implemented: " + unconfirmedServiceChoice.name());
             }
 
         }
@@ -889,8 +890,11 @@ public class APDU {
     }
 
     private int processUnconfirmedCOVNotification(int offset, final byte[] data, final int payloadLength) {
-        int structureLength = 0;
 
+        LOG.info("processUnconfirmedCOVNotification() offset: {}, payloadLength: {}, data: {}", offset, data,
+                Utils.bytesToHex(data));
+
+        int structureLength = 0;
         if (offset < payloadLength) {
 
             // parse optional service parameters

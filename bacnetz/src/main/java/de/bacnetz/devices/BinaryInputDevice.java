@@ -46,4 +46,15 @@ public class BinaryInputDevice extends DefaultDevice {
         }
     }
 
+    @Override
+    public void onValueChanged(final Device device, final DeviceProperty<Object> presentValueDeviceProperty,
+            final Object oldPresentValue, final Object newPresentValue) {
+        throw new RuntimeException("Not implemented yet!");
+    }
+
+    @Override
+    public Logger getLogger() {
+        return LOG;
+    }
+
 }

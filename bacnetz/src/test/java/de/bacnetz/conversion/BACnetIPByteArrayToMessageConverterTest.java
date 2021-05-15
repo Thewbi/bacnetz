@@ -38,6 +38,7 @@ public class BACnetIPByteArrayToMessageConverterTest {
         // @formatter:off
         
         final String data = "810A0011010402757D0509011C00C00002000000000000000000000000";
+//        final String data = "810A000901006002030000000000000000";
         
         // @formatter:on
 

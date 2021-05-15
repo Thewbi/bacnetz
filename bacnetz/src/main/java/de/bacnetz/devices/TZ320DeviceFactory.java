@@ -24,7 +24,7 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
     private Device createTZ320(final Map<ObjectIdentifierServiceParameter, Device> deviceMap,
             final Map<Integer, String> vendorMap, final int deviceId, final String objectName, final int vendorId) {
 
-        final DefaultDevice device = new DefaultDevice();
+        final BaseDevice device = createNewInstance();
         device.setObjectType(ObjectType.DEVICE);
         device.setId(deviceId);
         device.setName(objectName);
@@ -48,7 +48,11 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
         return device;
     }
 
-    private void addPropertiesToDevice(final DefaultDevice device) {
+    protected BaseDevice createNewInstance() {
+        return new TZ320Device();
+    }
+
+    private void addPropertiesToDevice(final Device device) {
         DefaultDeviceProperty<?> deviceProperty = null;
 
         // 0x4B = 75d - object-identifier
@@ -382,7 +386,7 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
     }
 
-    private void addChildrenToDevice(final DefaultDevice device, final Map<Integer, String> vendorMap) {
+    private void addChildrenToDevice(final Device device, final Map<Integer, String> vendorMap) {
 
         Device childDevice = null;
 
@@ -490,7 +494,7 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
         return "TZ320_command";
     }
 
-    protected void getModuleTypeChildDevice(final DefaultDevice device, final Map<Integer, String> vendorMap) {
+    protected void getModuleTypeChildDevice(final Device device, final Map<Integer, String> vendorMap) {
         // multi_state_value, 1
         final Device childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);

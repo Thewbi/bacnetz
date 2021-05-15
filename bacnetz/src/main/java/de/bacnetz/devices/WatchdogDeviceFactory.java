@@ -7,7 +7,12 @@ public class WatchdogDeviceFactory extends TZ320DeviceFactory {
     private static final int WATCHDOG_INDEX = 1;
 
     @Override
-    protected void getModuleTypeChildDevice(final DefaultDevice device, final Map<Integer, String> vendorMap) {
+    protected BaseDevice createNewInstance() {
+        return new WatchdogDevice();
+    }
+
+    @Override
+    protected void getModuleTypeChildDevice(final Device device, final Map<Integer, String> vendorMap) {
         // multi_state_value, 1
         final Device childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);
@@ -28,7 +33,7 @@ public class WatchdogDeviceFactory extends TZ320DeviceFactory {
     protected void getCommandOptions(final Device device) {
         device.getStates().add("enable watchdog");
         device.getStates().add("disable watchdog");
-        device.getStates().add("short time release");
+        device.getStates().add("short time released");
     }
 
     @Override
@@ -48,7 +53,7 @@ public class WatchdogDeviceFactory extends TZ320DeviceFactory {
 
     @Override
     protected String getStateName() {
-        return "TZ320_state";
+        return "watchdog_state";
     }
 
     @Override

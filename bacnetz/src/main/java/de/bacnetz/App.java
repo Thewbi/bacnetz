@@ -90,6 +90,7 @@ import de.bacnetz.vendor.VendorMap;
  * <li />common
  * <li />api
  * <li />bacnetz
+ * <li />bacnetzmstp
  * <li />jsonrpc
  * <li />fatclient
  * <li />server (Takes very, very long to build because it packages the angular
@@ -122,7 +123,8 @@ public class App {
     private static final int START_DEVICE_ID = 20000;
 //    private static final int START_DEVICE_ID = 70;
 
-    private static final int AMOUNT_OF_DEVICES = 1;
+//    private static final int AMOUNT_OF_DEVICES = 1;
+    private static final int AMOUNT_OF_DEVICES = 2;
 
     private static final Logger LOG = LogManager.getLogger(App.class);
 
@@ -166,14 +168,22 @@ public class App {
 //        deviceCreationDescriptor.setDeviceIdIncrement(1);
 //        deviceCreationDescriptor.setDeviceIdOffset(0);
 
+        // create watchdogs
         final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
         deviceCreationDescriptor.setDeviceType(DeviceType.WATCHDOG);
         deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
-        deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID + 70);
+        deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID + 100);
         deviceCreationDescriptor.setDeviceIdIncrement(1);
         deviceCreationDescriptor.setDeviceIdOffset(0);
+        List<Device> devices = deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
 
-        final List<Device> devices = deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
+        // create TZ320
+        deviceCreationDescriptor.setDeviceType(DeviceType.TZ320);
+        deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
+        deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID + 200);
+        deviceCreationDescriptor.setDeviceIdIncrement(1);
+        deviceCreationDescriptor.setDeviceIdOffset(0);
+        devices = deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
 
         startListenerThread(configurationManager, deviceService, messageFactory, vendorMap);
 

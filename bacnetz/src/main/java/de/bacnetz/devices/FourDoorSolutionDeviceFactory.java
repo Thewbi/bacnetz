@@ -20,10 +20,15 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         return createIO420FourDoorSolution(deviceMap, vendorMap, deviceId, objectName, vendorId);
     }
 
+    @Override
+    protected BaseDevice createNewInstance() {
+        return new FourDoorSolutionDevice();
+    }
+
     private Device createIO420FourDoorSolution(final Map<ObjectIdentifierServiceParameter, Device> deviceMap,
             final Map<Integer, String> vendorMap, final int deviceId, final String objectName, final int vendorId) {
 
-        final DefaultDevice device = new DefaultDevice();
+        final BaseDevice device = createNewInstance();
         device.setObjectType(ObjectType.DEVICE);
         device.setId(deviceId);
         device.setName(objectName);
@@ -1133,4 +1138,5 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         
         // @formatter:on
     }
+
 }

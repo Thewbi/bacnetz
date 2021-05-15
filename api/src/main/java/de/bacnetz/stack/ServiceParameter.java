@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.bacnetz.common.APIUtils;
+import de.bacnetz.common.utils.Utils;
 import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.devices.ObjectType;
 import de.bacnetz.factory.MessageType;
@@ -105,19 +106,11 @@ public class ServiceParameter {
 
             // tag number 6 is opening bracket without any payload
 
-            // DEBUG
-//            LOG.info("{[" + tagNumber + "]");
-
         } else if (lengthValueType == CLOSING_TAG_CODE) {
 
             // tag number 7 is closing bracket without any payload
 
-            // DEBUG
-//            LOG.info("}[" + tagNumber + "]");
-
         } else if (lengthValueType == EXTENDED_TAG_CODE) {
-
-//            LOG.info("EXTENDED TAG");
 
             final int payloadLength = data[offset + 1];
             length++;
@@ -125,18 +118,24 @@ public class ServiceParameter {
             payload = new byte[payloadLength];
             System.arraycopy(data, offset + 2, payload, 0, payloadLength);
 
-//            // DEBUG
-//            final String temp = new String(payload);
-//            LOG.info("EXTENDED TAG: '{}'", temp);
-
             length += payloadLength;
 
         } else {
 
-            payload = new byte[lengthValueType];
-            System.arraycopy(data, offset + 1, payload, 0, lengthValueType);
+            try {
 
-            length += lengthValueType;
+                payload = new byte[lengthValueType];
+                System.arraycopy(data, offset + 1, payload, 0, lengthValueType);
+
+                length += lengthValueType;
+
+            } catch (final Exception e) {
+                LOG.error("lengthValueType: {}, offset: {}, payload: {}, data: {}", lengthValueType, offset, payload,
+                        Utils.bytesToHex(data));
+
+                LOG.error(e.getMessage(), e);
+                throw e;
+            }
 
         }
 
