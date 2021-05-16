@@ -1,0 +1,73 @@
+== /bacnetz/api/device/writeProperty ==
+
+-- TZ320, command: no command
+{
+  "parentDeviceId": "20200",
+  "childDeviceId": 1,
+  "childObjectType": "BINARY_INPUT",
+  "propertyKey": 85,
+  "propertyName": "present-value",
+  "value": 1
+}
+
+-- TZ320, command: unlock
+{
+  "parentDeviceId": "20200",
+  "childDeviceId": 4,
+  "childObjectType": "MULTI_STATE_VALUE",
+  "propertyKey": 85,
+  "propertyName": "present-value",
+  "value": 2
+}
+
+-- TZ320, command: lock
+{
+  "parentDeviceId": "20200",
+  "childDeviceId": 4,
+  "childObjectType": "MULTI_STATE_VALUE",
+  "propertyKey": 85,
+  "propertyName": "present-value",
+  "value": 3
+}
+
+-- TZ320, command: kzf
+{
+  "parentDeviceId": "20200",
+  "childDeviceId": 4,
+  "childObjectType": "MULTI_STATE_VALUE",
+  "propertyKey": 85,
+  "propertyName": "present-value",
+  "value": 4
+}
+
+-- Watchdog, command watchdog aktiv
+{
+  "parentDeviceId": "20100",
+  "childDeviceId": 4,
+  "childObjectType": "MULTI_STATE_VALUE",
+  "propertyKey": 85,
+  "propertyName": "present-value",
+  "value": 1
+}
+
+-- Watchdog, command watchdog inaktiv
+{
+  "parentDeviceId": "20100",
+  "childDeviceId": 4,
+  "childObjectType": "MULTI_STATE_VALUE",
+  "propertyKey": 85,
+  "propertyName": "present-value",
+  "value": 2
+}
+
+-- Watchdog, command watchdog reset
+{
+  "parentDeviceId": "20100",
+  "childDeviceId": 4,
+  "childObjectType": "MULTI_STATE_VALUE",
+  "propertyKey": 85,
+  "propertyName": "present-value",
+  "value": 3
+}
+
+
