@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient, HttpParams } from "@angular/common/http";
+import { HttpClient } from "@angular/common/http";
+import { faCoffee, faDigitalTachograph } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-device-table',
@@ -11,6 +12,8 @@ export class DeviceTableComponent implements OnInit {
   constructor(private http: HttpClient) { }
 
   devices: any;
+
+  faDigitalTachograph = faDigitalTachograph;
 
   ngOnInit(): void {
 

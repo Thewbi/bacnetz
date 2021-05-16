@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.bacnetz.common.utils.NetworkUtils;
@@ -16,6 +18,8 @@ import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 import de.bacnetz.stack.VendorType;
 
 public class DefaultDeviceService implements DeviceService {
+
+    private final static Logger LOG = LoggerFactory.getLogger(DefaultDeviceService.class);
 
     private static final int WILDCARD_MSTP_DEVICE_INSTANCE_NUMBER = 255;
 
@@ -51,7 +55,12 @@ public class DefaultDeviceService implements DeviceService {
             // port. On that port, BACnet is able to perfectly correlate the id's because
             // there is only a single device listening on that port!
             final int port = deviceId < 1024 ? 1024 + deviceId : deviceId;
-            device.bindSocket(localIp, port);
+
+            try {
+                device.bindSocket(localIp, port);
+            } catch (final java.net.BindException e) {
+                LOG.error(e.getMessage(), e);
+            }
 
             deviceIdOffset += deviceCreationDescriptor.getDeviceIdIncrement();
         }

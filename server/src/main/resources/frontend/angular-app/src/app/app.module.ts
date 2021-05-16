@@ -9,11 +9,13 @@ import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { environment } from '../environments/environment';
 import { DeviceTableComponent } from './device-table/device-table.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { DeviceDetailsComponent } from './device-details/device-details.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    DeviceTableComponent
+    DeviceTableComponent,
+    DeviceDetailsComponent
   ],
   imports: [
     BrowserModule,

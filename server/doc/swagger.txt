@@ -1,0 +1,26 @@
+Swagger consists of two parts.
+1. a parser, that generates and also serves the swagger.json file
+2. a webapp that displays the webapp and sends the requests and displays the responses. It reads
+the swagger.json file and generates a webui from it.
+
+The parser is swagger-jaxrs. It works with Jersey and not only with Spring MVC.
+It is configured via de.bacnetz.server.configuration.JerseyConfiguration.
+The resulting swagger.json does not contain the application context (/bacnetz/api) under
+which the REST API is actually available!
+
+This means that the swagger webapp will call incorrect URLs and it will never actually reach the
+REST API. The workaraound to this issue is to not consume the generated and hosted swagger.json 
+directly from the parser but to consume another swagger.json that is contained in the root
+of the static folder. All files in the static folder are served by spring boot as is.
+
+Whenever the REST API changes, I currently access the hosted swagger.json containing the
+incorrect paths, copy the json and past it into the swagger.json in the root of the static folder.
+Then the swagger webapp is configured to consume that swagger.json. I fix all paths in the 
+swagger.json so that the webapp uses the correct URLs.
+
+To tell the swagger ui webapp which swagger.json to consume, you edit the file:
+/server/src/main/resources/static/swagger/index.html
+Here, the url parameter contains the path to the swagger.json. 
+
+I know it is really bad, but currently I do not know how to fix it. After four hours of searching a 
+correct solution I just gave up.

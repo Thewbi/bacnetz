@@ -1,0 +1,150 @@
+{
+	"swagger": "2.0",
+	"tags": [
+		{
+			"name": "device"
+		},
+		{
+			"name": "sysinfo"
+		}
+	],
+	"paths": {
+		"/bacnetz/api/device/all": {
+			"get": {
+				"tags": [
+					"device"
+				],
+				"summary": "Retrieve all devices",
+				"description": "",
+				"operationId": "all",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "array",
+							"items": {
+								"type": "object"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/bacnetz/api/device/details/{uid}": {
+			"get": {
+				"tags": [
+					"device"
+				],
+				"summary": "Retrieve detailed device information",
+				"description": "",
+				"operationId": "details",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "uid",
+						"in": "path",
+						"required": true,
+						"type": "integer",
+						"format": "int64"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/DeviceDto"
+						}
+					}
+				}
+			}
+		},
+		"/bacnetz/api/device/toggle": {
+			"post": {
+				"tags": [
+					"device"
+				],
+				"summary": "Toggle all door open states",
+				"description": "",
+				"operationId": "toggleAll",
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
+		"/bacnetz/api/device/toggle/{uid}": {
+			"post": {
+				"tags": [
+					"device"
+				],
+				"summary": "Toggle specific door open state",
+				"description": "",
+				"operationId": "toggle",
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "uid",
+						"in": "path",
+						"required": true,
+						"type": "integer",
+						"format": "int64"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
+		"/bacnetz/api/sysinfo/version": {
+			"get": {
+				"tags": [
+					"sysinfo"
+				],
+				"summary": "Get app version.",
+				"description": "",
+				"operationId": "getImageVersion",
+				"parameters": [
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		}
+	},
+	"definitions": {
+		"DeviceDto": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"type": "integer",
+					"format": "int32"
+				}
+			}
+		}
+	}
+}

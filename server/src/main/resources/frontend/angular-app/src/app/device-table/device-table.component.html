@@ -1,4 +1,16 @@
-<p>device-table works!</p>
-<ul>
-  <li *ngFor="let device of devices">{{ device.id }}</li>
-</ul>
+<div class="device-table">
+  <p>Device Table</p>
+  <ul>
+    <li *ngFor="let device of devices">
+      <fa-icon [icon]="faDigitalTachograph" size="2x" [spin]="true"></fa-icon>
+
+      ID: {{ device.id }}, ObjectType:{{ device.objectType }}, Name:{{
+        device.name
+      }}
+
+      <a [routerLink]="['/device-details', device.id]" routerLinkActive="active"
+        >Device Details</a
+      >
+    </li>
+  </ul>
+</div>

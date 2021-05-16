@@ -39,7 +39,10 @@
     window.onload = function() {
       // Begin Swagger UI call region
       const ui = SwaggerUIBundle({
-        url: "/bacnetz/api/swagger.json",
+      
+        // this is where the swagger.json is served from 
+        url: "/swagger.json",
+        
         dom_id: '#swagger-ui',
         deepLinking: true,
         presets: [
