@@ -15,3 +15,21 @@ div.documentation {
   background: #f3d009;
   max-width: 50%;
 }
+
+div.footer {
+  margin: 20px auto 20px auto;
+  padding: 10px 10px 10px 10px;
+  border-radius: 25px;
+  background: #f30909;
+  color: #000000;
+}
+
+.blink_me {
+  animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
