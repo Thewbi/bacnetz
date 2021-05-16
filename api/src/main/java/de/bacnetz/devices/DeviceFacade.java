@@ -6,6 +6,8 @@ public interface DeviceFacade {
 
     List<DeviceDto> getDevices();
 
+    DeviceDto getDeviceDetails(long uid);
+
     void toggleAll();
 
 }

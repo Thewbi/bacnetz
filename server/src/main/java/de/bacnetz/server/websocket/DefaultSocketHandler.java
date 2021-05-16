@@ -34,7 +34,7 @@ import de.bacnetz.websocket.IUserSocket;
 
 /**
  * <pre>
- * ws = new WebSocket("ws://localhost:8080/inac/push");
+ * ws = new WebSocket("ws://localhost:8080/bacnetz/push");
  * console.log(ws);
  * ws.onopen = function () {
  * 	console.log('open');

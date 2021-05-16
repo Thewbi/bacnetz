@@ -2,6 +2,7 @@ import { Component } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable, throwError } from "rxjs";
 import { catchError, retry } from "rxjs/operators";
+import { faCoffee, faDigitalTachograph } from '@fortawesome/free-solid-svg-icons';
 
 /**
  * nvm
@@ -49,15 +50,19 @@ import { catchError, retry } from "rxjs/operators";
   styleUrls: ["./app.component.css"],
 })
 export class AppComponent {
-  title = "BACnet Simulator";
+
+  title = "BACnetz Simulator";
+
+  faCoffee = faCoffee;
+  faDigitalTachograph = faDigitalTachograph;
 
   constructor(private http: HttpClient) {}
 
   onClickMe() {
     console.log("click");
 
-    //let ws = new WebSocket('ws://127.0.0.1:8182/inac/push');
-    let ws = new WebSocket("ws://192.168.0.234:8182/inac/push");
+    //let ws = new WebSocket('ws://127.0.0.1:8182/bacnetz/push');
+    let ws = new WebSocket("ws://192.168.0.234:8182/bacnetz/push");
 
     console.log("ws");
 

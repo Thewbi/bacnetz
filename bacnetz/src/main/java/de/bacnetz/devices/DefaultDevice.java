@@ -6,10 +6,13 @@ import org.apache.logging.log4j.Logger;
 /**
  * A device is a hierarchy of devices and child devices. A FourDoorSolution for
  * example is a device that contains four child devices, one for each of the
- * four doors.
+ * four doors.<br />
+ * <br />
  * 
  * Each door in turn contains a binary child device, which models the door's
- * state (open or closed). This describes a three level hierarchy of devices.
+ * state (open or closed). This describes a three level hierarchy of
+ * devices.<br />
+ * <br />
  * 
  * Check the DefaultDeviceFactory class to see how the devices are assembled.
  * Each device stores a reference to it's optional parent device.

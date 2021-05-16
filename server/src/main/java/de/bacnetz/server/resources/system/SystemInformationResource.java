@@ -1,4 +1,4 @@
-package de.bacnetz.server.resource.system;
+package de.bacnetz.server.resources.system;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

@@ -30,6 +30,11 @@ public class DeviceResource {
     @Autowired
     private DeviceFacade deviceFacade;
 
+    /**
+     * http://127.0.0.1:8182/bacnetz/api/device/all
+     * 
+     * @return
+     */
     @ApiOperation("Retrieve all devices")
     @ApiResponses({ @ApiResponse(code = 200, message = "OK", response = List.class) })
     @GET
@@ -40,8 +45,19 @@ public class DeviceResource {
         return deviceFacade.getDevices();
     }
 
+    @ApiOperation("Retrieve detailed device information")
+    @ApiResponses({ @ApiResponse(code = 200, message = "OK", response = DeviceDto.class) })
+    @GET
+    @Path("/details/{uid}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public DeviceDto details(@PathParam("uid") final long uid) {
+        LOG.info("device/details: uid={}", uid);
+        return deviceFacade.getDeviceDetails(uid);
+    }
+
     /**
-     * http://127.0.0.1:8182/bacnetz/device/toggle/100
+     * http://127.0.0.1:8182/bacnetz/api/device/toggle/100
      * 
      * @param uid
      */

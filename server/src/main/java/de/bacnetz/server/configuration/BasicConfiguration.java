@@ -12,6 +12,7 @@ import de.bacnetz.conversion.Converter;
 import de.bacnetz.devices.DefaultDeviceFacade;
 import de.bacnetz.devices.DefaultDeviceFactory;
 import de.bacnetz.devices.DefaultDeviceService;
+import de.bacnetz.devices.DetailedDeviceDeviceDtoConverter;
 import de.bacnetz.devices.Device;
 import de.bacnetz.devices.DeviceDeviceDtoConverter;
 import de.bacnetz.devices.DeviceDto;
@@ -73,9 +74,14 @@ public class BasicConfiguration {
         return new MulticastListenerReaderThread();
     }
 
-    @Bean
+    @Bean("deviceDeviceDtoConverter")
     public Converter<Device, DeviceDto> getDeviceDeviceDtoConverter() {
         return new DeviceDeviceDtoConverter();
+    }
+
+    @Bean("detailedDeviceDeviceDtoConverter")
+    public Converter<Device, DeviceDto> getDetailedDeviceDeviceDtoConverter() {
+        return new DetailedDeviceDeviceDtoConverter();
     }
 
 }

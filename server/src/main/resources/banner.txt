@@ -29,5 +29,9 @@ http://${server.address}:${server.port}/actuator
 Spring Boot Documentation:
 https://docs.spring.io/spring-boot/docs/current-SNAPSHOT/reference/htmlsingle/
 
+BACnetz stack available at:
+PointToPoint/Unicast: ${bind.ip}
+Multicast: ${multicast.ip}
+
 ========================================================================================================
 ========================================================================================================

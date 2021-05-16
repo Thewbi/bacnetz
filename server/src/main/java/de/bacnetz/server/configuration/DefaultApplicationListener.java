@@ -44,6 +44,10 @@ public class DefaultApplicationListener implements ApplicationListener<ContextRe
     @Autowired
     private COVSubscriptionRepository covSubscriptionRepository;
 
+    /**
+     * from application.properties defines the multicast IP address of the ethernet
+     * subnetwork that this BACnet server takes part in
+     */
     @Value("${bind.ip}")
     private String bindIp;
 
@@ -73,15 +77,23 @@ public class DefaultApplicationListener implements ApplicationListener<ContextRe
 
             final Map<Integer, String> vendorMap = VendorMap.processVendorMap();
 
+            // create watchdogs
             final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
             deviceCreationDescriptor.setDeviceType(DeviceType.WATCHDOG);
             deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
             deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID + 100);
             deviceCreationDescriptor.setDeviceIdIncrement(1);
             deviceCreationDescriptor.setDeviceIdOffset(0);
-
             @SuppressWarnings("unused")
-            final List<Device> devices = deviceService.createDevices(vendorMap, bindIp, deviceCreationDescriptor);
+            List<Device> devices = deviceService.createDevices(vendorMap, bindIp, deviceCreationDescriptor);
+
+            // create TZ320
+            deviceCreationDescriptor.setDeviceType(DeviceType.TZ320);
+            deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
+            deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID + 200);
+            deviceCreationDescriptor.setDeviceIdIncrement(1);
+            deviceCreationDescriptor.setDeviceIdOffset(0);
+            devices = deviceService.createDevices(vendorMap, bindIp, deviceCreationDescriptor);
 
             multicastListenerReaderThread.getMessageControllers().add(messageController);
             multicastListenerReaderThread.setVendorMap(vendorMap);

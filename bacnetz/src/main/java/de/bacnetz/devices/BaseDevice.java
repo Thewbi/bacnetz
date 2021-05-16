@@ -47,7 +47,7 @@ import de.bacnetz.threads.MulticastListenerReaderThread;
 
 public abstract class BaseDevice implements Device, CommunicationService {
 
-    /** the optional parent device in the hiearchy of objects */
+    /** the optional parent device in the hierarchy of objects */
     private Device parentDevice;
 
     /** this map contains all child devices */
@@ -84,9 +84,11 @@ public abstract class BaseDevice implements Device, CommunicationService {
 
     private LocalDateTime timeOfDeviceRestart = LocalDateTime.now();
 
-    // concurrent HashSet because a subscription set can be cleared (Delete all COV
-    // Subscriptionts) while it is iterated over (during a change of the present
-    // value property
+    /**
+     * concurrent HashSet because a subscription set can be cleared (Delete all COV
+     * Subscriptionts) while it is iterated over (during a change of the present
+     * value property
+     */
     private final Set<COVSubscription> covSubscriptions = ConcurrentHashMap.newKeySet();
 
     private DatagramSocket datagramSocket;
@@ -94,9 +96,9 @@ public abstract class BaseDevice implements Device, CommunicationService {
     private ConfigurationManager configurationManager;
 
     /**
-     * Every device that is created (every four door solution, every TZ320, will
-     * bind to a port. On that port a MulticastListenerReaderThread is started to
-     * listen for bacnet messages.
+     * Every device that is created (every four door solution, every TZ320, ...)
+     * will bind to a port. A MulticastListenerReaderThread is started on that port
+     * to listen for BACnet messages.
      */
     private MulticastListenerReaderThread multicastListenerReaderThread;
 

@@ -29,6 +29,8 @@ import de.bacnetz.server.websocket.subscriptions.SubscriptionManager;
 @EnableWebSocket
 public class WebSocketConfiguration implements WebSocketConfigurer {
 
+    private static final String WEBSOCKET_URL = "/bacnetz/push";
+
     private static final Logger LOG = LoggerFactory.getLogger(WebSocketConfiguration.class);
 
     @Autowired
@@ -40,7 +42,7 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
         LOG.info("registerWebSocketHandlers()");
 
         final WebSocketHandlerRegistration webSocketHandlerRegistration = registry.addHandler(socketHandler,
-                "/inac/push");
+                WEBSOCKET_URL);
 
         webSocketHandlerRegistration.setAllowedOrigins("*");
 
