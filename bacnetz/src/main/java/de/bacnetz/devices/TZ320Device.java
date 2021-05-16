@@ -34,52 +34,52 @@ public class TZ320Device extends BaseDevice {
             case 2:
                 tz320State = findDevice(ObjectIdentifierServiceParameter
                         .createFromTypeAndInstanceNumber(ObjectType.MULTI_STATE_VALUE, 3));
-                tz320State.setPresentValue(1);
+                tz320State.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
 
                 // 1 == locked, 0 == unlocked
                 lockState = findDevice(
                         ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 1));
-                lockState.setPresentValue(0);
+                lockState.writeProperty(DeviceProperty.PRESENT_VALUE, 0);
 
                 // 1 == closed, 0 == open
                 // lets leave the door close state on 1 always for now
                 closeState = findDevice(
                         ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 2));
-                closeState.setPresentValue(0);
+                closeState.writeProperty(DeviceProperty.PRESENT_VALUE, 0);
                 break;
 
             // lock
             case 3:
                 tz320State = findDevice(ObjectIdentifierServiceParameter
                         .createFromTypeAndInstanceNumber(ObjectType.MULTI_STATE_VALUE, 3));
-                tz320State.setPresentValue(4);
+                tz320State.writeProperty(DeviceProperty.PRESENT_VALUE, 4);
 
                 // 1 == locked, 0 == unlocked
                 lockState = findDevice(
                         ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 1));
-                lockState.setPresentValue(1);
+                lockState.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
 
                 // 1 == closed, 0 == open
                 closeState = findDevice(
                         ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 2));
-                closeState.setPresentValue(1);
+                closeState.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
                 break;
 
             // short time release (Kurzzeitfreigabe, KZF)
             case 4:
                 tz320State = findDevice(ObjectIdentifierServiceParameter
                         .createFromTypeAndInstanceNumber(ObjectType.MULTI_STATE_VALUE, 3));
-                tz320State.setPresentValue(6);
+                tz320State.writeProperty(DeviceProperty.PRESENT_VALUE, 6);
 
                 // 1 == locked, 0 == unlocked
                 lockState = findDevice(
                         ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 1));
-                lockState.setPresentValue(0);
+                lockState.writeProperty(DeviceProperty.PRESENT_VALUE, 0);
 
                 // 1 == closed, 0 == open
                 closeState = findDevice(
                         ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 2));
-                closeState.setPresentValue(1);
+                closeState.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
                 break;
 
             default:

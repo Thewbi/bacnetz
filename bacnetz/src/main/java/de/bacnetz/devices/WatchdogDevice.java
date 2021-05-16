@@ -26,17 +26,17 @@ public class WatchdogDevice extends BaseDevice {
 
             // 1 is enable watchdog command
             case 1:
-                watchdogState.setPresentValue(1);
+                watchdogState.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
                 break;
 
             // 2 is disable watchdog command
             case 2:
-                watchdogState.setPresentValue(2);
+                watchdogState.writeProperty(DeviceProperty.PRESENT_VALUE, 2);
                 break;
 
             // 3 is short time released command
             case 3:
-                watchdogState.setPresentValue(3);
+                watchdogState.writeProperty(DeviceProperty.PRESENT_VALUE, 3);
                 break;
 
             default:

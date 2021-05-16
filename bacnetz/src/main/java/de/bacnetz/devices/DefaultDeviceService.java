@@ -10,6 +10,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.factory.Factory;
@@ -98,6 +99,40 @@ public class DefaultDeviceService implements DeviceService {
         }
 
         return result;
+    }
+
+    @Override
+    public void writeProperty(final WritePropertyDescriptor writePropertyDescriptor) {
+
+        final ObjectIdentifierServiceParameter parentObjectIdentifier = ObjectIdentifierServiceParameter
+                .createFromTypeAndInstanceNumber(ObjectType.DEVICE, writePropertyDescriptor.getParentDeviceId());
+
+        final List<Device> parentDevices = findDevice(parentObjectIdentifier, LinkLayerType.IP);
+        if (CollectionUtils.isEmpty(parentDevices)) {
+            LOG.warn("No parent device found for " + parentObjectIdentifier);
+            return;
+        }
+
+        final Device parentDevice = parentDevices.get(0);
+
+        Device device = parentDevice;
+
+        // if a child was requested, try to find the child
+        if (writePropertyDescriptor.getChildDeviceId() != null) {
+
+            final ObjectIdentifierServiceParameter childObjectIdentifier = ObjectIdentifierServiceParameter
+                    .createFromTypeAndInstanceNumber(writePropertyDescriptor.getChildObjectType(),
+                            writePropertyDescriptor.getChildDeviceId());
+            device = device.findDevice(childObjectIdentifier);
+
+            if (device == null) {
+                LOG.warn("No child device found for " + childObjectIdentifier);
+                return;
+            }
+
+        }
+
+        device.writeProperty(writePropertyDescriptor.getPropertyKey(), writePropertyDescriptor.getValue());
     }
 
     @Override

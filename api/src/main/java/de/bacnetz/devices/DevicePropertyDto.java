@@ -2,16 +2,31 @@ package de.bacnetz.devices;
 
 public class DevicePropertyDto {
 
-    private String key;
+    private Integer key;
+
+    private String name;
 
     private Object value;
 
-    public String getKey() {
+    @Override
+    public String toString() {
+        return "DevicePropertyDto [key=" + key + ", name=" + name + ", value=" + value + "]";
+    }
+
+    public Integer getKey() {
         return key;
     }
 
-    public void setKey(final String key) {
+    public void setKey(final Integer key) {
         this.key = key;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(final String name) {
+        this.name = name;
     }
 
     public Object getValue() {

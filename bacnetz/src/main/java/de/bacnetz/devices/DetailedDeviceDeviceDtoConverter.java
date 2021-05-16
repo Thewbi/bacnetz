@@ -37,7 +37,8 @@ public class DetailedDeviceDeviceDtoConverter implements Converter<Device, Devic
             final List<DevicePropertyDto> childrenProperties = source.getProperties().values().stream().map(p -> {
                 final DevicePropertyDto devicePropertyDto = new DevicePropertyDto();
 
-                devicePropertyDto.setKey(p.getPropertyName());
+                devicePropertyDto.setKey(p.getPropertyKey());
+                devicePropertyDto.setName(p.getPropertyName());
                 devicePropertyDto.setValue(p.getValue());
 
                 return devicePropertyDto;

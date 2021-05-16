@@ -10,4 +10,6 @@ public interface DeviceFacade {
 
     void toggleAll();
 
+    void writeProperty(WritePropertyDto writePropertyDto);
+
 }

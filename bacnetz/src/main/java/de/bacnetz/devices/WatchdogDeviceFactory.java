@@ -25,7 +25,7 @@ public class WatchdogDeviceFactory extends TZ320DeviceFactory {
         childDevice.setMessageFactory(getMessageFactory());
         addPropertiesToModuleTypeDevice(childDevice);
         device.getChildDevices().add(childDevice);
-        childDevice.setPresentValue(WATCHDOG_INDEX);
+        childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, WATCHDOG_INDEX);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
     }
 

@@ -438,7 +438,6 @@ public abstract class BaseDevice implements Device, CommunicationService {
         bacnetServicesSupportedBitString.setDeleteObject(false);
 
         bacnetServicesSupportedBitString.setReadProperty(true);
-//      bacnetServicesSupportedBitString.setReadPropertyConditional(false);
         bacnetServicesSupportedBitString.setReadPropertyMultiple(true);
 
         bacnetServicesSupportedBitString.setWriteProperty(true);
@@ -454,9 +453,6 @@ public abstract class BaseDevice implements Device, CommunicationService {
         bacnetServicesSupportedBitString.setVtOpen(false);
         bacnetServicesSupportedBitString.setVtClose(false);
         bacnetServicesSupportedBitString.setVtData(false);
-
-//      bacnetServicesSupportedBitString.setAuthenticate();
-//      bacnetServicesSupportedBitString.setRequestKey();
 
         bacnetServicesSupportedBitString.setiAm(true);
         bacnetServicesSupportedBitString.setiHave(false);
@@ -743,16 +739,8 @@ public abstract class BaseDevice implements Device, CommunicationService {
         return properties.get(DevicePropertyType.PRESENT_VALUE.getCode()).getValue();
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public void setPresentValue(final Object newPresentValue) {
-
-        if (!properties.containsKey(DevicePropertyType.PRESENT_VALUE.getCode())) {
-            return;
-        }
-
-        final DeviceProperty<Object> presentValueDeviceProperty = (DeviceProperty<Object>) properties
-                .get(DevicePropertyType.PRESENT_VALUE.getCode());
+    private void updatePropertyValue(final DeviceProperty<Object> presentValueDeviceProperty,
+            final Object newPresentValue) {
 
         final Object oldPresentValue = presentValueDeviceProperty.getValue();
 
@@ -791,6 +779,21 @@ public abstract class BaseDevice implements Device, CommunicationService {
     }
 
     @Override
+    public void writeProperty(final Integer propertyKey, final Object value) {
+
+        getLogger().info("WriteProperty: PropertyKey: {} Value; {}", propertyKey, value);
+
+        if (!getProperties().containsKey(propertyKey)) {
+            getLogger().warn("The device {} does not have a property for the key {}", this, propertyKey);
+            return;
+        }
+
+        @SuppressWarnings("unchecked")
+        final DeviceProperty<Object> deviceProperty = (DeviceProperty<Object>) getProperties().get(propertyKey);
+        updatePropertyValue(deviceProperty, value);
+    }
+
+    @Override
     public void executeAction() {
 
         allToggle();
@@ -809,7 +812,8 @@ public abstract class BaseDevice implements Device, CommunicationService {
         final Device door1CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber1);
         if (door1CloseStateBinaryInput != null) {
             final byte[] byteArray1 = (byte[]) door1CloseStateBinaryInput.getPresentValue();
-            door1CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray1[0]) });
+            door1CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
+                    new byte[] { (byte) (1 - byteArray1[0]) });
         }
 
         getLogger().trace("Toggling door 2 ...");
@@ -818,7 +822,8 @@ public abstract class BaseDevice implements Device, CommunicationService {
         final Device door2CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber2);
         if (door2CloseStateBinaryInput != null) {
             final byte[] byteArray2 = (byte[]) door2CloseStateBinaryInput.getPresentValue();
-            door2CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray2[0]) });
+            door2CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
+                    new byte[] { (byte) (1 - byteArray2[0]) });
         }
 
         getLogger().trace("Toggling door 3 ...");
@@ -827,7 +832,8 @@ public abstract class BaseDevice implements Device, CommunicationService {
         final Device door3CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber3);
         if (door3CloseStateBinaryInput != null) {
             final byte[] byteArray3 = (byte[]) door3CloseStateBinaryInput.getPresentValue();
-            door3CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray3[0]) });
+            door3CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
+                    new byte[] { (byte) (1 - byteArray3[0]) });
         }
 
         getLogger().trace("Toggling door 4 ...");
@@ -836,7 +842,8 @@ public abstract class BaseDevice implements Device, CommunicationService {
         final Device door4CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber4);
         if (door4CloseStateBinaryInput != null) {
             final byte[] byteArray4 = (byte[]) door4CloseStateBinaryInput.getPresentValue();
-            door4CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray4[0]) });
+            door4CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
+                    new byte[] { (byte) (1 - byteArray4[0]) });
         }
     }
 
@@ -852,7 +859,8 @@ public abstract class BaseDevice implements Device, CommunicationService {
             final Device door1CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber1);
             if (door1CloseStateBinaryInput != null) {
                 final byte[] byteArray1 = (byte[]) door1CloseStateBinaryInput.getPresentValue();
-                door1CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray1[0]) });
+                door1CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
+                        new byte[] { (byte) (1 - byteArray1[0]) });
             }
         }
 
@@ -863,7 +871,8 @@ public abstract class BaseDevice implements Device, CommunicationService {
             final Device door2CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber2);
             if (door2CloseStateBinaryInput != null) {
                 final byte[] byteArray2 = (byte[]) door2CloseStateBinaryInput.getPresentValue();
-                door2CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray2[0]) });
+                door2CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
+                        new byte[] { (byte) (1 - byteArray2[0]) });
             }
         }
 
@@ -874,7 +883,8 @@ public abstract class BaseDevice implements Device, CommunicationService {
             final Device door3CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber3);
             if (door3CloseStateBinaryInput != null) {
                 final byte[] byteArray3 = (byte[]) door3CloseStateBinaryInput.getPresentValue();
-                door3CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray3[0]) });
+                door3CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
+                        new byte[] { (byte) (1 - byteArray3[0]) });
             }
         }
 
@@ -885,7 +895,8 @@ public abstract class BaseDevice implements Device, CommunicationService {
             final Device door4CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber4);
             if (door4CloseStateBinaryInput != null) {
                 final byte[] byteArray4 = (byte[]) door4CloseStateBinaryInput.getPresentValue();
-                door4CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray4[0]) });
+                door4CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
+                        new byte[] { (byte) (1 - byteArray4[0]) });
             }
         }
 
@@ -898,7 +909,8 @@ public abstract class BaseDevice implements Device, CommunicationService {
             final Device door1CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber1);
             if (door1CloseStateBinaryInput != null) {
                 final byte[] byteArray1 = (byte[]) door1CloseStateBinaryInput.getPresentValue();
-                door1CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray1[0]) });
+                door1CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
+                        new byte[] { (byte) (1 - byteArray1[0]) });
             }
 
             getLogger().info("Toggling door 2 ...");
@@ -907,7 +919,8 @@ public abstract class BaseDevice implements Device, CommunicationService {
             final Device door2CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber2);
             if (door2CloseStateBinaryInput != null) {
                 final byte[] byteArray2 = (byte[]) door2CloseStateBinaryInput.getPresentValue();
-                door2CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray2[0]) });
+                door2CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
+                        new byte[] { (byte) (1 - byteArray2[0]) });
             }
 
             getLogger().info("Toggling door 3 ...");
@@ -916,7 +929,8 @@ public abstract class BaseDevice implements Device, CommunicationService {
             final Device door3CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber3);
             if (door3CloseStateBinaryInput != null) {
                 final byte[] byteArray3 = (byte[]) door3CloseStateBinaryInput.getPresentValue();
-                door3CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray3[0]) });
+                door3CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
+                        new byte[] { (byte) (1 - byteArray3[0]) });
             }
 
             getLogger().info("Toggling door 4 ...");
@@ -925,7 +939,8 @@ public abstract class BaseDevice implements Device, CommunicationService {
             final Device door4CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber4);
             if (door4CloseStateBinaryInput != null) {
                 final byte[] byteArray4 = (byte[]) door4CloseStateBinaryInput.getPresentValue();
-                door4CloseStateBinaryInput.setPresentValue(new byte[] { (byte) (1 - byteArray4[0]) });
+                door4CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
+                        new byte[] { (byte) (1 - byteArray4[0]) });
             }
         }
 

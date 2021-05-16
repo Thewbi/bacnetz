@@ -13,6 +13,7 @@ import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.controller.DefaultMessage;
 import de.bacnetz.devices.BinaryInputDevice;
 import de.bacnetz.devices.Device;
+import de.bacnetz.devices.DeviceProperty;
 import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.factory.MessageType;
 import de.bacnetz.services.CommunicationService;
@@ -68,7 +69,8 @@ public class ToggleDoorOpenStateThread implements Runnable {
         while (true) {
 
             // toggle
-            binaryInputDevice.setPresentValue(!(Boolean) binaryInputDevice.getPresentValue());
+            binaryInputDevice.writeProperty(DeviceProperty.PRESENT_VALUE,
+                    !(Boolean) binaryInputDevice.getPresentValue());
 
             sendCOV(parentDevice, binaryInputDevice, vendorMap, TARGET_IP, communicationService, null);
 

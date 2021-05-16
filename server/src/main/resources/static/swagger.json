@@ -118,6 +118,34 @@
 				}
 			}
 		},
+		"/bacnetz/api/device/writeProperty": {
+			"post": {
+				"tags": [
+					"device"
+				],
+				"summary": "Changes a property on a device",
+				"description": "",
+				"operationId": "toggle_1",
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"in": "body",
+						"name": "body",
+						"required": false,
+						"schema": {
+							"$ref": "#/definitions/WritePropertyDto"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
 		"/bacnetz/api/sysinfo/version": {
 			"get": {
 				"tags": [
@@ -143,6 +171,103 @@
 				"id": {
 					"type": "integer",
 					"format": "int32"
+				},
+				"objectType": {
+					"type": "string",
+					"enum": [
+						"ANALOG_INPUT",
+						"ANALOG_OUTPUT",
+						"ANALOG_VALUE",
+						"BINARY_INPUT",
+						"DEVICE",
+						"FILE",
+						"LOOP",
+						"MULTI_STATE_INPUT",
+						"MULTI_STATE_OUTPUT",
+						"NOTIFICATION_CLASS",
+						"SCHEDULE",
+						"MULTI_STATE_VALUE"
+					]
+				},
+				"name": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"presentValue": {
+					"type": "object"
+				},
+				"states": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"deviceProperties": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/DevicePropertyDto"
+					}
+				},
+				"childDevices": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/DeviceDto"
+					}
+				}
+			}
+		},
+		"DevicePropertyDto": {
+			"type": "object",
+			"properties": {
+				"key": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"name": {
+					"type": "string"
+				},
+				"value": {
+					"type": "object"
+				}
+			}
+		},
+		"WritePropertyDto": {
+			"type": "object",
+			"properties": {
+				"parentDeviceId": {
+					"type": "string"
+				},
+				"childDeviceId": {
+					"type": "string"
+				},
+				"childObjectType": {
+					"type": "string",
+					"enum": [
+						"ANALOG_INPUT",
+						"ANALOG_OUTPUT",
+						"ANALOG_VALUE",
+						"BINARY_INPUT",
+						"DEVICE",
+						"FILE",
+						"LOOP",
+						"MULTI_STATE_INPUT",
+						"MULTI_STATE_OUTPUT",
+						"NOTIFICATION_CLASS",
+						"SCHEDULE",
+						"MULTI_STATE_VALUE"
+					]
+				},
+				"propertyKey": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"propertyName": {
+					"type": "string"
+				},
+				"value": {
+					"type": "object"
 				}
 			}
 		}

@@ -19,34 +19,6 @@ public class BinaryInputDevice extends DefaultDevice {
     }
 
     @Override
-    public void setPresentValue(final Object newPresentValue) {
-
-        if (!getProperties().containsKey(DevicePropertyType.PRESENT_VALUE.getCode())) {
-            return;
-        }
-
-        @SuppressWarnings("unchecked")
-        final DeviceProperty<Object> presentValueDeviceProperty = (DeviceProperty<Object>) getProperties()
-                .get(DevicePropertyType.PRESENT_VALUE.getCode());
-
-        final boolean valueChanged = true;
-        if (valueChanged) {
-
-            // set new value
-            presentValueDeviceProperty.setValue(newPresentValue);
-
-            LOG.info("COV subscriptions {} on device: {}", getCovSubscriptions().size(), this);
-
-            // send message to all subscribers
-            getCovSubscriptions().stream().forEach(s -> {
-                LOG.info("Answering to subscriber IP: {}, SubscriberProcessId: {}", s.getClientIp(),
-                        s.getSubscriberProcessId());
-                s.valueChanged(newPresentValue);
-            });
-        }
-    }
-
-    @Override
     public void onValueChanged(final Device device, final DeviceProperty<Object> presentValueDeviceProperty,
             final Object oldPresentValue, final Object newPresentValue) {
         throw new RuntimeException("Not implemented yet!");

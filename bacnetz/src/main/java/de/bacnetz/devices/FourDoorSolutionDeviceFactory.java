@@ -73,7 +73,8 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         addPropertiesToModuleTypeDevice(childDevice);
         device.getChildDevices().add(childDevice);
         // 4 = four door solution
-        childDevice.setPresentValue(4);
+//        childDevice.setPresentValue(4);
+        childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 4);
         // 80 = multi door solution
 //        childDevice.setPresentValue(80);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
@@ -92,7 +93,8 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         childDevice.setMessageFactory(getMessageFactory());
         addPropertiesToAlarmStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
-        childDevice.setPresentValue(1);
+//        childDevice.setPresentValue(1);
+        childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
         // 7 (notification-class) (15, 50)
@@ -139,7 +141,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         childDevice.setMessageFactory(getMessageFactory());
         addPropertiesToDoorCloseStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
-        childDevice.setPresentValue(new byte[] { 1 });
+        childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, new byte[] { 1 });
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
         // 6 - multi_state_value,6 - command
@@ -156,7 +158,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         childDevice.setMessageFactory(getMessageFactory());
         addPropertiesToDoorCommandStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
-        childDevice.setPresentValue(1);
+        childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
         // 5 - multi_state_value,5 - door1_state - lock state (locked, unlocked,
@@ -178,7 +180,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         childDevice.setMessageFactory(getMessageFactory());
         addPropertiesToDoorStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
-        childDevice.setPresentValue(1);
+        childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
         return index;
@@ -193,8 +195,6 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         index++;
         childDevice = new BinaryInputDevice();
         childDevice.setParentDevice(device);
-//        childDevice.setId(parentDeviceId + index);
-        // object-identifier: (3, 2)
         childDevice.setObjectType(ObjectType.BINARY_INPUT);
         childDevice.setId(2);
         childDevice.setName("door2_close_state");
@@ -204,14 +204,13 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         childDevice.setMessageFactory(getMessageFactory());
         addPropertiesToDoorCloseStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
-        childDevice.setPresentValue(new byte[] { 1 });
+        childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, new byte[] { 1 });
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
         // 9
         index++;
         childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);
-        // object-identifier (19, 6)
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
         childDevice.setId(6);
         childDevice.setName("door2_command");
@@ -220,14 +219,13 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         childDevice.setMessageFactory(getMessageFactory());
         addPropertiesToDoorCommandStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
-        childDevice.setPresentValue(1);
+        childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
         // 8, lock state
         index++;
         childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);
-        // object-identifier (19, 5)
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
         childDevice.setId(5);
         childDevice.setName("door2_state");
@@ -241,7 +239,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         childDevice.setMessageFactory(getMessageFactory());
         addPropertiesToDoorStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
-        childDevice.setPresentValue(1);
+        childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
         return index;
@@ -256,7 +254,6 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         index++;
         childDevice = new BinaryInputDevice();
         childDevice.setParentDevice(device);
-        // object-identifier (3, 3)
         childDevice.setObjectType(ObjectType.BINARY_INPUT);
         childDevice.setId(3);
         childDevice.setName("door3_close_state");
@@ -266,14 +263,13 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         childDevice.setMessageFactory(getMessageFactory());
         addPropertiesToDoorCloseStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
-        childDevice.setPresentValue(new byte[] { 1 });
+        childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, new byte[] { 1 });
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
         // 13
         index++;
         childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);
-        // object-identifier (19, 8)
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
         childDevice.setId(8);
         childDevice.setName("door3_command");
@@ -281,14 +277,13 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         childDevice.setMessageFactory(getMessageFactory());
         addPropertiesToDoorCommandStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
-        childDevice.setPresentValue(1);
+        childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
         // 12
         index++;
         childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);
-        // object-identifier (19, 7)
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
         childDevice.setId(7);
         childDevice.setName("door3_state");
@@ -302,7 +297,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         childDevice.setMessageFactory(getMessageFactory());
         addPropertiesToDoorStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
-        childDevice.setPresentValue(1);
+        childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
         return index;
@@ -317,11 +312,8 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         index++;
         childDevice = new BinaryInputDevice();
         childDevice.setParentDevice(device);
-
-        // object-identifier (3, 4)
         childDevice.setObjectType(ObjectType.BINARY_INPUT);
         childDevice.setId(4);
-
         childDevice.setName("door4_close_state");
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
@@ -329,7 +321,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         childDevice.setMessageFactory(getMessageFactory());
         addPropertiesToDoorCloseStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
-        childDevice.setPresentValue(new byte[] { 1 });
+        childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, new byte[] { 1 });
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
         // 15 four_door_solution_door4_state MASTER COMMAND and State (locked, unlocked,
@@ -337,7 +329,6 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         index++;
         childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);
-        // object-identifier (19, 10)
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
         childDevice.setId(10);
         childDevice.setName("door4_command");
@@ -347,7 +338,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         childDevice.setMessageFactory(getMessageFactory());
         addPropertiesToDoorCommandStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
-        childDevice.setPresentValue(1);
+        childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
 
         // 14 four_door_solution_door4_state lock_state
@@ -355,11 +346,8 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         index++;
         childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);
-
-        // object-identifier (19, 9)
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
         childDevice.setId(9);
-
         childDevice.setName("door4_state");
         childDevice.setDescription("no entry");
         childDevice.setLocation("Office");
@@ -371,7 +359,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         childDevice.setMessageFactory(getMessageFactory());
         addPropertiesToDoorStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
-        childDevice.setPresentValue(1);
+        childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
     }
 
@@ -481,24 +469,19 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         // quittierpflichtiges Telegramm als fehlgeschlagen gewertet wird, wenn die
         // Bestätigung ausbleibt. Der Standardwert beträgt 3000 ms.
         // 3000d == 0x0BB8
-//      deviceProperty = new DefaultDeviceProperty("apdu-timeout", DeviceProperty.APDU_TIMEOUT,
-//              new byte[] { (byte) 0x0B, (byte) 0xB8 }, MessageType.UNSIGNED_INTEGER);
         deviceProperty = new DefaultDeviceProperty<Integer>("apdu-timeout", DeviceProperty.APDU_TIMEOUT, 3000,
                 MessageType.UNSIGNED_INTEGER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x9B = 155d - database-revision (155d = 0x9B) defined in ASHRAE on page 696
         // database revision 3
-        deviceProperty = new DefaultDeviceProperty<Integer>("database-revision", DeviceProperty.DATABASE_REVISION,
-//              new byte[] { (byte) 0x03 }, 
-                3, MessageType.UNSIGNED_INTEGER);
+        deviceProperty = new DefaultDeviceProperty<Integer>("database-revision", DeviceProperty.DATABASE_REVISION, 3,
+                MessageType.UNSIGNED_INTEGER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x18 = 24d - daylight-savings-status
         deviceProperty = new DefaultDeviceProperty<Boolean>("daylight-savings-status",
-                DeviceProperty.DAYLIGHT_SAVINGS_STATUS,
-//              new byte[] { (byte) 0x01 }, 
-                true, MessageType.BOOLEAN);
+                DeviceProperty.DAYLIGHT_SAVINGS_STATUS, true, MessageType.BOOLEAN);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x24 = 36d - event-state
@@ -507,15 +490,13 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x3F = 63d - max-info-frames
-        deviceProperty = new DefaultDeviceProperty<Integer>("max-info-frames", DeviceProperty.MAX_INFO_FRAMES,
-//              new byte[] { (byte) 0x64 }, 
-                100, MessageType.UNSIGNED_INTEGER);
+        deviceProperty = new DefaultDeviceProperty<Integer>("max-info-frames", DeviceProperty.MAX_INFO_FRAMES, 100,
+                MessageType.UNSIGNED_INTEGER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x40 = 64d - max-master
-        deviceProperty = new DefaultDeviceProperty<Integer>("max-master", DeviceProperty.MAX_MASTER,
-//              new byte[] { (byte) 0x7F },
-                0x7F, MessageType.UNSIGNED_INTEGER);
+        deviceProperty = new DefaultDeviceProperty<Integer>("max-master", DeviceProperty.MAX_MASTER, 0x7F,
+                MessageType.UNSIGNED_INTEGER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x49 = 73d - number-of-APDU-retries
@@ -561,15 +542,13 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x51 = 81d out-of-service
-        deviceProperty = new DefaultDeviceProperty<Boolean>("out-of-service", DeviceProperty.OUT_OF_SERVICE,
-//              new byte[] { (byte) 0x00 }, 
-                false, MessageType.BOOLEAN);
+        deviceProperty = new DefaultDeviceProperty<Boolean>("out-of-service", DeviceProperty.OUT_OF_SERVICE, false,
+                MessageType.BOOLEAN);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x62 = 98d protocol-version
-        deviceProperty = new DefaultDeviceProperty<Integer>("protocol-version", DeviceProperty.PROTOCOL_VERSION,
-//              new byte[] { (byte) 0x01 }, 
-                1, MessageType.UNSIGNED_INTEGER);
+        deviceProperty = new DefaultDeviceProperty<Integer>("protocol-version", DeviceProperty.PROTOCOL_VERSION, 1,
+                MessageType.UNSIGNED_INTEGER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x77 = 119d UTC-offset

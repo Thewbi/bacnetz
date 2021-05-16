@@ -41,6 +41,8 @@ public interface Device {
 
     Message getPropertyValue(Message requestMessage, int propertyIdentifierCode);
 
+    void writeProperty(Integer propertyKey, Object value);
+
     Map<Integer, String> getVendorMap();
 
     void setVendorMap(Map<Integer, String> vendorMap);
@@ -52,8 +54,6 @@ public interface Device {
     BACnetServicesSupportedBitString retrieveServicesSupported();
 
     Object getPresentValue();
-
-    void setPresentValue(Object value);
 
     boolean isOutOfService();
 

@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.bacnetz.devices.DeviceDto;
 import de.bacnetz.devices.DeviceFacade;
+import de.bacnetz.devices.WritePropertyDto;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -54,6 +55,33 @@ public class DeviceResource {
     public DeviceDto details(@PathParam("uid") final long uid) {
         LOG.info("device/details: uid={}", uid);
         return deviceFacade.getDeviceDetails(uid);
+    }
+
+    /**
+     * http://127.0.0.1:8182/bacnetz/api/writeProperty
+     * 
+     * <pre>
+     * {
+     *     "parentDeviceId": "20200",
+     *     "childDeviceId": "2",
+     *     "childObjectType": "BINARY_INPUT",
+     *     "propertyKey": 85,
+     *     "propertyName": "present-value",
+     *     "value": 1
+     * }
+     * </pre>
+     * 
+     * @param uid
+     */
+    @ApiOperation("Changes a property on a device")
+    @ApiResponses({ @ApiResponse(code = 200, message = "OK") })
+    @POST
+    @Path("/writeProperty")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void toggle(final WritePropertyDto writePropertyDto) {
+        LOG.info("toggle: writePropertyDto={}", writePropertyDto);
+
+        deviceFacade.writeProperty(writePropertyDto);
     }
 
     /**

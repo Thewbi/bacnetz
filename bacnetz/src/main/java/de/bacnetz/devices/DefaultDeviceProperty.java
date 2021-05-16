@@ -75,9 +75,6 @@ public class DefaultDeviceProperty<T> implements DeviceProperty<T> {
             valueAsInteger = (Integer) value;
             return BACnetUtils.intToByteArray(valueAsInteger);
 
-//        case OCTET_STRING:
-//            return BACnetUtils.retrieveAsString((byte[]) value);
-
         case ENUMERATED:
             if (value instanceof Integer) {
                 valueAsInteger = (Integer) value;
@@ -89,7 +86,6 @@ public class DefaultDeviceProperty<T> implements DeviceProperty<T> {
             if (value instanceof String) {
                 return BACnetUtils.retrieveAsString((String) value);
             }
-//            return BACnetUtils.retrieveAsString((byte[]) value);
             return (byte[]) value;
 
         case SINGED_INTEGER_TWOS_COMPLEMENT_NOTATION:

@@ -18,6 +18,9 @@ import de.bacnetz.devices.DeviceDeviceDtoConverter;
 import de.bacnetz.devices.DeviceDto;
 import de.bacnetz.devices.DeviceFacade;
 import de.bacnetz.devices.DeviceService;
+import de.bacnetz.devices.WritePropertyDescriptor;
+import de.bacnetz.devices.WritePropertyDto;
+import de.bacnetz.devices.WritePropertyDtoToDescriptorConverter;
 import de.bacnetz.factory.DefaultMessageFactory;
 import de.bacnetz.factory.Factory;
 import de.bacnetz.factory.MessageFactory;
@@ -82,6 +85,11 @@ public class BasicConfiguration {
     @Bean("detailedDeviceDeviceDtoConverter")
     public Converter<Device, DeviceDto> getDetailedDeviceDeviceDtoConverter() {
         return new DetailedDeviceDeviceDtoConverter();
+    }
+
+    @Bean("writePropertyDtoToDescriptorConverter")
+    public Converter<WritePropertyDto, WritePropertyDescriptor> getWritePropertyDtoToDescriptorConverter() {
+        return new WritePropertyDtoToDescriptorConverter();
     }
 
 }

@@ -23,4 +23,6 @@ public interface DeviceService {
     List<Device> findDevice(ObjectIdentifierServiceParameter objectIdentifierServiceParameter,
             LinkLayerType linkLayerType);
 
+    void writeProperty(WritePropertyDescriptor writePropertyDescriptor);
+
 }

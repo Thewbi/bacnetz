@@ -262,10 +262,6 @@ public class DefaultMessageController implements MessageController {
                 LOG.info(">>> UNKNOWN_SERVICE_CHOICE received!");
                 return null;
 
-//            case DEVICE_COMMUNICATION_CONTROL:
-//                LOG.trace(">>> DEVICE_COMMUNICATION_CONTROL received!");
-//                return processDeviceCommunicationControl(message);
-
             default:
                 LOG.warn(">>> Unknown message: " + message.getApdu().getUnconfirmedServiceChoice());
                 return null;
@@ -340,7 +336,6 @@ public class DefaultMessageController implements MessageController {
         final List<ServiceParameter> serviceParameters = requestMessage.getApdu().getServiceParameters();
 
         final ServiceParameter subscriberProcessIdServiceParameter = serviceParameters.get(0);
-//        objectIdentifierServiceParameter = (ObjectIdentifierServiceParameter) serviceParameters.get(1);
 
         // when there are only two service parameters, that means the list of properties
         // to subscribe to is empty which means no subscription should survive. This
@@ -353,11 +348,6 @@ public class DefaultMessageController implements MessageController {
             findDevice.getCovSubscriptions().clear();
 
         } else {
-
-//		@SuppressWarnings("unused")
-//        final ServiceParameter issueConfirmedNotificationsServiceParameter = requestMessage.getApdu().getServiceParameters().get(2);
-//		@SuppressWarnings("unused")
-//		final ServiceParameter lifetimeServiceParameter = requestMessage.getApdu().getServiceParameters().get(3);
 
             // TODO: factory
             final DefaultCOVSubscription covSubscription = new DefaultCOVSubscription();
@@ -553,7 +543,6 @@ public class DefaultMessageController implements MessageController {
     public static Message retrieveIamMessage(final Device device, final LinkLayerType linkLayerType) {
 
         // return Unconfirmed request i-Am device,10001
-
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
         virtualLinkControl.setType(0x81);
         virtualLinkControl.setFunction(0x0B);
@@ -594,9 +583,6 @@ public class DefaultMessageController implements MessageController {
         segmentationSupportedServiceParameter.setLengthValueType(1);
         segmentationSupportedServiceParameter.setPayload(new byte[] { (byte) 0x00 }); // segmented-both
         apdu.getServiceParameters().add(segmentationSupportedServiceParameter);
-
-        // 0xB2 = 178d = loytec
-//      byte[] vendorIdBuffer = new byte[] { (byte) 0xB2 };
 
         // 0x021A = 538d = GEZE
         final byte[] vendorIdBuffer = new byte[] { (byte) 0x02, (byte) 0x1A };
@@ -652,7 +638,6 @@ public class DefaultMessageController implements MessageController {
             return processWriteLocation(propertyIdentifierCode, requestMessage);
 
         default:
-//            return processWriteRestartNotificationRecipientsProperty(propertyIdentifierCode, requestMessage);
             LOG.warn("Cannot write property: " + devicePropertyType + " (" + propertyIdentifierCode + ")");
             return null;
         }
@@ -663,8 +648,6 @@ public class DefaultMessageController implements MessageController {
         final List<Message> result = new ArrayList<>();
         result.add(message);
 
-//        device.setPresentValue((int) payload[0]);
-
         return result;
     }
 
@@ -672,8 +655,6 @@ public class DefaultMessageController implements MessageController {
         final DefaultMessage message = simpleAck(requestMessage, ConfirmedServiceChoice.WRITE_PROPERTY);
         final List<Message> result = new ArrayList<>();
         result.add(message);
-
-//        device.setPresentValue((int) payload[0]);
 
         return result;
     }
@@ -698,7 +679,7 @@ public class DefaultMessageController implements MessageController {
         final List<Message> result = new ArrayList<>();
         result.add(message);
 
-        device.setPresentValue((int) payload[0]);
+        device.writeProperty(DeviceProperty.PRESENT_VALUE, (int) payload[0]);
 
         return result;
     }
