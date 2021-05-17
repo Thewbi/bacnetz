@@ -6,7 +6,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.bacnetz.common.APIUtils;
-import de.bacnetz.common.utils.Utils;
 import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.devices.ObjectType;
 import de.bacnetz.factory.MessageType;
@@ -131,7 +130,7 @@ public class ServiceParameter {
 
             } catch (final Exception e) {
                 LOG.error("lengthValueType: {}, offset: {}, payload: {}, data: {}", lengthValueType, offset, payload,
-                        Utils.bytesToHex(data));
+                        APIUtils.bytesToHex(data));
 
                 LOG.error(e.getMessage(), e);
                 throw e;

@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 
-import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.factory.Factory;
 import de.bacnetz.stack.LinkLayerType;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
@@ -40,10 +39,12 @@ public class DefaultDeviceService implements DeviceService {
         for (int i = 0; i < deviceCreationDescriptor.getAmountOfDevices(); i++) {
 
             final DeviceType deviceType = deviceCreationDescriptor.getDeviceType();
+            final String deviceName = deviceCreationDescriptor.getDeviceName();
+            final String modelName = deviceCreationDescriptor.getModelName();
 
             final int deviceId = deviceCreationDescriptor.getStartDeviceId() + deviceIdOffset;
-            final Device device = deviceFactory.create(deviceType, deviceMap, vendorMap, deviceId,
-                    NetworkUtils.OBJECT_NAME, VendorType.GEZE_GMBH.getCode());
+            final Device device = deviceFactory.create(deviceType, deviceMap, vendorMap, deviceId, deviceName,
+                    modelName, VendorType.GEZE_GMBH.getCode());
             devices.add(device);
 
             // device starts it's own server on it's own port, because BACnet Ids are not

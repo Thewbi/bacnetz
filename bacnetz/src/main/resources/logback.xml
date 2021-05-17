@@ -1,0 +1,52 @@
+<configuration>
+
+	<appender name="CONSOLE"
+		class="ch.qos.logback.core.ConsoleAppender">
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<Pattern>
+				<!-- %d{HH:mm:ss.SSS} [%t] %-5level %logger{36} tihi - %msg%n -->
+				<!-- %logger{36}\(%file:%line\) - %caller - %msg%n -->
+				<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level (%file:%line\) - %message%n</pattern>
+			</Pattern>
+		</layout>
+	</appender>
+
+	<logger name="org.springframework" level="info"
+		additivity="false">
+		<AppenderRef ref="CONSOLE" />
+	</logger>
+	<logger name="org.springframework.web" level="info"
+		additivity="false">
+		<AppenderRef ref="CONSOLE" />
+	</logger>
+	<logger name="org.springframework.boot" level="info"
+		additivity="false">
+		<AppenderRef ref="CONSOLE" />
+	</logger>
+	<logger name="io.hawt" level="warn" additivity="false">
+		<AppenderRef ref="CONSOLE" />
+	</logger>
+	<logger name="org.hibernate" level="info" additivity="false">
+		<AppenderRef ref="CONSOLE" />
+	</logger>
+	<logger name="org.apache.shiro" level="info" additivity="false">
+		<AppenderRef ref="CONSOLE" />
+	</logger>
+	<logger name="com.zaxxer.hikari" level="info" additivity="false">
+		<AppenderRef ref="CONSOLE" />
+	</logger>
+	<logger name="io.swagger" level="info" additivity="false">
+		<AppenderRef ref="CONSOLE" />
+	</logger>
+	<logger name="org.reflections" level="info" additivity="false">
+		<AppenderRef ref="CONSOLE" />
+	</logger>
+	<logger name="org.jose4j" level="info" additivity="false">
+		<AppenderRef ref="CONSOLE" />
+	</logger>
+
+	<root level="debug">
+		<appender-ref ref="CONSOLE" />
+	</root>
+
+</configuration>

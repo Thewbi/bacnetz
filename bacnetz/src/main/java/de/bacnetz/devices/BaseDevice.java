@@ -63,6 +63,8 @@ public abstract class BaseDevice implements Device, CommunicationService {
 
     private String name;
 
+    private String modelName;
+
     private String description;
 
     private String location;
@@ -1042,7 +1044,7 @@ public abstract class BaseDevice implements Device, CommunicationService {
 
     @Override
     public String toString() {
-        return getClass().getName() + " [id=" + id + ", objectType=" + objectType + "]";
+        return getClass().getName() + " [id=" + id + ", objectType=" + objectType + ", modelName=" + modelName + "]";
     }
 
     @Override
@@ -1200,6 +1202,16 @@ public abstract class BaseDevice implements Device, CommunicationService {
 
     public MessageFactory getMessageFactory() {
         return messageFactory;
+    }
+
+    @Override
+    public String getModelName() {
+        return modelName;
+    }
+
+    @Override
+    public void setModelName(final String modelName) {
+        this.modelName = modelName;
     }
 
 }

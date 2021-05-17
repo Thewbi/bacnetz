@@ -16,18 +16,21 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
         final Map<Integer, String> vendorMap = (Map<Integer, String>) args[1];
         final int deviceId = (int) args[2];
         final String objectName = (String) args[3];
-        final int vendorId = (int) args[4];
+        final String modelName = (String) args[4];
+        final int vendorId = (int) args[5];
 
-        return createTZ320(deviceMap, vendorMap, deviceId, objectName, vendorId);
+        return createDevice(deviceMap, vendorMap, deviceId, objectName, modelName, vendorId);
     }
 
-    private Device createTZ320(final Map<ObjectIdentifierServiceParameter, Device> deviceMap,
-            final Map<Integer, String> vendorMap, final int deviceId, final String objectName, final int vendorId) {
+    private Device createDevice(final Map<ObjectIdentifierServiceParameter, Device> deviceMap,
+            final Map<Integer, String> vendorMap, final int deviceId, final String objectName, final String modelName,
+            final int vendorId) {
 
         final BaseDevice device = createNewInstance();
         device.setObjectType(ObjectType.DEVICE);
         device.setId(deviceId);
         device.setName(objectName);
+        device.setModelName(modelName);
         device.setDescription("no entry");
         device.setLocation("Office");
         device.setVendorMap(vendorMap);
@@ -235,6 +238,11 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
                 MessageType.CHARACTER_STRING);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
+        // 0x46 = 70d model-name
+        deviceProperty = new DefaultDeviceProperty<String>("model-name", DeviceProperty.MODEL_NAME, "IO 420",
+                MessageType.CHARACTER_STRING);
+        device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
+
         // 0x51 = 81d out-of-service
         deviceProperty = new DefaultDeviceProperty<Boolean>("out-of-service", DeviceProperty.OUT_OF_SERVICE,
 //              new byte[] { (byte) 0x00 }, 
@@ -260,11 +268,6 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
 //        // 0x79 = 121d vendor-name
         deviceProperty = new DefaultDeviceProperty<String>("vendor-name", DeviceProperty.VENDOR_NAME,
                 device.getVendorMap().get(device.getVendorId()), MessageType.CHARACTER_STRING);
-        device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
-
-        // 0x46 = 70d model-name
-        deviceProperty = new DefaultDeviceProperty<String>("model-name", DeviceProperty.MODEL_NAME, device.getName(),
-                MessageType.CHARACTER_STRING);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x8B = 139d protocol-revision (0x8B = 139d)

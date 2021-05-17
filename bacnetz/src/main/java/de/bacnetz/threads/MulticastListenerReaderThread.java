@@ -132,7 +132,8 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
                 request = parseBuffer(data, bytesReceived);
                 LOG.info("calling parseBuffer() done.");
 
-                LOG.info("calling setSourceInetSocketAddress() ...");
+                LOG.info("calling setSourceInetSocketAddress() request: {} datagramPacketSocketAddress: {} ...",
+                        request, datagramPacketSocketAddress);
                 request.setSourceInetSocketAddress((InetSocketAddress) datagramPacketSocketAddress);
                 LOG.info("calling setSourceInetSocketAddress() done.");
 

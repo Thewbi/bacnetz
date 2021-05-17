@@ -120,6 +120,7 @@ public class App {
 //    private static final boolean RUN_TOGGLE_DOOR_THREAD = false;
 //    private static final boolean RUN_TOGGLE_DOOR_THREAD = true;
 
+    @SuppressWarnings("unused")
     private static final int START_DEVICE_ID = 20000;
 //    private static final int START_DEVICE_ID = 70;
 
@@ -168,22 +169,25 @@ public class App {
 //        deviceCreationDescriptor.setDeviceIdIncrement(1);
 //        deviceCreationDescriptor.setDeviceIdOffset(0);
 
-        // create watchdogs
-        final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
-        deviceCreationDescriptor.setDeviceType(DeviceType.WATCHDOG);
-        deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
-        deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID + 100);
-        deviceCreationDescriptor.setDeviceIdIncrement(1);
-        deviceCreationDescriptor.setDeviceIdOffset(0);
-        List<Device> devices = deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
+//        // create watchdogs
+//        final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
+//        deviceCreationDescriptor.setDeviceType(DeviceType.WATCHDOG);
+//        deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
+//        deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID + 100);
+//        deviceCreationDescriptor.setDeviceIdIncrement(1);
+//        deviceCreationDescriptor.setDeviceIdOffset(0);
+//        @SuppressWarnings("unused")
+//        List<Device> devices = deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
+//
+//        // create TZ320
+//        deviceCreationDescriptor.setDeviceType(DeviceType.TZ320);
+//        deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
+//        deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID + 200);
+//        deviceCreationDescriptor.setDeviceIdIncrement(1);
+//        deviceCreationDescriptor.setDeviceIdOffset(0);
+//        devices = deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
 
-        // create TZ320
-        deviceCreationDescriptor.setDeviceType(DeviceType.TZ320);
-        deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
-        deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID + 200);
-        deviceCreationDescriptor.setDeviceIdIncrement(1);
-        deviceCreationDescriptor.setDeviceIdOffset(0);
-        devices = deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
+        setupCento(vendorMap, deviceService, localIp);
 
         startListenerThread(configurationManager, deviceService, messageFactory, vendorMap);
 
@@ -192,6 +196,99 @@ public class App {
 //        runMain(defaultConfigurationManager);
 //		runFixVendorCSV();
 //		runMainOld();
+    }
+
+    private static void setupCento(final Map<Integer, String> vendorMap, final DeviceService deviceService,
+            final String localIp) throws SocketException, UnknownHostException {
+
+        // 2, 3, 4, 5, 6, 7, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+        // 31, 32
+
+        // @formatter:off
+
+        // cento
+        // DEVICE TZ320
+        // [mstp DEVICE, 2] - Schleuse Tiefgarage TH1 (TH01 - Tiefgarage)
+        createTZ320(2, "Schleuse Tiefgarage TH1", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 3] - Schleuse Nordtür TH2 (TH02 - Tiefgarage Nord)
+        createTZ320(3, "Schleuse Nordtür TH2", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 4] - Schleuse Westtür TH2 (TH02 - Tiefgarage West)
+        createTZ320(4, "Schleuse Westtür TH2", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 7] - Schleuse Technik TH1 (TH01 - Technik)
+        createTZ320(7, "Schleuse Technik TH1", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 11] - Schleuse Nordtür TH2
+        createTZ320(11, "Schleuse Nordtür TH2", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 12] - Schleuse TH1 (TH01 Vorraum)
+        createTZ320(12, "Schleuse TH1", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 13] - TH02 Vorraum (Vorraum TH2)
+        createTZ320(13, "Vorraum TH2", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 14] - TH03 Vorraum (Vorraum TH3)
+        createTZ320(14, "Vorraum TH3", "IO 420", vendorMap, deviceService, localIp);
+
+        // cento
+        // DEVICE: watchdog
+        // [mstp DEVICE, 5] - Müllraum (Müllraum)
+        createWatchdog(5, "Müllraum", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 6] - Fluchtfenster Ost (Fluchtfenster Fahrradraum)
+        createWatchdog(6, "Fluchtfenster Ost", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 15] - Cafeteria (Cafeteria)
+        createWatchdog(15, "Cafeteria", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 16] - Vorraum TH3 (TH03 Labor)
+        createWatchdog(16, "Vorraum TH3", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 17] - Außentür Gentyping (Flur Watchdog)
+        createWatchdog(17, "Flur", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 18] - Außentür Flur Post (Post Genotyping Außen)
+        createWatchdog(18, "Post Genotyping Außen", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 19] - Windfang Nord (Eingang Windfand Süd)
+        createWatchdog(19, "Windfang Nord", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 20] - Windfang Nord (Eingang Windfand Nord)
+        createWatchdog(20, "Windfang Nord", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 21] - TH1 Außen (Außentür TH01 - Innenhof)
+        createWatchdog(21, "TH1 Außen", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 22] - TH2 Außen (Außentür TH03 - Innenhof) <--- FALSCHER NAME: SOLL: TH3 Außen, IST: TH2 Außen
+        createWatchdog(22, "TH2 Außen", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 23] - TH2 Außen (Außentür TH02 - Innenhof)
+        createWatchdog(23, "TH2 Außen", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 24] - Flur Außen (Flur BTB - Innenhof)
+        createWatchdog(24, "Flur Außen", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 25] - TH4 Außen (Außentür TH04 - Innenhof)
+        createWatchdog(25, "TH4 Außen", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 31] - Archiv (Patientenarchiv 1)
+        createWatchdog(31, "Archiv", "IO 420", vendorMap, deviceService, localIp);
+        // [mstp DEVICE, 32] - Archiv 2 (Patientenarchiv 2)
+        createWatchdog(32, "Archiv 2", "IO 420", vendorMap, deviceService, localIp);
+        
+        // @formatter:on
+    }
+
+    private static void createWatchdog(final int deviceId, final String deviceName, final String modelName,
+            final Map<Integer, String> vendorMap, final DeviceService deviceService, final String localIp)
+            throws SocketException, UnknownHostException {
+        final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
+        deviceCreationDescriptor.setDeviceType(DeviceType.WATCHDOG);
+        deviceCreationDescriptor.setDeviceName(deviceName);
+        deviceCreationDescriptor.setModelName(modelName);
+        deviceCreationDescriptor.setAmountOfDevices(1);
+        deviceCreationDescriptor.setStartDeviceId(deviceId);
+        deviceCreationDescriptor.setDeviceIdIncrement(1);
+        deviceCreationDescriptor.setDeviceIdOffset(0);
+        @SuppressWarnings("unused")
+        final List<Device> devices = deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
+    }
+
+    private static void createTZ320(final int deviceId, final String deviceName, final String modelName,
+            final Map<Integer, String> vendorMap, final DeviceService deviceService, final String localIp)
+            throws SocketException, UnknownHostException {
+        final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
+        deviceCreationDescriptor.setDeviceType(DeviceType.TZ320);
+        deviceCreationDescriptor.setDeviceName(deviceName);
+        deviceCreationDescriptor.setModelName(modelName);
+        deviceCreationDescriptor.setAmountOfDevices(1);
+        deviceCreationDescriptor.setStartDeviceId(deviceId);
+        deviceCreationDescriptor.setDeviceIdIncrement(1);
+        deviceCreationDescriptor.setDeviceIdOffset(0);
+        @SuppressWarnings("unused")
+        final List<Device> devices = deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
     }
 
     public static ConfigurationManager createConfigurationManager(final String[] args) throws ParseException {
@@ -272,6 +369,7 @@ public class App {
         new Thread(multicastListenerReaderThread).start();
     }
 
+    @SuppressWarnings("unused")
     private static void runMain(final ConfigurationManager configurationManager, final DeviceService deviceService,
             final Map<Integer, String> vendorMap) throws SocketException, UnknownHostException, IOException {
 
@@ -296,6 +394,8 @@ public class App {
 
         final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
         deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
+        deviceCreationDescriptor.setDeviceName("IO 420");
+        deviceCreationDescriptor.setModelName("IO 420");
         deviceCreationDescriptor.setStartDeviceId(20000);
         deviceCreationDescriptor.setDeviceIdIncrement(1);
         deviceCreationDescriptor.setDeviceIdOffset(0);

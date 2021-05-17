@@ -12,6 +12,17 @@ public class DeviceCreationDescriptor {
 
     private DeviceType deviceType;
 
+    private String deviceName = "IO 420";
+
+    private String modelName;
+
+    @Override
+    public String toString() {
+        return "DeviceCreationDescriptor [amountOfDevices=" + amountOfDevices + ", startDeviceId=" + startDeviceId
+                + ", deviceIdIncrement=" + deviceIdIncrement + ", deviceIdOffset=" + deviceIdOffset + ", deviceType="
+                + deviceType + ", deviceName=" + deviceName + ", modelName=" + modelName + "]";
+    }
+
     public int getAmountOfDevices() {
         return amountOfDevices;
     }
@@ -50,6 +61,22 @@ public class DeviceCreationDescriptor {
 
     public void setDeviceType(final DeviceType deviceType) {
         this.deviceType = deviceType;
+    }
+
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    public void setDeviceName(final String deviceName) {
+        this.deviceName = deviceName;
+    }
+
+    public String getModelName() {
+        return modelName;
+    }
+
+    public void setModelName(final String modelName) {
+        this.modelName = modelName;
     }
 
 }

@@ -37,6 +37,10 @@ public interface Device {
 
     void setName(String name);
 
+    String getModelName();
+
+    void setModelName(String modelName);
+
     Device findDevice(ServiceParameter objectIdentifierServiceParameter);
 
     Message getPropertyValue(Message requestMessage, int propertyIdentifierCode);

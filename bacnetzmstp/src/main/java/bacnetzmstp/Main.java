@@ -118,7 +118,7 @@ public class Main {
 
 //        final DefaultDevice masterDevice = new DefaultDevice();
         final Device masterDevice = deviceFactory.create(deviceService.getDeviceMap(), VendorMap.processVendorMap(),
-                MASTER_DEVICE_ID, NetworkUtils.OBJECT_NAME, VendorType.GEZE_GMBH.getCode());
+                MASTER_DEVICE_ID, NetworkUtils.OBJECT_NAME, "IO 420", VendorType.GEZE_GMBH.getCode());
 //        masterDevice.setId(MASTER_DEVICE_ID);
 
         if (!PASSIVE_MODE) {

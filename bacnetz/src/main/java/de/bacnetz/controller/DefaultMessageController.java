@@ -1223,6 +1223,7 @@ public class DefaultMessageController implements MessageController {
         // TODO: add node into UI tree for this newly discovered device
 
 //        sendResponseToIAM(sourceInetSocketAddress, objectIdentifierServiceParameter);
+        LOG.warn("Currently ignoring incoming I-AM messages!");
 
         return null;
     }

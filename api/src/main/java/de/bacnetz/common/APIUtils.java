@@ -16,6 +16,8 @@ import de.bacnetz.stack.TagClass;
  */
 public class APIUtils {
 
+    public static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+
     /**
      * ctor
      */
@@ -191,6 +193,37 @@ public class APIUtils {
         final boolean isNamedTagClosingTag = serviceParameter.getLengthValueType() == 0x07;
 
         return isContextSpecificTag && isNamedTagClosingTag & serviceParameter.getTagNumber() == tagNumber;
+    }
+
+    public static String bytesToHex(final byte[] data) {
+
+        final int stride = 3;
+        final char[] hexChars = new char[data.length * stride];
+        for (int j = 0; j < data.length; j++) {
+
+            final int v = data[j] & 0xFF;
+            hexChars[j * stride + 0] = HEX_ARRAY[v >>> 4];
+            hexChars[j * stride + 1] = HEX_ARRAY[v & 0x0F];
+            hexChars[j * stride + 2] = ' ';
+        }
+
+        return new String(hexChars);
+    }
+
+    public static String bytesToHex(final byte[] data, final int offset, final int length) {
+
+        final int stride = 3;
+        final char[] hexChars = new char[length * stride];
+        for (int j = 0; j < length; j++) {
+
+            final int idx = offset + j;
+            final int v = data[idx] & 0xFF;
+            hexChars[idx * stride + 0] = HEX_ARRAY[v >>> 4];
+            hexChars[idx * stride + 1] = HEX_ARRAY[v & 0x0F];
+            hexChars[idx * stride + 2] = ' ';
+        }
+
+        return new String(hexChars);
     }
 
 }

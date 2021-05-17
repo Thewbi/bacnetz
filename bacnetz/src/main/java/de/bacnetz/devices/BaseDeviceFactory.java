@@ -35,7 +35,8 @@ public abstract class BaseDeviceFactory implements Factory<Device> {
         final Map<Integer, String> vendorMap = (Map<Integer, String>) args[2];
         final int deviceId = (int) args[3];
         final String objectName = (String) args[4];
-        final int vendorId = (int) args[5];
+        final String modelName = (String) args[5];
+        final int vendorId = (int) args[6];
 
         if (fourDoorSolutionDeviceFactory == null) {
             fourDoorSolutionDeviceFactory = new FourDoorSolutionDeviceFactory();
@@ -58,13 +59,14 @@ public abstract class BaseDeviceFactory implements Factory<Device> {
         switch (deviceType) {
 
         case FOUR_DOOR_SOLUTION:
-            return fourDoorSolutionDeviceFactory.create(deviceMap, vendorMap, deviceId, objectName, vendorId);
+            return fourDoorSolutionDeviceFactory.create(deviceMap, vendorMap, deviceId, objectName, modelName,
+                    vendorId);
 
         case TZ320:
-            return tz320DeviceFactory.create(deviceMap, vendorMap, deviceId, objectName, vendorId);
+            return tz320DeviceFactory.create(deviceMap, vendorMap, deviceId, objectName, modelName, vendorId);
 
         case WATCHDOG:
-            return watchdogDeviceFactory.create(deviceMap, vendorMap, deviceId, objectName, vendorId);
+            return watchdogDeviceFactory.create(deviceMap, vendorMap, deviceId, objectName, modelName, vendorId);
 
         default:
             throw new RuntimeException("Unknown DeviceType " + deviceType);
