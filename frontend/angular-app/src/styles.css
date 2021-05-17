@@ -1,0 +1,11 @@
+/* You can add global styles to this file, and also import other style files */
+
+/* https://stackoverflow.com/questions/38409773/angular-2-how-to-correctly-automatically-import-normalize-css */
+@import "~normalize.css";
+
+/** https://stackoverflow.com/questions/50362039/angular-using-google-fonts-library */
+html,
+body {
+  /*font-family: "Muli";*/
+  font-family: "Pattaya", sans-serif;
+}

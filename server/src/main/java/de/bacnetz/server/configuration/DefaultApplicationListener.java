@@ -1,7 +1,6 @@
 package de.bacnetz.server.configuration;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.StreamSupport;
 
@@ -13,11 +12,9 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
+import de.bacnetz.App;
 import de.bacnetz.controller.MessageController;
-import de.bacnetz.devices.Device;
-import de.bacnetz.devices.DeviceCreationDescriptor;
 import de.bacnetz.devices.DeviceService;
-import de.bacnetz.devices.DeviceType;
 import de.bacnetz.server.persistence.covsubscriptions.COVSubscriptionData;
 import de.bacnetz.server.persistence.covsubscriptions.COVSubscriptionRepository;
 import de.bacnetz.threads.MulticastListenerReaderThread;
@@ -77,23 +74,25 @@ public class DefaultApplicationListener implements ApplicationListener<ContextRe
 
             final Map<Integer, String> vendorMap = VendorMap.processVendorMap();
 
-            // create watchdogs
-            final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
-            deviceCreationDescriptor.setDeviceType(DeviceType.WATCHDOG);
-            deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
-            deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID + 100);
-            deviceCreationDescriptor.setDeviceIdIncrement(1);
-            deviceCreationDescriptor.setDeviceIdOffset(0);
-            @SuppressWarnings("unused")
-            List<Device> devices = deviceService.createDevices(vendorMap, bindIp, deviceCreationDescriptor);
+//            // create watchdogs
+//            final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
+//            deviceCreationDescriptor.setDeviceType(DeviceType.WATCHDOG);
+//            deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
+//            deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID + 100);
+//            deviceCreationDescriptor.setDeviceIdIncrement(1);
+//            deviceCreationDescriptor.setDeviceIdOffset(0);
+//            @SuppressWarnings("unused")
+//            List<Device> devices = deviceService.createDevices(vendorMap, bindIp, deviceCreationDescriptor);
+//
+//            // create TZ320
+//            deviceCreationDescriptor.setDeviceType(DeviceType.TZ320);
+//            deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
+//            deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID + 200);
+//            deviceCreationDescriptor.setDeviceIdIncrement(1);
+//            deviceCreationDescriptor.setDeviceIdOffset(0);
+//            devices = deviceService.createDevices(vendorMap, bindIp, deviceCreationDescriptor);
 
-            // create TZ320
-            deviceCreationDescriptor.setDeviceType(DeviceType.TZ320);
-            deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
-            deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID + 200);
-            deviceCreationDescriptor.setDeviceIdIncrement(1);
-            deviceCreationDescriptor.setDeviceIdOffset(0);
-            devices = deviceService.createDevices(vendorMap, bindIp, deviceCreationDescriptor);
+            App.setupCento(vendorMap, deviceService, bindIp);
 
             multicastListenerReaderThread.getMessageControllers().add(messageController);
             multicastListenerReaderThread.setVendorMap(vendorMap);

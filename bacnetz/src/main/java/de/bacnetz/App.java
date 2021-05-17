@@ -198,7 +198,7 @@ public class App {
 //		runMainOld();
     }
 
-    private static void setupCento(final Map<Integer, String> vendorMap, final DeviceService deviceService,
+    public static void setupCento(final Map<Integer, String> vendorMap, final DeviceService deviceService,
             final String localIp) throws SocketException, UnknownHostException {
 
         // 2, 3, 4, 5, 6, 7, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,

@@ -1,0 +1,44 @@
+<!--The content below is only a placeholder and can be replaced.-->
+<div style="text-align: center">
+  <div class="topbar">
+    <span>Welcome to the {{ title }}!</span>
+  </div>
+
+  <!--
+  <fa-icon [icon]="faCoffee"></fa-icon>
+  <fa-icon [icon]="faDigitalTachograph"></fa-icon>
+
+  <button (click)="onClickMe()">Click me!</button><br /><br />
+  -->
+
+  <div class="documentation">
+    For the cockpit to talk to the simulator, the following prerequisits have to
+    be met:
+
+    <ol>
+      <li>The bacapp for IP has to be started on the cockpit.</li>
+      <li>
+        In the HDM a configuration for the bacapp for IP controller has to be
+        present.
+      </li>
+      <li>
+        The bacnet / IP configuration has to use the same net_number on both
+        links
+      </li>
+      <li>
+        The bacnet / IP configuration has to use the same net_number as the
+        BACnet devices it is supposed to talk to (Same network)
+      </li>
+      <li>Make sure the IP traffic is not blocked by any firewall</li>
+    </ol>
+  </div>
+
+  <router-outlet></router-outlet>
+
+  <div class="footer blink_me">
+    <marquee
+      >I'm sorry, the design is still under construction! A couple of marquee
+      texts are still missing!</marquee
+    >
+  </div>
+</div>
