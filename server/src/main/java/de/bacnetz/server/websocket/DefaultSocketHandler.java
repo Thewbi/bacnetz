@@ -33,6 +33,9 @@ import de.bacnetz.server.websocket.subscriptions.SubscriptionManager;
 import de.bacnetz.websocket.IUserSocket;
 
 /**
+ * The port of the websocket is defined in: ??? <br />
+ * <br />
+ * 
  * <pre>
  * ws = new WebSocket("ws://localhost:8080/bacnetz/push");
  * console.log(ws);
@@ -87,39 +90,48 @@ public class DefaultSocketHandler extends TextWebSocketHandler implements Socket
     public void handleTextMessage(final WebSocketSession session, final TextMessage message)
             throws InterruptedException, IOException {
 
-        LOG.trace("handleTextMessage");
+        LOG.info("handleTextMessage: message='{}'", message);
 
         // DEBUG output but ignore action list messages
         if (StringUtils.isNotBlank(message.getPayload())
                 && !message.getPayload().equalsIgnoreCase("{\"action\":\"list\"}")) {
-            LOG.trace(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-            LOG.trace("handleTextMessage");
-            LOG.trace(message.toString());
-            LOG.trace(message.getPayload());
+            LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+            LOG.info("handleTextMessage");
+            LOG.info(message.toString());
+            LOG.info(message.getPayload());
         }
 
-        // parse message
-        @SuppressWarnings("unchecked")
-        final Map<String, Object> webSocketMessage = new Gson().fromJson(message.getPayload(), Map.class);
+        try {
 
-        // DEBUG
-        for (final Map.Entry<String, Object> entry : webSocketMessage.entrySet()) {
-            LOG.info("Key: " + entry.getKey() + " Value: " + entry.getValue());
+            // parse message
+            @SuppressWarnings("unchecked")
+            final Map<String, Object> webSocketMessage = new Gson().fromJson(message.getPayload(), Map.class);
+
+            // DEBUG
+            for (final Map.Entry<String, Object> entry : webSocketMessage.entrySet()) {
+                LOG.info("Key: " + entry.getKey() + " Value: " + entry.getValue());
+            }
+
+            final String action = (String) webSocketMessage.get("action");
+
+            LOG.info("action = '{}'", action);
+
+            if ("subscribe".equalsIgnoreCase(action)) {
+                handleSubscription(session, webSocketMessage);
+            } else if ("unsubscribe".equalsIgnoreCase(action)) {
+                handleUnsubscribe(session, webSocketMessage);
+            } else if ("list".equalsIgnoreCase(action)) {
+                handleListSubscriptions(session);
+            } else {
+                LOG.error("Unknown Action: '{}'", action);
+            }
+        } catch (final Exception e) {
+            LOG.error(e.getMessage(), e);
         }
 
-        final String action = (String) webSocketMessage.get("action");
-
-        LOG.info("action = '{}'", action);
-
-        if ("subscribe".equalsIgnoreCase(action)) {
-            handleSubscription(session, webSocketMessage);
-        } else if ("unsubscribe".equalsIgnoreCase(action)) {
-            handleUnsubscribe(session, webSocketMessage);
-        } else if ("list".equalsIgnoreCase(action)) {
-            handleListSubscriptions(session);
-        } else {
-            LOG.error("Unknown Action: '{}'", action);
-        }
+        final TextMessage textMessage = new TextMessage(
+                "OmegaLUL, thanks for the message: '" + message.getPayload() + "'");
+        session.sendMessage(textMessage);
     }
 
     /**
