@@ -1,5 +1,5 @@
 import logo from "../../logo.svg";
-import { selectDevice } from "../../actions";
+import { selectDeviceActionCreator } from "../../actions";
 import { connect } from "react-redux";
 
 // ID: {props.value.id} Name: {props.value.name}
@@ -17,6 +17,9 @@ function DeviceListItemRedux(props) {
         <div className="description">
           <p>BACnet Device</p>
         </div>
+        <div className="description">
+          <p>State: {JSON.stringify(props.value.state)}</p>
+        </div>
         <button
           className="ui button primary"
           onClick={() => props.selectDevice(props.value)}
@@ -29,10 +32,10 @@ function DeviceListItemRedux(props) {
 }
 
 const mapStateToProps = (state) => {
-  //console.log(state);
+  console.log(state);
   return { devices: state.devices };
 };
 
-export default connect(mapStateToProps, { selectDevice: selectDevice })(
-  DeviceListItemRedux
-);
+export default connect(mapStateToProps, {
+  selectDevice: selectDeviceActionCreator,
+})(DeviceListItemRedux);

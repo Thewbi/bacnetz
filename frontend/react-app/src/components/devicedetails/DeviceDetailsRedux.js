@@ -1,4 +1,4 @@
-import { selectDevice } from "../../actions";
+import { selectDeviceActionCreator } from "../../actions";
 import { connect } from "react-redux";
 
 // ID: {props.value.id} Name: {props.value.name}
@@ -17,10 +17,10 @@ function DeviceDetailsRedux(props) {
 }
 
 const mapStateToProps = (state) => {
-  console.log(state);
+  //   console.log(state);
   return { selectedDevice: state.selectedDevice };
 };
 
-export default connect(mapStateToProps, { selectDevice: selectDevice })(
-  DeviceDetailsRedux
-);
+export default connect(mapStateToProps, {
+  selectDevice: selectDeviceActionCreator,
+})(DeviceDetailsRedux);

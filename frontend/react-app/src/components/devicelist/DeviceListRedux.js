@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import DeviceListItem from "../devicelistitem/DeviceListItem";
 import DeviceListItemRedux from "../devicelistitem/DeviceListItemRedux";
-import { selectDevice } from "../../actions";
+import { selectDeviceActionCreator } from "../../actions";
 import { useContext } from "react";
 
 import {
@@ -36,6 +36,9 @@ class DeviceListRedux extends Component {
     let payload = {
       number: this.number,
       messageText: "flup",
+
+      action: "subscribe",
+      id: "DEVICE_14_RWS_hdm",
     };
     this.ws.socket.send(JSON.stringify(payload));
   };
@@ -66,6 +69,6 @@ const mapStateToProps = (state) => {
   return { devices: state.devices };
 };
 
-export default connect(mapStateToProps, { selectDevice: selectDevice })(
-  DeviceListRedux
-);
+export default connect(mapStateToProps, {
+  selectDevice: selectDeviceActionCreator,
+})(DeviceListRedux);

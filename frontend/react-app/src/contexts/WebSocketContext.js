@@ -5,6 +5,8 @@ import { useDispatch } from "react-redux";
 import { messageReceived } from "../actions";
 //import WebSocket from "ws";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
+import { devicesReducer } from "../reducers";
+import { deviceStateChangedActionCreator } from "../actions";
 
 const WebSocketContext = createContext(null);
 
@@ -45,6 +47,15 @@ export default ({ children }) => {
 
     socket.onmessage = (message) => {
       console.log(message);
+      console.log(message.origin);
+      console.log(message.data);
+      console.log("Context, message: " + message);
+      //console.log("Context, message: " + JSON.stringify(message));
+
+      let msgAsJson = JSON.parse(message.data);
+      console.log(JSON.stringify(msgAsJson));
+
+      dispatch(deviceStateChangedActionCreator(msgAsJson));
     };
 
     ws = {

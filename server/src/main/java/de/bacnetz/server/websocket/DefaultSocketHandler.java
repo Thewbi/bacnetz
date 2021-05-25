@@ -105,7 +105,7 @@ public class DefaultSocketHandler extends TextWebSocketHandler implements Socket
 
             // parse message
             @SuppressWarnings("unchecked")
-            final Map<String, Object> webSocketMessage = new Gson().fromJson(message.getPayload(), Map.class);
+            final Map<String, Object> webSocketMessage = gson.fromJson(message.getPayload(), Map.class);
 
             // DEBUG
             for (final Map.Entry<String, Object> entry : webSocketMessage.entrySet()) {
@@ -129,9 +129,10 @@ public class DefaultSocketHandler extends TextWebSocketHandler implements Socket
             LOG.error(e.getMessage(), e);
         }
 
-        final TextMessage textMessage = new TextMessage(
-                "OmegaLUL, thanks for the message: '" + message.getPayload() + "'");
-        session.sendMessage(textMessage);
+        // send a reply
+        final ConnectionStatusDto connectionStatusDto = new ConnectionStatusDto();
+        connectionStatusDto.setConnectionStatus("OK");
+        session.sendMessage(new TextMessage(gson.toJson(connectionStatusDto)));
     }
 
     /**

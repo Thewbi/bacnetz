@@ -28,6 +28,11 @@ public class DefaultDevice extends BaseDevice {
     }
 
     @Override
+    public void executeAction() {
+        LOG.warn("Not implemented yet!");
+    }
+
+    @Override
     public Logger getLogger() {
         return LOG;
     }

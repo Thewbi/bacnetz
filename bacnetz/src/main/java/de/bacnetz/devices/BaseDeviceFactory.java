@@ -2,15 +2,21 @@ package de.bacnetz.devices;
 
 import java.util.Map;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.bacnetz.configuration.ConfigurationManager;
 import de.bacnetz.factory.Factory;
 import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.factory.MessageType;
+import de.bacnetz.listener.Listener;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 
 public abstract class BaseDeviceFactory implements Factory<Device> {
+
+    private static final Logger LOG = LogManager.getLogger(BaseDeviceFactory.class);
 
     @Autowired
     private ConfigurationManager configurationManager;
@@ -163,6 +169,63 @@ public abstract class BaseDeviceFactory implements Factory<Device> {
         deviceProperty = new DefaultDeviceProperty<Integer>("status-flags", DeviceProperty.STATUS_FLAGS, 0x00,
                 MessageType.UNSIGNED_INTEGER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
+    }
+
+    protected void addListenersToDevice(final Device device) {
+
+        // add a listener for notifying the parent which will execute domain-specific
+        // logic
+        device.getListeners().put("ParentLogicListener", new Listener() {
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public void event(final Object sender, final Object... args) {
+
+                LOG.info("ParentLogicListener Listener executing ...");
+
+                final Device senderDevice = (Device) sender;
+                final DeviceProperty<Object> presentValueDeviceProperty = (DeviceProperty<Object>) args[0];
+                final Object newPresentValue = args[1];
+                final Object oldPresentValue = args[2];
+
+                // notify the parent which will execute domain-specific logic
+                if (device.getParentDevice() != null) {
+                    device.getParentDevice().onValueChanged(senderDevice, presentValueDeviceProperty, newPresentValue,
+                            oldPresentValue);
+                }
+
+                LOG.info("ParentLogicListener Listener executing done.");
+            }
+
+        });
+
+        // add listener for all COV subscriptions
+        device.getListeners().put("COVListener", new Listener() {
+
+            @Override
+            public void event(final Object sender, final Object... args) {
+
+                LOG.info("COV Listener executing ...");
+
+                final Device senderDevice = (Device) sender;
+                final DeviceProperty<Object> presentValueDeviceProperty = (DeviceProperty<Object>) args[0];
+                final Object newPresentValue = args[1];
+                final Object oldPresentValue = args[2];
+
+                if (CollectionUtils.isNotEmpty(senderDevice.getCovSubscriptions())) {
+
+                    // notify all COV subscriptions
+                    senderDevice.getCovSubscriptions().stream().forEach(s -> {
+                        s.valueChanged(newPresentValue);
+                    });
+                }
+
+                LOG.info("COV Listener executing done.");
+            }
+        });
+
+        // websocket listeners are added in
+        // de.bacnetz.server.websocket.subscriptions.DefaultSubscriptionManager.addSubscriptionToDevice(Subscription)
     }
 
     public ConfigurationManager getConfigurationManager() {

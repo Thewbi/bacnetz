@@ -1,8 +1,11 @@
 package de.bacnetz.server.websocket.subscriptions;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.TextMessage;
@@ -11,6 +14,11 @@ import org.springframework.web.socket.WebSocketMessage;
 import com.google.gson.Gson;
 
 import de.bacnetz.common.websocket.subscriptions.Subscription;
+import de.bacnetz.devices.Device;
+import de.bacnetz.devices.DeviceService;
+import de.bacnetz.devices.ObjectType;
+import de.bacnetz.stack.LinkLayerType;
+import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 
 public class DefaultSubscriptionManager implements SubscriptionManager {
 
@@ -19,6 +27,8 @@ public class DefaultSubscriptionManager implements SubscriptionManager {
     private final Map<String, Subscription> subscriptions = new HashMap<>();
 
     private final Gson gson = new Gson();
+
+    private DeviceService deviceService;
 
     @Override
     public void addSubscription(final Subscription subscription) {
@@ -37,8 +47,32 @@ public class DefaultSubscriptionManager implements SubscriptionManager {
 
         final String subcriptionId = subscription.getId();
         final String[] split = subcriptionId.split("_");
+        final int deviceId = Integer.parseInt(split[1]);
 
-        final String deviceId = split[1];
+        final ObjectIdentifierServiceParameter objectIdentifier = ObjectIdentifierServiceParameter
+                .createFromTypeAndInstanceNumber(ObjectType.DEVICE, deviceId);
+
+        final List<Device> devices = deviceService.findDevice(objectIdentifier, LinkLayerType.IP);
+
+        if (CollectionUtils.isEmpty(devices)) {
+            return;
+        }
+
+        final Device device = devices.get(0);
+        if (MapUtils.isEmpty(device.getListeners())) {
+            // if there is no listener for the subscription yet, add one
+            final DefaultSubscriptionListener listener = new DefaultSubscriptionListener(subscription);
+            device.getListeners().put(subscription, listener);
+            LOG.info("WebSocket subscription added to device: " + device);
+        } else {
+            // check if there is a listener already
+            if (!device.getListeners().containsKey(subscription)) {
+                // if there is no listener for the subscription yet, add one
+                final DefaultSubscriptionListener listener = new DefaultSubscriptionListener(subscription);
+                device.getListeners().put(subscription, listener);
+                LOG.info("WebSocket subscription added to device: " + device);
+            }
+        }
 
     }
 
@@ -74,6 +108,14 @@ public class DefaultSubscriptionManager implements SubscriptionManager {
 
     @Override
     public void removeAllSubscriptions() {
+    }
+
+    public DeviceService getDeviceService() {
+        return deviceService;
+    }
+
+    public void setDeviceService(final DeviceService deviceService) {
+        this.deviceService = deviceService;
     }
 
 }

@@ -11,6 +11,7 @@ import java.util.Set;
 
 import de.bacnetz.controller.Message;
 import de.bacnetz.factory.MessageFactory;
+import de.bacnetz.listener.Listener;
 import de.bacnetz.stack.BACnetServicesSupportedBitString;
 import de.bacnetz.stack.COVSubscription;
 import de.bacnetz.stack.LinkLayerType;
@@ -89,6 +90,9 @@ public interface Device {
 
     void setParentDevice(Device parentDevice);
 
+    /**
+     * Called by the REST API on a device to test interaction
+     */
     void executeAction();
 
     int getVendorId();
@@ -107,5 +111,7 @@ public interface Device {
 
     void onValueChanged(Device device, DeviceProperty<Object> presentValueDeviceProperty, Object oldPresentValue,
             Object newPresentValue);
+
+    Map<Object, Listener> getListeners();
 
 }

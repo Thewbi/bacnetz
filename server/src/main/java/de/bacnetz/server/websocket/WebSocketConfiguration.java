@@ -17,6 +17,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistra
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
 
+import de.bacnetz.devices.DeviceService;
 import de.bacnetz.server.websocket.subscriptions.DefaultSubscriptionManager;
 import de.bacnetz.server.websocket.subscriptions.SubscriptionManager;
 
@@ -66,8 +67,11 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
     }
 
     @Bean
-    public SubscriptionManager subscriptionManager() {
-        return new DefaultSubscriptionManager();
+    public SubscriptionManager subscriptionManager(final DeviceService deviceService) {
+        final DefaultSubscriptionManager defaultSubscriptionManager = new DefaultSubscriptionManager();
+        defaultSubscriptionManager.setDeviceService(deviceService);
+
+        return defaultSubscriptionManager;
     }
 
 }

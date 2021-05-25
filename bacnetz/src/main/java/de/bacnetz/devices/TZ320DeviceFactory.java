@@ -46,6 +46,8 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
         // make sure to add child devices first using a call to addChildrenToDevice!
         addPropertiesToDevice(device);
 
+        addListenersToDevice(device);
+
         deviceMap.put(device.getObjectIdentifierServiceParameter(), device);
 
         return device;
@@ -199,12 +201,6 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x4c = 76d (0x4c = 76d) - object list
-//      case 0x4c:
-//          LOG.trace("<<< READ_PROP: object-list ({})", propertyIdentifierCode);
-//          return processObjectListRequest(propertyIdentifierCode, requestMessage);
-//      deviceProperty = new DefaultDeviceProperty<Integer>("object-list", DeviceProperty.OBJECT_LIST, null,
-//              MessageType.UNSIGNED_INTEGER);
-//      device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
         final CompositeDeviceProperty objectListCompositeDeviceProperty = new CompositeDeviceProperty("object-list",
                 DeviceProperty.OBJECT_LIST, null, MessageType.UNSIGNED_INTEGER);
 
@@ -231,9 +227,6 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
                 objectListCompositeDeviceProperty);
 
         // 0x4d = 77d (0x4d = 77d) object-name
-//      case 0x4d:
-//          LOG.trace("<<< READ_PROP: object-name ({})", propertyIdentifierCode);
-//          return processObjectNameProperty(propertyIdentifierCode, requestMessage);
         deviceProperty = new DefaultDeviceProperty<String>("object-name", DeviceProperty.OBJECT_NAME, device.getName(),
                 MessageType.CHARACTER_STRING);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
@@ -244,15 +237,13 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x51 = 81d out-of-service
-        deviceProperty = new DefaultDeviceProperty<Boolean>("out-of-service", DeviceProperty.OUT_OF_SERVICE,
-//              new byte[] { (byte) 0x00 }, 
-                false, MessageType.BOOLEAN);
+        deviceProperty = new DefaultDeviceProperty<Boolean>("out-of-service", DeviceProperty.OUT_OF_SERVICE, false,
+                MessageType.BOOLEAN);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x62 = 98d protocol-version
-        deviceProperty = new DefaultDeviceProperty<Integer>("protocol-version", DeviceProperty.PROTOCOL_VERSION,
-//              new byte[] { (byte) 0x01 }, 
-                1, MessageType.UNSIGNED_INTEGER);
+        deviceProperty = new DefaultDeviceProperty<Integer>("protocol-version", DeviceProperty.PROTOCOL_VERSION, 1,
+                MessageType.UNSIGNED_INTEGER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x77 = 119d UTC-offset
@@ -265,7 +256,7 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
                 device.getVendorId(), MessageType.UNSIGNED_INTEGER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
-//        // 0x79 = 121d vendor-name
+        // 0x79 = 121d vendor-name
         deviceProperty = new DefaultDeviceProperty<String>("vendor-name", DeviceProperty.VENDOR_NAME,
                 device.getVendorMap().get(device.getVendorId()), MessageType.CHARACTER_STRING);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
@@ -277,9 +268,6 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0x2C = 44d firmware-revision
-//      case 0x2C:
-//          LOG.trace("<<< READ_PROP: firmware-revision ({})", propertyIdentifierCode);
-//          return processFirmwareRevisionProperty(propertyIdentifierCode, requestMessage);
         deviceProperty = new DefaultDeviceProperty<String>("firmware-revision", DeviceProperty.FIRMWARE_REVISION,
                 device.getFirmwareRevision(), MessageType.CHARACTER_STRING);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
@@ -370,9 +358,6 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
 
         // 0xCA = 202d
-//      case 0xCA:
-//          LOG.trace("<<< READ_PROP: restart-notification-recipients ({})", propertyIdentifierCode);
-//          return processRestartNotificationRecipientsProperty(propertyIdentifierCode, requestMessage);
         deviceProperty = new DefaultDeviceProperty<Integer>("restart-notification-recipients",
                 DeviceProperty.RESTART_NOTIFICATION_RECIPIENTS, 0, MessageType.UNSIGNED_INTEGER);
         device.getProperties().put(deviceProperty.getPropertyKey(), deviceProperty);
@@ -403,8 +388,9 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
         device.getChildDevices().add(childDevice);
         childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
 
-        // binary-input, 1
+        // binary-input, 1 - lock state
         childDevice = new BinaryInputDevice();
         childDevice.setParentDevice(device);
         childDevice.setObjectType(ObjectType.BINARY_INPUT);
@@ -418,8 +404,9 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
         device.getChildDevices().add(childDevice);
         childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, new byte[] { 1 });
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
 
-        // binary-input, 2
+        // binary-input, 2 - door state
         childDevice = new BinaryInputDevice();
         childDevice.setParentDevice(device);
         childDevice.setObjectType(ObjectType.BINARY_INPUT);
@@ -433,8 +420,9 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
         device.getChildDevices().add(childDevice);
         childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, new byte[] { 1 });
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
 
-        // multi_state_value, 3
+        // multi_state_value, 3 - state property
         childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
@@ -448,8 +436,9 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
         device.getChildDevices().add(childDevice);
         childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
 
-        // multi_state_value, 4
+        // multi_state_value, 4 - command object
         childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);
         childDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
@@ -463,6 +452,7 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
         device.getChildDevices().add(childDevice);
         childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
 
         // 7 (notification-class) (15, 50)
         childDevice = new DefaultDevice();
@@ -477,6 +467,7 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
         addPropertiesToNotificationClassDevice(childDevice);
         device.getChildDevices().add(childDevice);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
     }
 
     protected String getAlarmTypeName() {

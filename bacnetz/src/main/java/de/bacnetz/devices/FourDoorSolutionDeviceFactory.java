@@ -47,6 +47,8 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         // make sure to add child devices first using a call to addChildrenToDevice!
         addPropertiesToDevice(device);
 
+        addListenersToDevice(device);
+
         deviceMap.put(device.getObjectIdentifierServiceParameter(), device);
 
         return device;
@@ -73,11 +75,9 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         addPropertiesToModuleTypeDevice(childDevice);
         device.getChildDevices().add(childDevice);
         // 4 = four door solution
-//        childDevice.setPresentValue(4);
         childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 4);
-        // 80 = multi door solution
-//        childDevice.setPresentValue(80);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
 
         // 2 - alarm-type (19, 2)
         index++;
@@ -93,15 +93,14 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         childDevice.setMessageFactory(getMessageFactory());
         addPropertiesToAlarmStateDevice(childDevice);
         device.getChildDevices().add(childDevice);
-//        childDevice.setPresentValue(1);
         childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
 
         // 7 (notification-class) (15, 50)
         index++;
         childDevice = new DefaultDevice();
         childDevice.setParentDevice(device);
-        // object-identifier (15, 50)
         childDevice.setObjectType(ObjectType.NOTIFICATION_CLASS);
         childDevice.setId(50);
         childDevice.setName("notificaton_class_obj");
@@ -112,6 +111,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         addPropertiesToNotificationClassDevice(childDevice);
         device.getChildDevices().add(childDevice);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
 
         index = createDoor1(device, vendorMap, index, parentDeviceId);
 
@@ -143,6 +143,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         device.getChildDevices().add(childDevice);
         childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, new byte[] { 1 });
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
 
         // 6 - multi_state_value,6 - command
         index++;
@@ -160,6 +161,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         device.getChildDevices().add(childDevice);
         childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
 
         // 5 - multi_state_value,5 - door1_state - lock state (locked, unlocked,
         // short-time-released)
@@ -182,6 +184,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         device.getChildDevices().add(childDevice);
         childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
 
         return index;
     }
@@ -206,6 +209,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         device.getChildDevices().add(childDevice);
         childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, new byte[] { 1 });
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
 
         // 9
         index++;
@@ -221,6 +225,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         device.getChildDevices().add(childDevice);
         childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
 
         // 8, lock state
         index++;
@@ -241,6 +246,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         device.getChildDevices().add(childDevice);
         childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
 
         return index;
     }
@@ -265,6 +271,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         device.getChildDevices().add(childDevice);
         childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, new byte[] { 1 });
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
 
         // 13
         index++;
@@ -279,6 +286,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         device.getChildDevices().add(childDevice);
         childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
 
         // 12
         index++;
@@ -299,6 +307,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         device.getChildDevices().add(childDevice);
         childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
 
         return index;
     }
@@ -323,6 +332,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         device.getChildDevices().add(childDevice);
         childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, new byte[] { 1 });
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
 
         // 15 four_door_solution_door4_state MASTER COMMAND and State (locked, unlocked,
         // short_time_released)
@@ -340,6 +350,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         device.getChildDevices().add(childDevice);
         childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
 
         // 14 four_door_solution_door4_state lock_state
         // (locked, unlocked, short time release)
@@ -361,6 +372,7 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
         device.getChildDevices().add(childDevice);
         childDevice.writeProperty(DeviceProperty.PRESENT_VALUE, 1);
         device.getDeviceMap().put(childDevice.getObjectIdentifierServiceParameter(), childDevice);
+        addListenersToDevice(childDevice);
     }
 
     private void addPropertiesToDevice(final Device device) {

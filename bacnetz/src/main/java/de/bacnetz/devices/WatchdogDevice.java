@@ -46,6 +46,11 @@ public class WatchdogDevice extends BaseDevice {
     }
 
     @Override
+    public void executeAction() {
+        LOG.warn("Not implemented yet!");
+    }
+
+    @Override
     public Logger getLogger() {
         return LOG;
     }

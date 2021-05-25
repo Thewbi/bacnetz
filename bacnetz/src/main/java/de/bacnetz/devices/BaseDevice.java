@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -31,6 +32,7 @@ import de.bacnetz.controller.DefaultMessageController;
 import de.bacnetz.controller.Message;
 import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.factory.MessageType;
+import de.bacnetz.listener.Listener;
 import de.bacnetz.services.CommunicationService;
 import de.bacnetz.stack.BACnetProtocolObjectTypesSupportedBitString;
 import de.bacnetz.stack.BACnetServicesSupportedBitString;
@@ -104,8 +106,6 @@ public abstract class BaseDevice implements Device, CommunicationService {
      */
     private MulticastListenerReaderThread multicastListenerReaderThread;
 
-    private int tempActionId;
-
     /**
      * Internal service (no spring bean). Used during binding of this device to a
      * port.
@@ -117,6 +117,8 @@ public abstract class BaseDevice implements Device, CommunicationService {
      * port.
      */
     private DefaultMessageController messageController;
+
+    private final Map<Object, Listener> listeners = new HashMap<>();
 
     /**
      * ctor
@@ -741,6 +743,21 @@ public abstract class BaseDevice implements Device, CommunicationService {
         return properties.get(DevicePropertyType.PRESENT_VALUE.getCode()).getValue();
     }
 
+    @Override
+    public void writeProperty(final Integer propertyKey, final Object value) {
+
+        getLogger().info("WriteProperty: PropertyKey: {} Value; {}", propertyKey, value);
+
+        if (!getProperties().containsKey(propertyKey)) {
+            getLogger().warn("The device {} does not have a property for the key {}", this, propertyKey);
+            return;
+        }
+
+        @SuppressWarnings("unchecked")
+        final DeviceProperty<Object> deviceProperty = (DeviceProperty<Object>) getProperties().get(propertyKey);
+        updatePropertyValue(deviceProperty, value);
+    }
+
     private void updatePropertyValue(final DeviceProperty<Object> presentValueDeviceProperty,
             final Object newPresentValue) {
 
@@ -771,183 +788,12 @@ public abstract class BaseDevice implements Device, CommunicationService {
 
             presentValueDeviceProperty.setValue(newPresentValue);
 
-            // notify the parent which will execute domain-specific logic
-            getParentDevice().onValueChanged(this, presentValueDeviceProperty, newPresentValue, newPresentValue);
-
-            covSubscriptions.stream().forEach(s -> {
-                s.valueChanged(newPresentValue);
-            });
-        }
-    }
-
-    @Override
-    public void writeProperty(final Integer propertyKey, final Object value) {
-
-        getLogger().info("WriteProperty: PropertyKey: {} Value; {}", propertyKey, value);
-
-        if (!getProperties().containsKey(propertyKey)) {
-            getLogger().warn("The device {} does not have a property for the key {}", this, propertyKey);
-            return;
-        }
-
-        @SuppressWarnings("unchecked")
-        final DeviceProperty<Object> deviceProperty = (DeviceProperty<Object>) getProperties().get(propertyKey);
-        updatePropertyValue(deviceProperty, value);
-    }
-
-    @Override
-    public void executeAction() {
-
-        allToggle();
-//        moduloToggle();
-    }
-
-    private void allToggle() {
-
-        getLogger().info("Toogling all doors on device: '{}'", getId());
-
-        final int startId = 0;
-
-        getLogger().trace("Toggling door 1 ...");
-        final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber1 = ObjectIdentifierServiceParameter
-                .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 1);
-        final Device door1CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber1);
-        if (door1CloseStateBinaryInput != null) {
-            final byte[] byteArray1 = (byte[]) door1CloseStateBinaryInput.getPresentValue();
-            door1CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
-                    new byte[] { (byte) (1 - byteArray1[0]) });
-        }
-
-        getLogger().trace("Toggling door 2 ...");
-        final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber2 = ObjectIdentifierServiceParameter
-                .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 2);
-        final Device door2CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber2);
-        if (door2CloseStateBinaryInput != null) {
-            final byte[] byteArray2 = (byte[]) door2CloseStateBinaryInput.getPresentValue();
-            door2CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
-                    new byte[] { (byte) (1 - byteArray2[0]) });
-        }
-
-        getLogger().trace("Toggling door 3 ...");
-        final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber3 = ObjectIdentifierServiceParameter
-                .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 3);
-        final Device door3CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber3);
-        if (door3CloseStateBinaryInput != null) {
-            final byte[] byteArray3 = (byte[]) door3CloseStateBinaryInput.getPresentValue();
-            door3CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
-                    new byte[] { (byte) (1 - byteArray3[0]) });
-        }
-
-        getLogger().trace("Toggling door 4 ...");
-        final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber4 = ObjectIdentifierServiceParameter
-                .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 4);
-        final Device door4CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber4);
-        if (door4CloseStateBinaryInput != null) {
-            final byte[] byteArray4 = (byte[]) door4CloseStateBinaryInput.getPresentValue();
-            door4CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
-                    new byte[] { (byte) (1 - byteArray4[0]) });
-        }
-    }
-
-    @SuppressWarnings("unused")
-    private void moduloToggle() {
-
-        final int startId = 0;
-
-        if (tempActionId == 0) {
-            getLogger().info("Toggling door 1 ...");
-            final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber1 = ObjectIdentifierServiceParameter
-                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 1);
-            final Device door1CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber1);
-            if (door1CloseStateBinaryInput != null) {
-                final byte[] byteArray1 = (byte[]) door1CloseStateBinaryInput.getPresentValue();
-                door1CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
-                        new byte[] { (byte) (1 - byteArray1[0]) });
-            }
-        }
-
-        if (tempActionId == 1) {
-            getLogger().info("Toggling door 2 ...");
-            final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber2 = ObjectIdentifierServiceParameter
-                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 2);
-            final Device door2CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber2);
-            if (door2CloseStateBinaryInput != null) {
-                final byte[] byteArray2 = (byte[]) door2CloseStateBinaryInput.getPresentValue();
-                door2CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
-                        new byte[] { (byte) (1 - byteArray2[0]) });
-            }
-        }
-
-        if (tempActionId == 2) {
-            getLogger().info("Toggling door 3 ...");
-            final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber3 = ObjectIdentifierServiceParameter
-                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 3);
-            final Device door3CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber3);
-            if (door3CloseStateBinaryInput != null) {
-                final byte[] byteArray3 = (byte[]) door3CloseStateBinaryInput.getPresentValue();
-                door3CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
-                        new byte[] { (byte) (1 - byteArray3[0]) });
-            }
-        }
-
-        if (tempActionId == 3) {
-            getLogger().info("Toggling door 4 ...");
-            final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber4 = ObjectIdentifierServiceParameter
-                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 4);
-            final Device door4CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber4);
-            if (door4CloseStateBinaryInput != null) {
-                final byte[] byteArray4 = (byte[]) door4CloseStateBinaryInput.getPresentValue();
-                door4CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
-                        new byte[] { (byte) (1 - byteArray4[0]) });
-            }
-        }
-
-        // toggle all doors
-        if (tempActionId == 4) {
-
-            getLogger().info("Toggling door 1 ...");
-            final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber1 = ObjectIdentifierServiceParameter
-                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 1);
-            final Device door1CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber1);
-            if (door1CloseStateBinaryInput != null) {
-                final byte[] byteArray1 = (byte[]) door1CloseStateBinaryInput.getPresentValue();
-                door1CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
-                        new byte[] { (byte) (1 - byteArray1[0]) });
+            if (MapUtils.isNotEmpty(listeners)) {
+                listeners.values().stream()
+                        .forEach(l -> l.event(this, presentValueDeviceProperty, newPresentValue, oldPresentValue));
             }
 
-            getLogger().info("Toggling door 2 ...");
-            final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber2 = ObjectIdentifierServiceParameter
-                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 2);
-            final Device door2CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber2);
-            if (door2CloseStateBinaryInput != null) {
-                final byte[] byteArray2 = (byte[]) door2CloseStateBinaryInput.getPresentValue();
-                door2CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
-                        new byte[] { (byte) (1 - byteArray2[0]) });
-            }
-
-            getLogger().info("Toggling door 3 ...");
-            final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber3 = ObjectIdentifierServiceParameter
-                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 3);
-            final Device door3CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber3);
-            if (door3CloseStateBinaryInput != null) {
-                final byte[] byteArray3 = (byte[]) door3CloseStateBinaryInput.getPresentValue();
-                door3CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
-                        new byte[] { (byte) (1 - byteArray3[0]) });
-            }
-
-            getLogger().info("Toggling door 4 ...");
-            final ObjectIdentifierServiceParameter createFromTypeAndInstanceNumber4 = ObjectIdentifierServiceParameter
-                    .createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, startId + 4);
-            final Device door4CloseStateBinaryInput = findDevice(createFromTypeAndInstanceNumber4);
-            if (door4CloseStateBinaryInput != null) {
-                final byte[] byteArray4 = (byte[]) door4CloseStateBinaryInput.getPresentValue();
-                door4CloseStateBinaryInput.writeProperty(DeviceProperty.PRESENT_VALUE,
-                        new byte[] { (byte) (1 - byteArray4[0]) });
-            }
         }
-
-        tempActionId++;
-        tempActionId = tempActionId % 5;
     }
 
     @Override
@@ -1212,6 +1058,11 @@ public abstract class BaseDevice implements Device, CommunicationService {
     @Override
     public void setModelName(final String modelName) {
         this.modelName = modelName;
+    }
+
+    @Override
+    public Map<Object, Listener> getListeners() {
+        return listeners;
     }
 
 }
