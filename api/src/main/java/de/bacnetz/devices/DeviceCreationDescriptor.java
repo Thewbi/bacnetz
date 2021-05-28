@@ -16,11 +16,14 @@ public class DeviceCreationDescriptor {
 
     private String modelName;
 
+    private int vendorId;
+
     @Override
     public String toString() {
         return "DeviceCreationDescriptor [amountOfDevices=" + amountOfDevices + ", startDeviceId=" + startDeviceId
                 + ", deviceIdIncrement=" + deviceIdIncrement + ", deviceIdOffset=" + deviceIdOffset + ", deviceType="
-                + deviceType + ", deviceName=" + deviceName + ", modelName=" + modelName + "]";
+                + deviceType + ", deviceName=" + deviceName + ", modelName=" + modelName + ", vendorId=" + vendorId
+                + "]";
     }
 
     public int getAmountOfDevices() {
@@ -77,6 +80,14 @@ public class DeviceCreationDescriptor {
 
     public void setModelName(final String modelName) {
         this.modelName = modelName;
+    }
+
+    public int getVendorId() {
+        return vendorId;
+    }
+
+    public void setVendorId(final int vendorId) {
+        this.vendorId = vendorId;
     }
 
 }

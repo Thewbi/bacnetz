@@ -44,6 +44,7 @@ import de.bacnetz.factory.DefaultMessageFactory;
 import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.stack.IPv4Packet;
 import de.bacnetz.stack.UDPPacket;
+import de.bacnetz.stack.VendorType;
 import de.bacnetz.threads.MulticastListenerReaderThread;
 import de.bacnetz.vendor.VendorMap;
 
@@ -209,21 +210,21 @@ public class App {
         // cento
         // DEVICE TZ320
         // [mstp DEVICE, 2] - Schleuse Tiefgarage TH1 (TH01 - Tiefgarage)
-        createTZ320(2, "Schleuse Tiefgarage TH1", "IO 420", vendorMap, deviceService, localIp);
+        createTZ320(2, "Schleuse Tiefgarage TH1", "IO 420", VendorType.GEZE_GMBH.getCode(), vendorMap, deviceService, localIp);
         // [mstp DEVICE, 3] - Schleuse Nordtür TH2 (TH02 - Tiefgarage Nord)
-        createTZ320(3, "Schleuse Nordtür TH2", "IO 420", vendorMap, deviceService, localIp);
+        createTZ320(3, "Schleuse Nordtür TH2", "IO 420", VendorType.GEZE_GMBH.getCode(), vendorMap, deviceService, localIp);
         // [mstp DEVICE, 4] - Schleuse Westtür TH2 (TH02 - Tiefgarage West)
-        createTZ320(4, "Schleuse Westtür TH2", "IO 420", vendorMap, deviceService, localIp);
+        createTZ320(4, "Schleuse Westtür TH2", "IO 420", VendorType.GEZE_GMBH.getCode(), vendorMap, deviceService, localIp);
         // [mstp DEVICE, 7] - Schleuse Technik TH1 (TH01 - Technik)
-        createTZ320(7, "Schleuse Technik TH1", "IO 420", vendorMap, deviceService, localIp);
+        createTZ320(7, "Schleuse Technik TH1", "IO 420", VendorType.GEZE_GMBH.getCode(), vendorMap, deviceService, localIp);
         // [mstp DEVICE, 11] - Schleuse Nordtür TH2
-        createTZ320(11, "Schleuse Nordtür TH2", "IO 420", vendorMap, deviceService, localIp);
+        createTZ320(11, "Schleuse Nordtür TH2", "IO 420", VendorType.GEZE_GMBH.getCode(), vendorMap, deviceService, localIp);
         // [mstp DEVICE, 12] - Schleuse TH1 (TH01 Vorraum)
-        createTZ320(12, "Schleuse TH1", "IO 420", vendorMap, deviceService, localIp);
+        createTZ320(12, "Schleuse TH1", "IO 420", VendorType.GEZE_GMBH.getCode(), vendorMap, deviceService, localIp);
         // [mstp DEVICE, 13] - TH02 Vorraum (Vorraum TH2)
-        createTZ320(13, "Vorraum TH2", "IO 420", vendorMap, deviceService, localIp);
+        createTZ320(13, "Vorraum TH2", "IO 420", VendorType.GEZE_GMBH.getCode(), vendorMap, deviceService, localIp);
         // [mstp DEVICE, 14] - TH03 Vorraum (Vorraum TH3)
-        createTZ320(14, "Vorraum TH3", "IO 420", vendorMap, deviceService, localIp);
+        createTZ320(14, "Vorraum TH3", "IO 420", VendorType.GEZE_GMBH.getCode(), vendorMap, deviceService, localIp);
 
         // cento
         // DEVICE: watchdog
@@ -277,8 +278,8 @@ public class App {
     }
 
     private static void createTZ320(final int deviceId, final String deviceName, final String modelName,
-            final Map<Integer, String> vendorMap, final DeviceService deviceService, final String localIp)
-            throws SocketException, UnknownHostException {
+            final int vendorId, final Map<Integer, String> vendorMap, final DeviceService deviceService,
+            final String localIp) throws SocketException, UnknownHostException {
         final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
         deviceCreationDescriptor.setDeviceType(DeviceType.TZ320);
         deviceCreationDescriptor.setDeviceName(deviceName);
@@ -287,6 +288,7 @@ public class App {
         deviceCreationDescriptor.setStartDeviceId(deviceId);
         deviceCreationDescriptor.setDeviceIdIncrement(1);
         deviceCreationDescriptor.setDeviceIdOffset(0);
+        deviceCreationDescriptor.setVendorId(vendorId);
         @SuppressWarnings("unused")
         final List<Device> devices = deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
     }

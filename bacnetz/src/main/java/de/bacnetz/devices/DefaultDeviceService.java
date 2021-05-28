@@ -15,7 +15,6 @@ import org.springframework.util.CollectionUtils;
 import de.bacnetz.factory.Factory;
 import de.bacnetz.stack.LinkLayerType;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
-import de.bacnetz.stack.VendorType;
 
 public class DefaultDeviceService implements DeviceService {
 
@@ -41,10 +40,11 @@ public class DefaultDeviceService implements DeviceService {
             final DeviceType deviceType = deviceCreationDescriptor.getDeviceType();
             final String deviceName = deviceCreationDescriptor.getDeviceName();
             final String modelName = deviceCreationDescriptor.getModelName();
+            final int vendorId = deviceCreationDescriptor.getVendorId();
 
             final int deviceId = deviceCreationDescriptor.getStartDeviceId() + deviceIdOffset;
             final Device device = deviceFactory.create(deviceType, deviceMap, vendorMap, deviceId, deviceName,
-                    modelName, VendorType.GEZE_GMBH.getCode());
+                    modelName, vendorId);
             devices.add(device);
 
             // device starts it's own server on it's own port, because BACnet Ids are not
