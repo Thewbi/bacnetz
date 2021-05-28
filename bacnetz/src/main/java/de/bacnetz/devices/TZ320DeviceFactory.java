@@ -12,6 +12,17 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
     @Override
     public Device create(final Object... args) {
 
+        // @formatter:off
+        
+        // 0 - deviceMap
+        // 1 - vendorMap
+        // 2 - deviceId
+        // 3 - deviceName
+        // 4 - modelName
+        // 5 - vendorId
+        
+        // @formatter:on
+
         final Map<ObjectIdentifierServiceParameter, Device> deviceMap = (Map<ObjectIdentifierServiceParameter, Device>) args[0];
         final Map<Integer, String> vendorMap = (Map<Integer, String>) args[1];
         final int deviceId = (int) args[2];

@@ -11,13 +11,25 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
     @Override
     public Device create(final Object... args) {
 
+        // @formatter:off
+        
+        // 0 - deviceMap
+        // 1 - vendorMap
+        // 2 - deviceId
+        // 3 - deviceName
+        // 4 - modelName
+        // 5 - vendorId
+        
+        // @formatter:on
+
         final Map<ObjectIdentifierServiceParameter, Device> deviceMap = (Map<ObjectIdentifierServiceParameter, Device>) args[0];
         final Map<Integer, String> vendorMap = (Map<Integer, String>) args[1];
         final int deviceId = (int) args[2];
-        final String objectName = (String) args[3];
-        final int vendorId = (int) args[4];
+        final String deviceName = (String) args[3];
+        final String modelName = (String) args[4];
+        final int vendorId = (int) args[5];
 
-        return createIO420FourDoorSolution(deviceMap, vendorMap, deviceId, objectName, vendorId);
+        return createIO420FourDoorSolution(deviceMap, vendorMap, deviceId, deviceName, modelName, vendorId);
     }
 
     @Override
@@ -26,12 +38,14 @@ public class FourDoorSolutionDeviceFactory extends DefaultDeviceFactory {
     }
 
     private Device createIO420FourDoorSolution(final Map<ObjectIdentifierServiceParameter, Device> deviceMap,
-            final Map<Integer, String> vendorMap, final int deviceId, final String objectName, final int vendorId) {
+            final Map<Integer, String> vendorMap, final int deviceId, final String objectName, final String modelName,
+            final int vendorId) {
 
         final BaseDevice device = createNewInstance();
         device.setObjectType(ObjectType.DEVICE);
         device.setId(deviceId);
         device.setName(objectName);
+        device.setModelName(modelName);
         device.setDescription("no entry");
         device.setLocation("Office");
         device.setVendorMap(vendorMap);

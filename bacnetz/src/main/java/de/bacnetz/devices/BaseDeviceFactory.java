@@ -36,6 +36,18 @@ public abstract class BaseDeviceFactory implements Factory<Device> {
     @Override
     public Device create(final Object... args) {
 
+        // @formatter:off
+        
+        // 0 - deviceType
+        // 1 - deviceMap
+        // 2 - vendorMap
+        // 3 - deviceId
+        // 4 - deviceName
+        // 5 - modelName
+        // 6 - vendorId
+        
+        // @formatter:on
+
         final DeviceType deviceType = (DeviceType) args[0];
         final Map<ObjectIdentifierServiceParameter, Device> deviceMap = (Map<ObjectIdentifierServiceParameter, Device>) args[1];
         final Map<Integer, String> vendorMap = (Map<Integer, String>) args[2];
