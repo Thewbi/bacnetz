@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -352,6 +353,8 @@ public class DefaultMessageController implements MessageController {
             // TODO: factory
             final DefaultCOVSubscription covSubscription = new DefaultCOVSubscription();
             covSubscription.setClientIp(requestMessage.getSourceInetSocketAddress().getHostString());
+//            covSubscription.setPort(requestMessage.get);
+            covSubscription.setRequestMessage(requestMessage);
             covSubscription.setCommunicationService(communicationService);
             covSubscription.setDevice(findDevice);
             covSubscription.setParentDevice(findDevice.getParentDevice());
@@ -938,36 +941,40 @@ public class DefaultMessageController implements MessageController {
 
                 int debugOutputIndex = 0;
 
-                for (final DeviceProperty<?> deviceProperty : targetDevice.getProperties().values()) {
+                if (MapUtils.isNotEmpty(targetDevice.getProperties())) {
 
-                    debugOutputIndex++;
+                    for (final DeviceProperty<?> deviceProperty : targetDevice.getProperties().values()) {
 
-                    LOG.trace("Adding ServiceParameter for DeviceProperty " + debugOutputIndex + ") " + deviceProperty
-                            + " ...");
+                        debugOutputIndex++;
 
-                    if (targetDevice != null) {
+                        LOG.trace("Adding ServiceParameter for DeviceProperty " + debugOutputIndex + ") "
+                                + deviceProperty + " ...");
 
-                        // add the property identifier
-                        final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
-                        propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-                        propertyIdentifierServiceParameter.setTagNumber(2);
-                        propertyIdentifierServiceParameter.setLengthValueType(1);
-                        propertyIdentifierServiceParameter
-                                .setPayload(new byte[] { (byte) deviceProperty.getPropertyKey() });
-                        targetApdu.getServiceParameters().add(propertyIdentifierServiceParameter);
+                        if (targetDevice != null) {
+
+                            // add the property identifier
+                            final ServiceParameter propertyIdentifierServiceParameter = new ServiceParameter();
+                            propertyIdentifierServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+                            propertyIdentifierServiceParameter.setTagNumber(2);
+                            propertyIdentifierServiceParameter.setLengthValueType(1);
+                            propertyIdentifierServiceParameter
+                                    .setPayload(new byte[] { (byte) deviceProperty.getPropertyKey() });
+                            targetApdu.getServiceParameters().add(propertyIdentifierServiceParameter);
+                        }
+
+                        // add the property value
+                        addPropertyValue(targetApdu, deviceProperty);
+
+                        LOG.trace("Adding ServiceParameter for DeviceProperty: " + deviceProperty + " done.");
                     }
-
-                    // add the property value
-                    addPropertyValue(targetApdu, deviceProperty);
-
-                    LOG.trace("Adding ServiceParameter for DeviceProperty: " + deviceProperty + " done.");
                 }
 
             } else if (devicePropertyKey == DevicePropertyType.TIME_OF_DEVICE_RESTART.getCode()) {
 
                 if (targetDevice != null) {
 
-                    if (targetDevice.getProperties().containsKey(devicePropertyKey)) {
+                    if (MapUtils.isNotEmpty(targetDevice.getProperties())
+                            && targetDevice.getProperties().containsKey(devicePropertyKey)) {
 
                         final DeviceProperty<?> deviceProperty = targetDevice.getProperties().get(devicePropertyKey);
 

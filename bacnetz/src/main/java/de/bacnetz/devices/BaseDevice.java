@@ -27,13 +27,12 @@ import org.apache.logging.log4j.Logger;
 
 import de.bacnetz.common.utils.Utils;
 import de.bacnetz.configuration.ConfigurationManager;
-import de.bacnetz.configuration.DefaultConfigurationManager;
 import de.bacnetz.controller.DefaultMessageController;
 import de.bacnetz.controller.Message;
 import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.factory.MessageType;
 import de.bacnetz.listener.Listener;
-import de.bacnetz.services.CommunicationService;
+import de.bacnetz.services.BaseCommunicationService;
 import de.bacnetz.stack.BACnetProtocolObjectTypesSupportedBitString;
 import de.bacnetz.stack.BACnetServicesSupportedBitString;
 import de.bacnetz.stack.BaseBitString;
@@ -47,7 +46,7 @@ import de.bacnetz.stack.StatusFlagsBitString;
 import de.bacnetz.stack.TagClass;
 import de.bacnetz.threads.MulticastListenerReaderThread;
 
-public abstract class BaseDevice implements Device, CommunicationService {
+public abstract class BaseDevice extends BaseCommunicationService implements Device {
 
     /** the optional parent device in the hierarchy of objects */
     private Device parentDevice;
@@ -746,7 +745,7 @@ public abstract class BaseDevice implements Device, CommunicationService {
     @Override
     public void writeProperty(final Integer propertyKey, final Object value) {
 
-        getLogger().info("WriteProperty: PropertyKey: {} Value; {}", propertyKey, value);
+        getLogger().trace("WriteProperty: PropertyKey: {} Value; {}", propertyKey, value);
 
         if (!getProperties().containsKey(propertyKey)) {
             getLogger().warn("The device {} does not have a property for the key {}", this, propertyKey);
@@ -781,8 +780,8 @@ public abstract class BaseDevice implements Device, CommunicationService {
             }
         }
 
-        getLogger().info("NewPresentValue: {}, OldPresentValue: {}, ValueChanged: {}", newPresentValue, oldPresentValue,
-                valueChanged);
+        getLogger().trace("NewPresentValue: {}, OldPresentValue: {}, ValueChanged: {}", newPresentValue,
+                oldPresentValue, valueChanged);
 
         if (valueChanged) {
 
@@ -799,7 +798,7 @@ public abstract class BaseDevice implements Device, CommunicationService {
     @Override
     public void bindSocket(final String ip, final int port) throws SocketException, UnknownHostException {
 
-        getLogger().info("Device is binding to IP: '{}' and Port: '{}'", ip, port);
+        getLogger().info("Device {} is binding to IP: '{}' and Port: '{}' - {}", id, ip, port, this);
 
         if (datagramSocket != null) {
             return;
@@ -871,26 +870,26 @@ public abstract class BaseDevice implements Device, CommunicationService {
     }
 
     @Override
-    public void pointToPointMessage(final Message responseMessage, final InetAddress datagramPacketAddress)
-            throws IOException {
-
-        final byte[] bytes = responseMessage.getBytes();
-
-        if (responseMessage.getVirtualLinkControl().getLength() != bytes.length) {
-            throw new RuntimeException(
-                    "Message is invalid! The length in the virtual link control does not match the real data length!");
-        }
-
-        final InetAddress destinationAddress = datagramPacketAddress;
-        final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, destinationAddress,
-                DefaultConfigurationManager.BACNET_PORT_DEFAULT_VALUE);
-
-        datagramSocket.send(responseDatagramPacket);
+    protected DatagramSocket getDatagramSocket() {
+        return datagramSocket;
     }
 
     @Override
     public String toString() {
-        return getClass().getName() + " [id=" + id + ", objectType=" + objectType + ", modelName=" + modelName + "]";
+
+        final StringBuffer stringBuffer = new StringBuffer();
+        stringBuffer.append(
+                getClass().getName() + " [id=" + id + ", objectType=" + objectType + ", modelName=" + modelName + "]");
+
+        if (MapUtils.isNotEmpty(deviceMap)) {
+            stringBuffer.append(" [Properties: ");
+            properties.entrySet().stream().forEach(e -> {
+                stringBuffer.append(" [Key: " + e.getKey() + " Value: " + e.getValue() + "]");
+            });
+            stringBuffer.append(" ]");
+        }
+
+        return stringBuffer.toString();
     }
 
     @Override

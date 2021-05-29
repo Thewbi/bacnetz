@@ -26,11 +26,11 @@ import de.bacnetz.controller.DefaultMessage;
 import de.bacnetz.controller.Message;
 import de.bacnetz.controller.MessageController;
 import de.bacnetz.conversion.BACnetIPByteArrayToMessageConverter;
-import de.bacnetz.services.CommunicationService;
+import de.bacnetz.services.BaseCommunicationService;
 import de.bacnetz.stack.ConfirmedServiceChoice;
 import de.bacnetz.stack.UnconfirmedServiceChoice;
 
-public class MulticastListenerReaderThread implements Runnable, CommunicationService {
+public class MulticastListenerReaderThread extends BaseCommunicationService implements Runnable {
 
     private static final Logger LOG = LogManager.getLogger(MulticastListenerReaderThread.class);
 
@@ -52,7 +52,7 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
     @Override
     public void run() {
 
-        LOG.info("Start MulticastListener thread!");
+        LOG.trace("Start MulticastListener thread!");
 
         running = true;
 
@@ -70,14 +70,6 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
 
         try {
             openBroadCastSocket();
-
-//            LOG.info("Broadcast listener on " + NetworkUtils.LOCAL_BIND_IP + ":" + NetworkUtils.DEFAULT_PORT
-//                    + " started.");
-
-//            LOG.info("Broadcast listener on "
-//                    + configurationManager.getPropertyAsString(ConfigurationManager.LOCAL_IP_CONFIG_KEY) + ":"
-//                    + configurationManager.getPropertyAsString(ConfigurationManager.PORT_CONFIG_KEY) + " started.");
-
         } catch (final SocketException e) {
             LOG.error(e.getMessage(), e);
             LOG.error(
@@ -117,7 +109,7 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
                     + Utils.byteArrayToStringNoPrefix(datagramPacket.getData()));
             LOG.trace(">>> " + Utils.byteArrayToStringNoPrefix(data));
 
-            List<Message> response = null;
+            List<Message> responseMessages = null;
             Message request = null;
 
             // parse and process the request message and return a response message
@@ -139,7 +131,7 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
 
                 // tell the controller to compute a response from the request
                 LOG.info("calling sendMessageToController() ...");
-                response = sendMessageToController(request);
+                responseMessages = sendMessageToController(request);
                 LOG.info("calling sendMessageToController() done.");
 
             } catch (final Exception e) {
@@ -147,9 +139,12 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
                 LOG.error(e.getMessage(), e);
             }
 
-            if (CollectionUtils.isNotEmpty(response)) {
+            if (CollectionUtils.isNotEmpty(responseMessages)) {
                 // send answer to the network
-                response.stream().forEach(m -> sendMessage(datagramPacketAddress, m));
+                for (final Message response : responseMessages) {
+                    sendMessage(datagramPacketAddress, request, response);
+                }
+//                response.stream().forEach(m -> sendMessage(datagramPacketAddress, request, m));
             } else {
                 LOG.trace("Controller returned a null message!");
             }
@@ -182,7 +177,8 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
         broadcastDatagramSocket = null;
     }
 
-    private void sendMessage(final InetAddress datagramPacketAddress, final Message responseMessage) {
+    private void sendMessage(final InetAddress datagramPacketAddress, final Message requestMessage,
+            final Message responseMessage) {
 
         try {
 
@@ -202,9 +198,6 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
                 LOG.trace(">>> ServiceChoice: {}", responseMessage.getApdu().getConfirmedServiceChoice().name());
             }
 
-//		final byte[] bytes = responseMessage.getBytes();
-//		LOG.trace(">>> " + Utils.byteArrayToStringNoPrefix(bytes));
-
             if (broadcast) {
 
                 LOG.trace(">>> BroadCast");
@@ -217,31 +210,13 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
                 LOG.trace(">>> PointToPoint");
 
                 // point to point response
-                pointToPointMessage(responseMessage, datagramPacketAddress);
+                pointToPointMessage(requestMessage, responseMessage, datagramPacketAddress);
 
             }
 
         } catch (final IOException e) {
             LOG.info(e.getMessage(), e);
         }
-    }
-
-    @Override
-    public void pointToPointMessage(final Message responseMessage, final InetAddress datagramPacketAddress)
-            throws IOException {
-
-        final byte[] bytes = responseMessage.getBytes();
-
-        if (responseMessage.getVirtualLinkControl().getLength() != bytes.length) {
-            throw new RuntimeException(
-                    "Message is invalid! The length in the virtual link control does not match the real data length!");
-        }
-
-        final InetAddress destinationAddress = datagramPacketAddress;
-        final DatagramPacket responseDatagramPacket = new DatagramPacket(bytes, bytes.length, destinationAddress,
-                ConfigurationManager.BACNET_PORT_DEFAULT_VALUE);
-
-        broadcastDatagramSocket.send(responseDatagramPacket);
     }
 
     private void broadcastMessage(final Message message) throws IOException {
@@ -394,6 +369,11 @@ public class MulticastListenerReaderThread implements Runnable, CommunicationSer
 
     public void setBroadcastDatagramSocket(final DatagramSocket broadcastDatagramSocket) {
         this.broadcastDatagramSocket = broadcastDatagramSocket;
+    }
+
+    @Override
+    protected DatagramSocket getDatagramSocket() {
+        return broadcastDatagramSocket;
     }
 
 }

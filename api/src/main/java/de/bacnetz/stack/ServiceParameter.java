@@ -312,7 +312,6 @@ public class ServiceParameter {
                     stringBuffer.append(DevicePropertyType.getByCode(payload[0]));
                 } else if (lengthValueType == 2) {
                     final int tempint = APIUtils.bytesToUnsignedShort(payload[0], payload[1], true);
-
                     stringBuffer.append(DevicePropertyType.getByCode(tempint));
                 }
             }

@@ -59,6 +59,7 @@ public class DefaultDeviceService implements DeviceService {
             final int port = deviceId < 1024 ? 1024 + deviceId : deviceId;
 
             try {
+                LOG.trace("Device {} is binding to {}:{}", device, localIp, port);
                 device.bindSocket(localIp, port);
             } catch (final java.net.BindException e) {
                 LOG.error(e.getMessage(), e);

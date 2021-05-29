@@ -53,23 +53,12 @@ public class DefaultApplicationListener implements ApplicationListener<ContextRe
 
     @Override
     public void onApplicationEvent(final ContextRefreshedEvent event) {
-
         LOG.info("DefaultApplicationListener.onApplicationEvent()");
+//        testDatabase();
+        createObjects();
+    }
 
-        final Iterable<COVSubscriptionData> findAll = covSubscriptionRepository.findAll();
-        final boolean parallel = false;
-        StreamSupport.stream(findAll.spliterator(), parallel)
-                .forEach(cov -> LOG.info("Persistend object: '{}'", cov.toString()));
-
-        final COVSubscriptionData covSubscriptionData = new COVSubscriptionData();
-        covSubscriptionData.setIp("127.0.0.1");
-
-        LOG.info("New Object before save:'{}'", covSubscriptionData.toString());
-
-        final COVSubscriptionData saved = covSubscriptionRepository.save(covSubscriptionData);
-
-        LOG.info("New Object after save:'{}'", saved.toString());
-
+    private void createObjects() {
         try {
 
             final Map<Integer, String> vendorMap = VendorMap.processVendorMap();
@@ -103,6 +92,23 @@ public class DefaultApplicationListener implements ApplicationListener<ContextRe
         } catch (final IOException e) {
             LOG.error(e.getMessage(), e);
         }
+    }
+
+    @SuppressWarnings("unused")
+    private void testDatabase() {
+        final Iterable<COVSubscriptionData> findAll = covSubscriptionRepository.findAll();
+        final boolean parallel = false;
+        StreamSupport.stream(findAll.spliterator(), parallel)
+                .forEach(cov -> LOG.info("Persisted object: '{}'", cov.toString()));
+        final COVSubscriptionData covSubscriptionData = new COVSubscriptionData();
+        covSubscriptionData.setIp("127.0.0.1");
+        LOG.info("New Object before save:'{}'", covSubscriptionData.toString());
+
+        final COVSubscriptionData saved = covSubscriptionRepository.save(covSubscriptionData);
+        LOG.info("New Object after save:'{}'", saved.toString());
+
+        covSubscriptionRepository.deleteAll();
+        LOG.info("All objects have been deleted.");
     }
 
 }

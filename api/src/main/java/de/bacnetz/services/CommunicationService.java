@@ -7,6 +7,7 @@ import de.bacnetz.controller.Message;
 
 public interface CommunicationService {
 
-    void pointToPointMessage(Message responseMessage, InetAddress datagramPacketAddress) throws IOException;
+    void pointToPointMessage(Message requestMessage, Message responseMessage, InetAddress datagramPacketAddress)
+            throws IOException;
 
 }

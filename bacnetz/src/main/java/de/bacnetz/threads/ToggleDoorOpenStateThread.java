@@ -11,9 +11,8 @@ import org.apache.logging.log4j.Logger;
 import de.bacnetz.common.utils.BACnetUtils;
 import de.bacnetz.common.utils.NetworkUtils;
 import de.bacnetz.controller.DefaultMessage;
-import de.bacnetz.devices.BinaryInputDevice;
+import de.bacnetz.controller.Message;
 import de.bacnetz.devices.Device;
-import de.bacnetz.devices.DeviceProperty;
 import de.bacnetz.devices.DevicePropertyType;
 import de.bacnetz.factory.MessageType;
 import de.bacnetz.services.CommunicationService;
@@ -30,12 +29,12 @@ public class ToggleDoorOpenStateThread implements Runnable {
 
     // select the IP of the network interface, the bacnet objects should be
     // available at
-    public static final String TARGET_IP = "192.168.0.234";
+//    public static final String TARGET_IP = "192.168.0.234";
 //    public static final String TARGET_IP = "192.168.0.2";
 //    public static final String TARGET_IP = "192.168.2.2";
 //    public static final String TARGET_IP = "192.168.0.108";
 
-    private static final int SLEEP_TIME = 10000;
+//    private static final int SLEEP_TIME = 10000;
 
     private static final Logger LOG = LogManager.getLogger(ToggleDoorOpenStateThread.class);
 
@@ -50,43 +49,45 @@ public class ToggleDoorOpenStateThread implements Runnable {
     @Override
     public void run() {
 
-        if ((parentDevice == null) || (childDevice == null)) {
+        throw new RuntimeException("not implemented!");
 
-            final String msg = "No device set! Need device!";
-            LOG.error(msg);
-            throw new RuntimeException(msg);
-        }
-
-        // sleep before the loop starts it's work
-        try {
-            Thread.sleep(SLEEP_TIME);
-        } catch (final InterruptedException e) {
-            LOG.error(e.getMessage(), e);
-        }
-
-        final BinaryInputDevice binaryInputDevice = (BinaryInputDevice) childDevice;
-
-        while (true) {
-
-            // toggle
-            binaryInputDevice.writeProperty(DeviceProperty.PRESENT_VALUE,
-                    !(Boolean) binaryInputDevice.getPresentValue());
-
-            sendCOV(parentDevice, binaryInputDevice, vendorMap, TARGET_IP, communicationService, null);
-
-            try {
-                Thread.sleep(SLEEP_TIME);
-            } catch (final InterruptedException e) {
-                LOG.error(e.getMessage(), e);
-            }
-        }
+//        if ((parentDevice == null) || (childDevice == null)) {
+//
+//            final String msg = "No device set! Need device!";
+//            LOG.error(msg);
+//            throw new RuntimeException(msg);
+//        }
+//
+//        // sleep before the loop starts it's work
+//        try {
+//            Thread.sleep(SLEEP_TIME);
+//        } catch (final InterruptedException e) {
+//            LOG.error(e.getMessage(), e);
+//        }
+//
+//        final BinaryInputDevice binaryInputDevice = (BinaryInputDevice) childDevice;
+//
+//        while (true) {
+//
+//            // toggle
+//            binaryInputDevice.writeProperty(DeviceProperty.PRESENT_VALUE,
+//                    !(Boolean) binaryInputDevice.getPresentValue());
+//
+//            sendCOV(parentDevice, binaryInputDevice, vendorMap, TARGET_IP, communicationService, null);
+//
+//            try {
+//                Thread.sleep(SLEEP_TIME);
+//            } catch (final InterruptedException e) {
+//                LOG.error(e.getMessage(), e);
+//            }
+//        }
     }
 
     public static void sendCOV(final Device parentDevice, final Device childDevice,
-            final Map<Integer, String> vendorMap, final String targetIp,
-            final CommunicationService communicationService, final NPDU originalNpdu) {
+            final Map<Integer, String> vendorMap, final Message initialSubscriptionMessage, final String targetIp,
+            final int targetPort, final CommunicationService communicationService, final NPDU originalNpdu) {
 
-        final String msg = "Sending COV update to targetIp:" + targetIp;
+        final String msg = "Sending COV update to targetIp:" + targetIp + " and Port: " + targetPort;
         LOG.info(msg);
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
@@ -244,7 +245,8 @@ public class ToggleDoorOpenStateThread implements Runnable {
 
         try {
             final InetAddress datagramPacketAddress = InetAddress.getByName(targetIp);
-            communicationService.pointToPointMessage(responseMessage, datagramPacketAddress);
+            communicationService.pointToPointMessage(initialSubscriptionMessage, responseMessage,
+                    datagramPacketAddress);
         } catch (final UnknownHostException e) {
             LOG.error(e.getMessage(), e);
         } catch (final IOException e) {
