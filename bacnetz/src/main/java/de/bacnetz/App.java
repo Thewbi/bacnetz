@@ -374,22 +374,12 @@ public class App {
         final DefaultMessageController defaultMessageController = new DefaultMessageController();
         defaultMessageController.setDeviceService(deviceService);
 
-//        deviceService.getDevices().addAll(devices);
         defaultMessageController.setMessageFactory(messageFactory);
         defaultMessageController.setVendorMap(vendorMap);
         defaultMessageController.setCommunicationService(multicastListenerReaderThread);
 
         multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
         multicastListenerReaderThread.openBroadCastSocket();
-
-//        final Device door1CloseStateBinaryInput = device.findDevice(
-//                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 1));
-//        final Device door2CloseStateBinaryInput = device.findDevice(
-//                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 2));
-//        final Device door3CloseStateBinaryInput = device.findDevice(
-//                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 3));
-//        final Device door4CloseStateBinaryInput = device.findDevice(
-//                ObjectIdentifierServiceParameter.createFromTypeAndInstanceNumber(ObjectType.BINARY_INPUT, 4));
 
         new Thread(multicastListenerReaderThread).start();
     }

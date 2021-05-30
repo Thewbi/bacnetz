@@ -18,6 +18,9 @@ import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 
 public class DefaultDeviceService implements DeviceService {
 
+    // private static final int MIN_PORT = 1024;
+    private static final int MIN_PORT = 10000;
+
     private final static Logger LOG = LoggerFactory.getLogger(DefaultDeviceService.class);
 
     private static final int WILDCARD_MSTP_DEVICE_INSTANCE_NUMBER = 255;
@@ -56,7 +59,7 @@ public class DefaultDeviceService implements DeviceService {
             // device listens, BACnet IP communication partners will directly talk to that
             // port. On that port, BACnet is able to perfectly correlate the id's because
             // there is only a single device listening on that port!
-            final int port = deviceId < 1024 ? 1024 + deviceId : deviceId;
+            final int port = deviceId < MIN_PORT ? MIN_PORT + deviceId : deviceId;
 
             try {
                 LOG.trace("Device {} is binding to {}:{}", device, localIp, port);

@@ -83,6 +83,7 @@ public class MulticastListenerReaderThread extends BaseCommunicationService impl
             final DatagramPacket datagramPacket = new DatagramPacket(data, data.length);
 
             // blocking call
+            LOG.info("Receiving ...");
             broadcastDatagramSocket.receive(datagramPacket);
             final int bytesReceived = datagramPacket.getLength();
 
@@ -104,10 +105,10 @@ public class MulticastListenerReaderThread extends BaseCommunicationService impl
             }
 
             // DEBUG
-            LOG.trace(">>> Received from inetAddress: " + datagramPacketAddress + " From socketAddress "
+            LOG.info(">>> Received from inetAddress: " + datagramPacketAddress + " From socketAddress "
                     + datagramPacketSocketAddress + " Data: "
                     + Utils.byteArrayToStringNoPrefix(datagramPacket.getData()));
-            LOG.trace(">>> " + Utils.byteArrayToStringNoPrefix(data));
+            LOG.info(">>> " + Utils.byteArrayToStringNoPrefix(data));
 
             List<Message> responseMessages = null;
             Message request = null;
@@ -165,6 +166,7 @@ public class MulticastListenerReaderThread extends BaseCommunicationService impl
         }
 
         // this will open the broadcast socket on 127.0.0.1 or even 0.0.0.0
+        LOG.info("Opening broadcast socket on port: {}", ConfigurationManager.BACNET_PORT_DEFAULT_VALUE);
         broadcastDatagramSocket = new DatagramSocket(ConfigurationManager.BACNET_PORT_DEFAULT_VALUE);
         broadcastDatagramSocket.setBroadcast(true);
     }

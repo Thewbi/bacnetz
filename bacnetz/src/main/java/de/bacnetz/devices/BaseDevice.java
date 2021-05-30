@@ -798,11 +798,11 @@ public abstract class BaseDevice extends BaseCommunicationService implements Dev
     @Override
     public void bindSocket(final String ip, final int port) throws SocketException, UnknownHostException {
 
-        getLogger().info("Device {} is binding to IP: '{}' and Port: '{}' - {}", id, ip, port, this);
-
         if (datagramSocket != null) {
             return;
         }
+
+        getLogger().info("Device {} is binding to IP: '{}' and Port: '{}' - {}", id, ip, port, this);
 
         datagramSocket = new DatagramSocket(port, InetAddress.getByName(ip));
 
