@@ -15,9 +15,9 @@ repositories {
 }
 
 dependencies {
-    implementation 'de.bacnetz:api:1.0.0'
-    implementation 'de.bacnetz:bacnetz:1.0.0'
-    implementation 'de.bacnetz:common:1.0.0'
+    implementation 'de.bacnetz:api:0.0.1-SNAPSHOT'
+    implementation 'de.bacnetz:bacnetz:0.0.1-SNAPSHOT'
+    implementation 'de.bacnetz:common:0.0.1-SNAPSHOT'
     implementation 'org.openmuc:jrxtx:1.0.1'
     implementation 'org.springframework:spring-beans:5.2.8.RELEASE'
     implementation 'commons-cli:commons-cli:1.4'
@@ -33,8 +33,14 @@ dependencies {
     testImplementation 'org.junit.platform:junit-platform-launcher:1.5.1'
 }
 
+configurations {
+    all {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
+}
+
 group = 'de.bacnetz'
-version = '1.0.0.0'
+version = '0.0.1-SNAPSHOT'
 description = 'bacnetzmstp'
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 

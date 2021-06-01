@@ -802,7 +802,7 @@ public abstract class BaseDevice extends BaseCommunicationService implements Dev
             return;
         }
 
-        getLogger().info("Device {} is binding to IP: '{}' and Port: '{}' - {}", id, ip, port, this);
+        getLogger().info("Device {} is binding to IP: '{}' and Port: '{}'", id, ip, port);
 
         datagramSocket = new DatagramSocket(port, InetAddress.getByName(ip));
 

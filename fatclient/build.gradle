@@ -15,9 +15,9 @@ repositories {
 }
 
 dependencies {
-    implementation 'de.bacnetz:api:1.0.0'
-    implementation 'de.bacnetz:common:1.0.0'
-    implementation 'de.bacnetz:bacnetz:1.0.0'
+    implementation 'de.bacnetz:api:0.0.1-SNAPSHOT'
+    implementation 'de.bacnetz:common:0.0.1-SNAPSHOT'
+    implementation 'de.bacnetz:bacnetz:0.0.1-SNAPSHOT'
     implementation 'org.apache.pivot:pivot-core:2.0.5'
     implementation 'org.apache.pivot:pivot-wtk:2.0.5'
     implementation 'org.apache.pivot:pivot-charts:2.0.5'
@@ -29,8 +29,14 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-core:2.13.2'
 }
 
+configurations {
+    all {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
+}
+
 group = 'de.bacnetz'
-version = '1.0.0.0'
+version = '0.0.1-SNAPSHOT'
 description = 'fatclient'
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
