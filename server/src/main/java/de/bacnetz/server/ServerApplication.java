@@ -51,6 +51,15 @@ public class ServerApplication {
      * http://localhost:4200/
      * </pre>
      * 
+     * Gradle:
+     * Uses the maven repository for some reason!
+     * 
+     * <pre>
+     * gradle clean build
+     * gradle publishToMavenLocal
+     * gradle run
+     * </pre>
+     * 
      * @param args
      */
     public static void main(final String[] args) {
