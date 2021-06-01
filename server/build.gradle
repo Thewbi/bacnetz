@@ -17,6 +17,7 @@ repositories {
     maven {
         url = uri('https://repo.maven.apache.org/maven2/')
     }
+    jcenter()
 }
 
 dependencies {
@@ -36,6 +37,10 @@ dependencies {
     implementation 'io.swagger:swagger-jaxrs:1.6.2'
     runtimeOnly 'com.h2database:h2:1.4.200'
     testImplementation 'org.springframework.boot:spring-boot-starter-test:2.3.3.RELEASE'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
+    testImplementation 'org.junit.platform:junit-platform-launcher:1.5.1'
+    testImplementation group: 'org.mockito', name: 'mockito-all', version: '2.0.2-beta'
 }
 
 group = 'de.bacnetz'
@@ -63,4 +68,8 @@ tasks.withType(JavaCompile) {
 
 application {
     mainClass = 'de.bacnetz.server.ServerApplication'
+}
+
+test {
+    useJUnitPlatform()
 }

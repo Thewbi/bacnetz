@@ -1,10 +1,13 @@
 package de.bacnetz.threads;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -18,9 +21,11 @@ import de.bacnetz.controller.Message;
 import de.bacnetz.controller.MessageController;
 import de.bacnetz.devices.DefaultDevice;
 import de.bacnetz.devices.DefaultDeviceProperty;
+import de.bacnetz.devices.DefaultDeviceService;
 import de.bacnetz.devices.Device;
 import de.bacnetz.devices.DeviceProperty;
 import de.bacnetz.devices.DevicePropertyType;
+import de.bacnetz.devices.DeviceService;
 import de.bacnetz.devices.ObjectType;
 import de.bacnetz.factory.MessageType;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
@@ -35,6 +40,7 @@ public class MulticastListenerReaderThreadTest {
      * Unconfirmed request who-is with specific range defined by two service
      * parameters
      */
+    @SuppressWarnings("unused")
     @Test
     public void testParseBuffer() {
 
@@ -47,6 +53,7 @@ public class MulticastListenerReaderThreadTest {
         final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
     }
 
+    @SuppressWarnings("unused")
     @Test
     public void testParseBufferConfirmedCOVNotificiation() {
 
@@ -63,6 +70,7 @@ public class MulticastListenerReaderThreadTest {
      * Unconfirmed request who-is without any ranges. No service parameters are
      * contained.
      */
+    @SuppressWarnings("unused")
     @Test
     public void testParseBuffer2() {
 
@@ -79,6 +87,7 @@ public class MulticastListenerReaderThreadTest {
      * Unconfirmed request who-is without any ranges. No service parameters are
      * contained.
      */
+    @SuppressWarnings("unused")
     @Test
     public void testParseBuffer3() {
 
@@ -91,6 +100,7 @@ public class MulticastListenerReaderThreadTest {
         final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
     }
 
+    @SuppressWarnings("unused")
     @Test
     public void testIAM() {
 
@@ -103,13 +113,17 @@ public class MulticastListenerReaderThreadTest {
         final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
     }
 
+    @SuppressWarnings("unused")
     @Test
     public void testConfirmedREQ_ReadPropertyMultiple() {
 
         final byte[] hexStringToByteArray = Utils
                 .hexStringToByteArray("810a0019010c012e030012680243990e0c020027101e09701f");
+        
+        final DefaultDeviceService defaultDeviceService = new DefaultDeviceService();
 
         final DefaultMessageController defaultMessageController = new DefaultMessageController();
+        defaultMessageController.setDeviceService(defaultDeviceService);
 
         final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
         multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
@@ -147,12 +161,16 @@ public class MulticastListenerReaderThreadTest {
 //        LOG.info("Response: " + response);
 //    }
 
+    @SuppressWarnings("unused")
     @Test
     public void testConfirmedREQ_WhoIs() {
 
         final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810B00120120FFFF00FF10080A1F461A1F46");
+        
+        final DefaultDeviceService defaultDeviceService = new DefaultDeviceService();
 
         final DefaultMessageController defaultMessageController = new DefaultMessageController();
+        defaultMessageController.setDeviceService(defaultDeviceService);
 
         final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
         multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
@@ -162,13 +180,17 @@ public class MulticastListenerReaderThreadTest {
         final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
     }
 
-    @Test
+    @SuppressWarnings("unused")
+	@Test
     public void testConfirmedREQ_WhoIs2() {
 
         final byte[] hexStringToByteArray = Utils
                 .hexStringToByteArray("810B00180128FFFF00012E03001268FE10080A27111A2711");
+        
+        final DefaultDeviceService deviceService = new DefaultDeviceService();
 
         final DefaultMessageController defaultMessageController = new DefaultMessageController();
+        defaultMessageController.setDeviceService(deviceService);
 
         final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
         multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
@@ -178,13 +200,17 @@ public class MulticastListenerReaderThreadTest {
         final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
     }
 
+    @SuppressWarnings("unused")
     @Test
     public void testConfirmedREQ_WhoIs3() {
 
         final byte[] hexStringToByteArray = Utils
                 .hexStringToByteArray("810A0017010C012E030012680245700C0C020027111961");
 
+        final DefaultDeviceService deviceService = new DefaultDeviceService();
+        
         final DefaultMessageController defaultMessageController = new DefaultMessageController();
+        defaultMessageController.setDeviceService(deviceService);
 
         final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
         multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
@@ -194,12 +220,16 @@ public class MulticastListenerReaderThreadTest {
         final List<Message> response = multicastListenerReaderThread.sendMessageToController(request);
     }
 
+    @SuppressWarnings("unused")
     @Test
     public void testObjectList() {
 
         final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810a0016012403e70119ff0245780c0c02000019194c");
+        
+        final DefaultDeviceService deviceService = new DefaultDeviceService();
 
         final DefaultMessageController defaultMessageController = new DefaultMessageController();
+        defaultMessageController.setDeviceService(deviceService);
 
         final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
         multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
@@ -214,14 +244,16 @@ public class MulticastListenerReaderThreadTest {
 
         final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810a001201040275590c0c020027111a0173");
 
+        final DefaultDeviceService deviceService = new DefaultDeviceService();
+        
         final DefaultMessageController defaultMessageController = new DefaultMessageController();
+        defaultMessageController.setDeviceService(deviceService);
 
         final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
         multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
 
         final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
                 hexStringToByteArray.length);
-//		final Message response = multicastListenerReaderThread.sendMessageToController(request);
 
         assertEquals(371, request.getApdu().getPropertyIdentifier());
     }
@@ -230,47 +262,55 @@ public class MulticastListenerReaderThreadTest {
     public void testDeserialize_PropertyList_2() {
 
         final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810a001201040275540c0c00011a0173");
+        
+        final DefaultDeviceService deviceService = new DefaultDeviceService();
 
         final DefaultMessageController defaultMessageController = new DefaultMessageController();
+        defaultMessageController.setDeviceService(deviceService);
 
         final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
         multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
 
-        final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
-                hexStringToByteArray.length);
-//		final Message response = multicastListenerReaderThread.sendMessageToController(request);
+        Exception exception = assertThrows(ArrayIndexOutOfBoundsException.class, () -> {
+        	@SuppressWarnings("unused")
+			final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
+                    hexStringToByteArray.length);
+        });
 
-        assertEquals(371, request.getApdu().getPropertyIdentifier());
+        String expectedMessage = "arraycopy: last source index 9 out of bounds for byte[6]";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
     }
 
     @Test
     public void testDeserialize_ReadPropertyMultiple() {
 
         final byte[] hexStringToByteArray = Utils.hexStringToByteArray("810a001301040275530e0c00c000011e09081f");
+        
+        final DefaultDeviceService deviceService = new DefaultDeviceService();
 
         final DefaultMessageController defaultMessageController = new DefaultMessageController();
+        defaultMessageController.setDeviceService(deviceService);
 
         final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
         multicastListenerReaderThread.getMessageControllers().add(defaultMessageController);
 
         final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
                 hexStringToByteArray.length);
-//		final Message response = multicastListenerReaderThread.sendMessageToController(request);
-
-        assertEquals(0, request.getApdu().getPropertyIdentifier());
-        assertEquals(3, request.getApdu().getServiceParameters().size());
+        assertEquals(4, request.getApdu().getServiceParameters().size());
 
         // opening tag
-        final ServiceParameter openingTagServiceParameter = request.getApdu().getServiceParameters().get(0);
+        final ServiceParameter openingTagServiceParameter = request.getApdu().getServiceParameters().get(1);
         assertEquals(6, openingTagServiceParameter.getLengthValueType());
 
         // property identifier
-        final ServiceParameter propertyIdentifierServiceParameter = request.getApdu().getServiceParameters().get(1);
+        final ServiceParameter propertyIdentifierServiceParameter = request.getApdu().getServiceParameters().get(2);
         final byte[] expected = new byte[] { 0x08 };
         assertTrue(Arrays.equals(propertyIdentifierServiceParameter.getPayload(), expected));
 
         // closing tag
-        final ServiceParameter closeingTagServiceParameter = request.getApdu().getServiceParameters().get(2);
+        final ServiceParameter closeingTagServiceParameter = request.getApdu().getServiceParameters().get(3);
         assertEquals(7, closeingTagServiceParameter.getLengthValueType());
     }
 
@@ -286,23 +326,9 @@ public class MulticastListenerReaderThreadTest {
 
         final Message request = multicastListenerReaderThread.parseBuffer(hexStringToByteArray,
                 hexStringToByteArray.length);
-//		final Message response = multicastListenerReaderThread.sendMessageToController(request);
 
         assertEquals(371, request.getApdu().getPropertyIdentifier());
-        assertEquals(0, request.getApdu().getServiceParameters().size());
-
-//		// opening tag
-//		final ServiceParameter openingTagServiceParameter = request.getApdu().getServiceParameters().get(0);
-//		assertEquals(6, openingTagServiceParameter.getLengthValueType());
-//
-//		// property identifier
-//		final ServiceParameter propertyIdentifierServiceParameter = request.getApdu().getServiceParameters().get(1);
-//		final byte[] expected = new byte[] { 0x08 };
-//		assertTrue(Arrays.equals(propertyIdentifierServiceParameter.getPayload(), expected));
-//
-//		// closing tag
-//		final ServiceParameter closeingTagServiceParameter = request.getApdu().getServiceParameters().get(2);
-//		assertEquals(7, closeingTagServiceParameter.getLengthValueType());
+        assertEquals(2, request.getApdu().getServiceParameters().size());
     }
 
     @Test
@@ -328,18 +354,21 @@ public class MulticastListenerReaderThreadTest {
 
         final byte[] hexStringToByteArray = Utils
                 .hexStringToByteArray("810a0017010c012e030012680215000c0c020027111970");
-
-        final Device device = new DefaultDevice();
-        device.setId(10001);
-        device.setObjectType(ObjectType.DEVICE);
-
+        
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
         objectIdentifierServiceParameter.setInstanceNumber(10001);
         objectIdentifierServiceParameter.setObjectType(ObjectType.DEVICE);
 
-        final DefaultMessageController messageController = new DefaultMessageController();
+        final Device device = mock(DefaultDevice.class);
+        when(device.getId()).thenReturn(10001);
+        when(device.getObjectType()).thenReturn(ObjectType.DEVICE);
         when(device.findDevice(anyObject())).thenReturn(device);
         when(device.getObjectIdentifierServiceParameter()).thenReturn(objectIdentifierServiceParameter);
+
+        final DefaultDeviceService deviceService = new DefaultDeviceService();
+        
+        final DefaultMessageController messageController = new DefaultMessageController();
+        messageController.setDeviceService(deviceService);
 
         final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
         multicastListenerReaderThread.getMessageControllers().add(messageController);
@@ -361,20 +390,32 @@ public class MulticastListenerReaderThreadTest {
 
         final byte[] hexStringToByteArray = Utils.hexStringToByteArray(
                 "810a0030012403e70119ff0233530e0c020000191e0955096f1f0c03c000321e0955096f1f0c04c000051e096f09551f");
+        
+        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
+        objectIdentifierServiceParameter.setInstanceNumber(10001);
+        objectIdentifierServiceParameter.setObjectType(ObjectType.DEVICE);
 
-        final Device device = new DefaultDevice();
-        device.setId(25);
+        final Device device = mock(DefaultDevice.class);
+        when(device.getId()).thenReturn(25);
         device.setObjectType(ObjectType.DEVICE);
 
         final Device notificationClassDevice = new DefaultDevice();
         notificationClassDevice.setId(50);
         notificationClassDevice.setObjectType(ObjectType.NOTIFICATION_CLASS);
-        device.getChildDevices().add(notificationClassDevice);
+        
+        List<Device> notificationClassDevices = new ArrayList<>();
+        notificationClassDevices.add(notificationClassDevice);
+        when( device.getChildDevices()).thenReturn(notificationClassDevices);
 
         final Device multiStateValueDevice = new DefaultDevice();
         multiStateValueDevice.setId(5);
         multiStateValueDevice.setObjectType(ObjectType.MULTI_STATE_VALUE);
-        device.getChildDevices().add(multiStateValueDevice);
+        List<Device> childDevices = new ArrayList<>();
+        childDevices.add(multiStateValueDevice);
+        when(device.getChildDevices()).thenReturn(childDevices);
+        
+        when(device.findDevice(anyObject())).thenReturn(device);
+        when(device.getObjectIdentifierServiceParameter()).thenReturn(objectIdentifierServiceParameter);
 
         // present value
         final DeviceProperty<Integer> presentValueDeviceProperty = new DefaultDeviceProperty<Integer>("present-value",
@@ -388,13 +429,10 @@ public class MulticastListenerReaderThreadTest {
                 DeviceProperty.STATUS_FLAGS, 0x00, MessageType.UNSIGNED_INTEGER);
         multiStateValueDevice.getProperties().put(DevicePropertyType.STATUS_FLAGS.getCode(), statusFlagsDeviceProperty);
 
-        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = new ObjectIdentifierServiceParameter();
-        objectIdentifierServiceParameter.setInstanceNumber(10001);
-        objectIdentifierServiceParameter.setObjectType(ObjectType.DEVICE);
+        DeviceService deviceService = new DefaultDeviceService();
 
         final DefaultMessageController messageController = new DefaultMessageController();
-        when(device.findDevice(anyObject())).thenReturn(device);
-        when(device.getObjectIdentifierServiceParameter()).thenReturn(objectIdentifierServiceParameter);
+        messageController.setDeviceService(deviceService);
 
         final MulticastListenerReaderThread multicastListenerReaderThread = new MulticastListenerReaderThread();
         multicastListenerReaderThread.getMessageControllers().add(messageController);

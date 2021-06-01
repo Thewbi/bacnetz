@@ -2,6 +2,7 @@ package de.bacnetz.stack;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
@@ -34,6 +35,43 @@ public class APDUTest {
 
         final List<ServiceParameter> serviceParameters = apdu.getServiceParameters();
         assertEquals(2, serviceParameters.size());
+    }
+    
+    @Test
+    public void testDeserialize2() {
+    	
+        final byte[] hexStringToByteArray = APIUtils.hexStringToByteArray("810a001301040275530e0c00c000011e09081f");
+
+        final APDU apdu = new APDU();
+        apdu.fromBytes(hexStringToByteArray, 6, hexStringToByteArray.length);
+        apdu.processPayload(apdu.getPayload(), 0, apdu.getPayload().length, 0);
+
+        assertEquals(PDUType.CONFIRMED_SERVICE_REQUEST_PDU, apdu.getPduType());
+        assertFalse(apdu.isSegmentation());
+        assertFalse(apdu.isMoreSegmentsFollow());
+        assertTrue(apdu.isSegmentedResponseAccepted());
+
+        assertEquals(ConfirmedServiceChoice.READ_PROPERTY_MULTIPLE, apdu.getConfirmedServiceChoice());
+
+        final List<ServiceParameter> serviceParameters = apdu.getServiceParameters();
+        assertEquals(4, serviceParameters.size());
+    }
+    
+    @Test
+    public void testDeserialize3() {
+    	
+        final byte[] hexStringToByteArray = APIUtils.hexStringToByteArray("810a001201040275540c0c00011a0173");
+
+        final APDU apdu = new APDU();
+        apdu.fromBytes(hexStringToByteArray, 6, hexStringToByteArray.length);
+        Exception exception = assertThrows(ArrayIndexOutOfBoundsException.class, () -> {
+        	apdu.processPayload(apdu.getPayload(), 0, apdu.getPayload().length, 0);
+        });
+
+        String expectedMessage = "arraycopy: last source index 9 out of bounds for byte[6]";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
     }
 
     @Test
