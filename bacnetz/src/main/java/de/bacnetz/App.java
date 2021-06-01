@@ -210,7 +210,7 @@ public class App {
         deviceCreationDescriptor.setDeviceName("TZ320");
         deviceCreationDescriptor.setModelName("IO 420");
         deviceCreationDescriptor.setAmountOfDevices(3);
-        deviceCreationDescriptor.setStartDeviceId(2);
+        deviceCreationDescriptor.setStartDeviceId(10000);
         deviceCreationDescriptor.setDeviceIdIncrement(1);
         deviceCreationDescriptor.setDeviceIdOffset(0);
         deviceCreationDescriptor.setVendorId(VendorType.GEZE_GMBH.getCode());
@@ -222,7 +222,7 @@ public class App {
         deviceCreationDescriptor.setDeviceName("TZ320");
         deviceCreationDescriptor.setModelName("IO 420");
         deviceCreationDescriptor.setAmountOfDevices(3);
-        deviceCreationDescriptor.setStartDeviceId(2);
+        deviceCreationDescriptor.setStartDeviceId(20000);
         deviceCreationDescriptor.setDeviceIdIncrement(1);
         deviceCreationDescriptor.setDeviceIdOffset(0);
         deviceCreationDescriptor.setVendorId(VendorType.NEC_CORPORATION.getCode());
