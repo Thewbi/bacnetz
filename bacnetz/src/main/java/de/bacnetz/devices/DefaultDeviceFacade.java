@@ -3,17 +3,12 @@ package de.bacnetz.devices;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import de.bacnetz.conversion.Converter;
 
 public class DefaultDeviceFacade implements DeviceFacade {
-
-    @SuppressWarnings("unused")
-    private final static Logger LOG = LoggerFactory.getLogger(DefaultDeviceFacade.class);
 
     @Autowired
     private DeviceService deviceService;

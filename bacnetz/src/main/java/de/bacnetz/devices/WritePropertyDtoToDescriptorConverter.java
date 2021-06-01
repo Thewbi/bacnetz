@@ -1,13 +1,13 @@
 package de.bacnetz.devices;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.bacnetz.conversion.Converter;
 
 public class WritePropertyDtoToDescriptorConverter implements Converter<WritePropertyDto, WritePropertyDescriptor> {
 
-    private final static Logger LOG = LoggerFactory.getLogger(WritePropertyDtoToDescriptorConverter.class);
+    private static final Logger LOG = LogManager.getLogger(WritePropertyDtoToDescriptorConverter.class);
 
     @Override
     public WritePropertyDescriptor convert(final WritePropertyDto source) {

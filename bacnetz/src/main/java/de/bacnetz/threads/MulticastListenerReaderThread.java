@@ -83,7 +83,7 @@ public class MulticastListenerReaderThread extends BaseCommunicationService impl
             final DatagramPacket datagramPacket = new DatagramPacket(data, data.length);
 
             // blocking call
-            LOG.info("Receiving ...");
+            LOG.trace("Receiving ...");
             broadcastDatagramSocket.receive(datagramPacket);
             final int bytesReceived = datagramPacket.getLength();
 

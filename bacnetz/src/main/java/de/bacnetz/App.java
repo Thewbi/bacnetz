@@ -188,7 +188,9 @@ public class App {
 //        deviceCreationDescriptor.setDeviceIdOffset(0);
 //        devices = deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
 
-        setupCento(vendorMap, deviceService, localIp);
+//        setupCento(vendorMap, deviceService, localIp);
+
+        setupVendorTest(vendorMap, deviceService, localIp);
 
         startListenerThread(configurationManager, deviceService, messageFactory, vendorMap);
 
@@ -199,6 +201,34 @@ public class App {
 //		runMainOld();
     }
 
+    public static void setupVendorTest(final Map<Integer, String> vendorMap, final DeviceService deviceService,
+            final String localIp) throws SocketException, UnknownHostException {
+
+        // GEZE
+        DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
+        deviceCreationDescriptor.setDeviceType(DeviceType.TZ320);
+        deviceCreationDescriptor.setDeviceName("TZ320");
+        deviceCreationDescriptor.setModelName("IO 420");
+        deviceCreationDescriptor.setAmountOfDevices(3);
+        deviceCreationDescriptor.setStartDeviceId(2);
+        deviceCreationDescriptor.setDeviceIdIncrement(1);
+        deviceCreationDescriptor.setDeviceIdOffset(0);
+        deviceCreationDescriptor.setVendorId(VendorType.GEZE_GMBH.getCode());
+        deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
+
+        // NEC_CORPORATION
+        deviceCreationDescriptor = new DeviceCreationDescriptor();
+        deviceCreationDescriptor.setDeviceType(DeviceType.TZ320);
+        deviceCreationDescriptor.setDeviceName("TZ320");
+        deviceCreationDescriptor.setModelName("IO 420");
+        deviceCreationDescriptor.setAmountOfDevices(3);
+        deviceCreationDescriptor.setStartDeviceId(2);
+        deviceCreationDescriptor.setDeviceIdIncrement(1);
+        deviceCreationDescriptor.setDeviceIdOffset(0);
+        deviceCreationDescriptor.setVendorId(VendorType.NEC_CORPORATION.getCode());
+        deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
+    }
+
     public static void setupCento(final Map<Integer, String> vendorMap, final DeviceService deviceService,
             final String localIp) throws SocketException, UnknownHostException {
 
@@ -207,7 +237,7 @@ public class App {
 
         // @formatter:off
         
-        final int vendorIdOffset = 1;
+        final int vendorIdOffset = 0;
         final int vendorId = VendorType.GEZE_GMBH.getCode() + vendorIdOffset;
 
         // cento
@@ -261,9 +291,9 @@ public class App {
         createWatchdog(31, "Archiv", "IO 420", vendorId, vendorMap, deviceService, localIp);
         // [mstp DEVICE, 32] - Archiv 2 (Patientenarchiv 2)
         createWatchdog(32, "Archiv 2", "IO 420", vendorId, vendorMap, deviceService, localIp);
-        
-        // four door
-        createFourDoorSolution(36, "FourDoor", "IO 420", vendorId, vendorMap, deviceService, localIp);
+//        
+//        // four door
+//        createFourDoorSolution(36, "FourDoor", "IO 420", vendorId, vendorMap, deviceService, localIp);
         
         // @formatter:on
     }

@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 
@@ -21,7 +21,7 @@ public class DefaultDeviceService implements DeviceService {
     // private static final int MIN_PORT = 1024;
     private static final int MIN_PORT = 10000;
 
-    private final static Logger LOG = LoggerFactory.getLogger(DefaultDeviceService.class);
+    private static final Logger LOG = LogManager.getLogger(DefaultDeviceService.class);
 
     private static final int WILDCARD_MSTP_DEVICE_INSTANCE_NUMBER = 255;
 

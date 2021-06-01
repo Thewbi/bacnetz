@@ -81,7 +81,8 @@ public class DefaultApplicationListener implements ApplicationListener<ContextRe
 //            deviceCreationDescriptor.setDeviceIdOffset(0);
 //            devices = deviceService.createDevices(vendorMap, bindIp, deviceCreationDescriptor);
 
-            App.setupCento(vendorMap, deviceService, bindIp);
+//            App.setupCento(vendorMap, deviceService, bindIp);
+            App.setupVendorTest(vendorMap, deviceService, bindIp);
 
             multicastListenerReaderThread.getMessageControllers().add(messageController);
             multicastListenerReaderThread.setVendorMap(vendorMap);
