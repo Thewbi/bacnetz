@@ -36,10 +36,10 @@ public class APDUTest {
         final List<ServiceParameter> serviceParameters = apdu.getServiceParameters();
         assertEquals(2, serviceParameters.size());
     }
-    
+
     @Test
     public void testDeserialize2() {
-    	
+
         final byte[] hexStringToByteArray = APIUtils.hexStringToByteArray("810a001301040275530e0c00c000011e09081f");
 
         final APDU apdu = new APDU();
@@ -56,20 +56,20 @@ public class APDUTest {
         final List<ServiceParameter> serviceParameters = apdu.getServiceParameters();
         assertEquals(4, serviceParameters.size());
     }
-    
+
     @Test
     public void testDeserialize3() {
-    	
+
         final byte[] hexStringToByteArray = APIUtils.hexStringToByteArray("810a001201040275540c0c00011a0173");
 
         final APDU apdu = new APDU();
         apdu.fromBytes(hexStringToByteArray, 6, hexStringToByteArray.length);
-        Exception exception = assertThrows(ArrayIndexOutOfBoundsException.class, () -> {
-        	apdu.processPayload(apdu.getPayload(), 0, apdu.getPayload().length, 0);
+        final Exception exception = assertThrows(ArrayIndexOutOfBoundsException.class, () -> {
+            apdu.processPayload(apdu.getPayload(), 0, apdu.getPayload().length, 0);
         });
 
-        String expectedMessage = "arraycopy: last source index 9 out of bounds for byte[6]";
-        String actualMessage = exception.getMessage();
+        final String expectedMessage = "arraycopy: last source index 9 out of bounds for byte[6]";
+        final String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
     }
@@ -490,6 +490,7 @@ public class APDUTest {
         apdu.setPduType(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU);
         apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.I_AM);
         apdu.setVendorMap(new HashMap<Integer, String>());
+        apdu.setInvokeId(-2);
         apdu.getServiceParameters().add(objectIdentifierServiceParameter);
         apdu.getServiceParameters().add(maximumAPDUServiceParameter);
         apdu.getServiceParameters().add(segmentationSupportedServiceParameter);
@@ -520,12 +521,12 @@ public class APDUTest {
         apdu.fromBytes(hexStringToByteArray, 0, hexStringToByteArray.length);
         apdu.processPayload(apdu.getPayload(), 0, apdu.getPayload().length, 0);
 
-        assertEquals(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU, apdu.getPduType());
+        assertEquals(PDUType.CONFIRMED_SERVICE_REQUEST_PDU, apdu.getPduType());
         assertFalse(apdu.isSegmentation());
         assertFalse(apdu.isMoreSegmentsFollow());
-        assertFalse(apdu.isSegmentedResponseAccepted());
+        assertTrue(apdu.isSegmentedResponseAccepted());
 
-        assertEquals(UnconfirmedServiceChoice.WHO_IS, apdu.getUnconfirmedServiceChoice());
+        assertEquals(ConfirmedServiceChoice.READ_PROPERTY, apdu.getConfirmedServiceChoice());
 
         final List<ServiceParameter> serviceParameters = apdu.getServiceParameters();
         assertEquals(2, serviceParameters.size());

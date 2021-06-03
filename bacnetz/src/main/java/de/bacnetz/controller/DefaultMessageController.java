@@ -587,8 +587,7 @@ public class DefaultMessageController implements MessageController {
         segmentationSupportedServiceParameter.setPayload(new byte[] { (byte) 0x00 }); // segmented-both
         apdu.getServiceParameters().add(segmentationSupportedServiceParameter);
 
-        // 0x021A = 538d = GEZE
-        final byte[] vendorIdBuffer = new byte[] { (byte) 0x02, (byte) 0x1A };
+        final byte[] vendorIdBuffer = Utils.shortToBuffer((short) device.getVendorId());
 
         final ServiceParameter vendorIdServiceParameter = new ServiceParameter();
         vendorIdServiceParameter.setTagClass(TagClass.APPLICATION_TAG);

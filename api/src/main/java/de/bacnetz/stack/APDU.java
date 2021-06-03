@@ -285,9 +285,6 @@ public class APDU {
 
         // bit 1 is the segmentedResponseAccepted bit
         segmentedResponseAccepted = 0 < (data[startIndex + offset] & 0x02);
-        if (segmentedResponseAccepted) {
-            LOG.trace("segmentedResponseAccepted bit");
-        }
 
         offset++;
         structureLength++;

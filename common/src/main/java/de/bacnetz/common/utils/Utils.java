@@ -142,6 +142,19 @@ public class Utils {
         return buffer;
     }
 
+    public static byte[] shortToBuffer(final short data) {
+
+        final byte a = (byte) ((data >> 8) & 0xff);
+        final byte b = (byte) ((data >> 0) & 0xff);
+
+        final byte[] buffer = new byte[2];
+
+        buffer[0] = a;
+        buffer[1] = b;
+
+        return buffer;
+    }
+
     public static int addShortToBuffer(final byte[] buffer, int idx, final short data) {
 
         buffer[idx] = (byte) (0xFF & (data >> 8));

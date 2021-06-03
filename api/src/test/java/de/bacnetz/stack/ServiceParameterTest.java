@@ -1,5 +1,6 @@
 package de.bacnetz.stack;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -12,7 +13,7 @@ import de.bacnetz.factory.MessageType;
 
 public class ServiceParameterTest {
 
-    private static final String OBJECT_NAME = "IO 420";
+    private static final String OBJECT_NAME = "Device_IO420";
 
     @Test
     public void testDeserialize() {
@@ -159,6 +160,15 @@ public class ServiceParameterTest {
 
         final byte[] result = new byte[20];
 
+        final ServiceParameter serviceParameter = new ServiceParameter();
+        serviceParameter.fromBytes(expected, 0);
+        serviceParameter.toBytes(result, 0);
+
+        System.out.println(serviceParameter);
+        System.out.println("System.out.println(serviceParameter): " + serviceParameter.getLengthValueType());
+        System.out.println("PayloadLength: " + serviceParameter.getPayload().length);
+        System.out.println("Result:   " + APIUtils.byteArrayToStringNoPrefix(result));
+
         final ServiceParameter objectNameServiceParameter = new ServiceParameter();
         objectNameServiceParameter.setTagClass(TagClass.APPLICATION_TAG);
         objectNameServiceParameter.setTagNumber(ServiceParameter.APPLICATION_TAG_NUMBER_CHARACTER_STRING);
@@ -169,6 +179,8 @@ public class ServiceParameterTest {
 
         System.out.println("Result:   " + APIUtils.byteArrayToStringNoPrefix(result));
         System.out.println("Expected: " + APIUtils.byteArrayToStringNoPrefix(expected));
+
+        assertArrayEquals(result, expected);
 
         assertTrue(Arrays.equals(result, expected));
     }
