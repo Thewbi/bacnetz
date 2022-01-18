@@ -8,10 +8,6 @@ plugins {
     id 'application'
 }
 
-application {
-    mainClass = 'de.bacnetz.server.ServerApplication'
-}
-
 repositories {
     mavenLocal()
     maven {

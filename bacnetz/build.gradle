@@ -65,3 +65,8 @@ eclipse {
        downloadSources=true
     }
 }
+
+jar { 
+   from sourceSets.main.output
+   from sourceSets.main.allJava
+}

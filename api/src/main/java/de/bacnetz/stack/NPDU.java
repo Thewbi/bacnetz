@@ -212,6 +212,7 @@ public class NPDU {
             APIUtils.addShortToBuffer(data, offset + index, (short) destinationNetworkAddress);
             index += 2;
 
+            // destination mac
             data[offset + index++] = (byte) destinationMACLayerAddressLength;
             if (destinationMACLayerAddressLength > 0) {
 
@@ -221,9 +222,6 @@ public class NPDU {
                             & 0xFF));
                 }
             }
-
-            data[offset + index++] = (byte) destinationHopCount;
-
         }
 
         if (isSourceSpecifierPresent()) {
@@ -241,6 +239,9 @@ public class NPDU {
                 }
             }
         }
+
+        // destination hop count
+        data[offset + index++] = (byte) destinationHopCount;
 
         return index;
     }

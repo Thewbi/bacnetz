@@ -3,6 +3,8 @@ package de.bacnetz.devices;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.collections4.MapUtils;
+
 public enum DevicePropertyType {
 
     // @formatter:off
@@ -360,7 +362,9 @@ public enum DevicePropertyType {
     MIN_ACTUAL_VALUE(383, "min-actual-value"),
     POWER(384, "power"),
     TRANSITION(385, "transition"),
-    EGRESS_ACTIVE(386, "egress-active");
+    EGRESS_ACTIVE(386, "egress-active"),
+    
+    UNKNOWN(-1, "UNKNOWN");
 
 	// @formatter:on
 
@@ -382,6 +386,9 @@ public enum DevicePropertyType {
     }
 
     public static DevicePropertyType getByCode(final int code) {
+        if (MapUtils.isEmpty(codeMap) || !codeMap.containsKey(code)) {
+            return DevicePropertyType.UNKNOWN;
+        }
         return codeMap.get(code);
     }
 

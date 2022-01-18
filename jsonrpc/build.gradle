@@ -12,6 +12,7 @@ repositories {
     maven {
         url = uri('https://repo.maven.apache.org/maven2/')
     }
+    jcenter()
 }
 
 dependencies {
@@ -21,12 +22,19 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
     testImplementation 'org.junit.platform:junit-platform-launcher:1.5.1'
+    testImplementation group: 'org.mockito', name: 'mockito-all', version: '2.0.2-beta'
 }
 
 group = 'de.bacnetz'
 version = '1.0.0'
 description = 'jsonrpc'
 java.sourceCompatibility = JavaVersion.VERSION_1_8
+
+configurations {
+    all {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
+}
 
 publishing {
     publications {

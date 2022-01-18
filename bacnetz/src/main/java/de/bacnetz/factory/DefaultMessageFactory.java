@@ -67,7 +67,7 @@ public class DefaultMessageFactory implements MessageFactory {
     @Override
     public Message create(final Object... args) {
 
-        LOG.trace(args);
+        LOG.info("Create: " + args);
 
         DeviceProperty<?> deviceProperty;
         Device device;
@@ -1000,40 +1000,50 @@ public class DefaultMessageFactory implements MessageFactory {
         return result;
     }
 
+//    @Override
+//    public Message whoIsMessage() {
+//
+//        final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
+//        // Type: BACnet/IP (Annex J) (0x81)
+//        virtualLinkControl.setType(0x81);
+//        // Function: Original-Broadcast-NPDU (0x0b)
+//        virtualLinkControl.setFunction(0x0B);
+//        // BVLC-Length: 4 of 22 bytes BACnet packet length
+//        virtualLinkControl.setLength(0x00);
+//
+//        final NPDU npdu = new NPDU();
+//        npdu.setVersion(0x01);
+//        npdu.setControl(0x00);
+//
+//        final APDU apdu = new APDU();
+//        apdu.setPduType(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU);
+//        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.WHO_IS);
+//
+//        final DefaultMessage result = new DefaultMessage();
+//        if (linkLayerType != LinkLayerType.MSTP) {
+//            result.setVirtualLinkControl(virtualLinkControl);
+//        }
+//        result.setNpdu(npdu);
+//        result.setApdu(apdu);
+//
+//        virtualLinkControl.setLength(result.getDataLength());
+//
+//        return result;
+//    }
+
     @Override
     public Message whoIsMessage() {
-
-        final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
-        // Type: BACnet/IP (Annex J) (0x81)
-        virtualLinkControl.setType(0x81);
-        // Function: Original-Broadcast-NPDU (0x0b)
-        virtualLinkControl.setFunction(0x0B);
-        // BVLC-Length: 4 of 22 bytes BACnet packet length
-        virtualLinkControl.setLength(0x00);
-
-        final NPDU npdu = new NPDU();
-        npdu.setVersion(0x01);
-        npdu.setControl(0x00);
-
-        final APDU apdu = new APDU();
-        apdu.setPduType(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU);
-        apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.WHO_IS);
-
-        final DefaultMessage result = new DefaultMessage();
-        if (linkLayerType != LinkLayerType.MSTP) {
-            result.setVirtualLinkControl(virtualLinkControl);
-        }
-        result.setNpdu(npdu);
-        result.setApdu(apdu);
-
-        virtualLinkControl.setLength(result.getDataLength());
-
-        return result;
+        return whoIsMessage(-1, -1);
     }
 
     @Override
     public Message whoIsMessage(final int lowerBound, final int upperBound) {
 
+        LOG.info("WHO-IS-Message lowerBound: " + lowerBound + " upperBound: " + upperBound + " linkLayerType: "
+                + linkLayerType);
+
+        final boolean useBounds = lowerBound >= 0 && upperBound >= 0;
+
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
         // Type: BACnet/IP (Annex J) (0x81)
         virtualLinkControl.setType(0x81);
@@ -1044,30 +1054,34 @@ public class DefaultMessageFactory implements MessageFactory {
 
         final NPDU npdu = new NPDU();
         npdu.setVersion(0x01);
-        npdu.setControl(0x28);
+        npdu.setControl(0x20); // including destination information
+//        npdu.setControl(0x28); // including source and destination information
         npdu.setDestinationNetworkAddress(NetworkUtils.BROADCAST_NETWORK_NUMBER);
-        npdu.setDestinationMACLayerAddressLength(0x00);
-        npdu.setSourceMacLayerAddressLength(0x03);
-        npdu.setSourceMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+        npdu.setDestinationMACLayerAddressLength(0x0); // length of zero indicates broadcast on destination network
+//        npdu.setSourceMac(NetworkUtils.DEVICE_MAC_ADDRESS);
+//        npdu.setSourceMacLayerAddressLength(0x03);
         npdu.setDestinationHopCount(0xFE);
-
-        final ServiceParameter lowerBoundServiceParameter = new ServiceParameter();
-        lowerBoundServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        lowerBoundServiceParameter.setTagNumber(0x00);
-        lowerBoundServiceParameter.setLengthValueType(0x01);
-        lowerBoundServiceParameter.setPayload(new byte[] { (byte) lowerBound });
-
-        final ServiceParameter upperBoundServiceParameter = new ServiceParameter();
-        upperBoundServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
-        upperBoundServiceParameter.setTagNumber(0x01);
-        upperBoundServiceParameter.setLengthValueType(0x01);
-        upperBoundServiceParameter.setPayload(new byte[] { (byte) upperBound });
 
         final APDU apdu = new APDU();
         apdu.setPduType(PDUType.UNCONFIRMED_SERVICE_REQUEST_PDU);
         apdu.setUnconfirmedServiceChoice(UnconfirmedServiceChoice.WHO_IS);
-        apdu.getServiceParameters().add(lowerBoundServiceParameter);
-        apdu.getServiceParameters().add(upperBoundServiceParameter);
+
+        if (useBounds) {
+            final ServiceParameter lowerBoundServiceParameter = new ServiceParameter();
+            lowerBoundServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+            lowerBoundServiceParameter.setTagNumber(0x00);
+            lowerBoundServiceParameter.setLengthValueType(0x01);
+            lowerBoundServiceParameter.setPayload(new byte[] { (byte) lowerBound });
+
+            final ServiceParameter upperBoundServiceParameter = new ServiceParameter();
+            upperBoundServiceParameter.setTagClass(TagClass.CONTEXT_SPECIFIC_TAG);
+            upperBoundServiceParameter.setTagNumber(0x01);
+            upperBoundServiceParameter.setLengthValueType(0x01);
+            upperBoundServiceParameter.setPayload(new byte[] { (byte) upperBound });
+
+            apdu.getServiceParameters().add(lowerBoundServiceParameter);
+            apdu.getServiceParameters().add(upperBoundServiceParameter);
+        }
 
         final DefaultMessage result = new DefaultMessage();
         if (linkLayerType != LinkLayerType.MSTP) {

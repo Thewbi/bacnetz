@@ -13,6 +13,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import de.bacnetz.configuration.ConfigurationManager;
 import de.bacnetz.controller.DefaultMessageController;
 import de.bacnetz.devices.DeviceService;
+import de.bacnetz.factory.DefaultMessageFactory;
 import de.bacnetz.threads.MulticastListenerReaderThread;
 import de.bacnetz.vendor.VendorMap;
 
@@ -41,7 +42,11 @@ public class DefaultApplicationListener implements ApplicationListener<ContextRe
             final DeviceService deviceService, final Map<Integer, String> vendorMap)
             throws FileNotFoundException, IOException {
 
+        final DefaultMessageFactory defaultMessageFactory = new DefaultMessageFactory();
+        defaultMessageFactory.setVendorMap(vendorMap);
+
         final DefaultMessageController defaultMessageController = new DefaultMessageController();
+        defaultMessageController.setMessageFactory(defaultMessageFactory);
         defaultMessageController.setDeviceService(deviceService);
         defaultMessageController.setVendorMap(vendorMap);
 

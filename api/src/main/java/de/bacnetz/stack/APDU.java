@@ -133,7 +133,8 @@ public class APDU {
         }
 
         // invoke id
-        if (invokeId >= -1) {
+//        if (invokeId >= -1) { // why is this condition here?
+        if (invokeId > -1) { // this condition is required for WHO-IS! Does it brake other messages?
             dataLength++;
         }
 
@@ -226,7 +227,8 @@ public class APDU {
         }
 
         // 1 Byte: invoke ID
-        if (invokeId >= -1) {
+//        if (invokeId >= -1) { // why is this condition here?
+        if (invokeId > -1) { // this condition is required for WHO-IS! Does it brake other messages?
             data[offset + index++] = (byte) invokeId;
         }
 

@@ -22,7 +22,8 @@ import de.bacnetz.factory.MessageFactory;
  */
 public class WhoIsRunnable implements Runnable {
 
-    private static final int WHO_IS_INTERVAL_IN_MS_DEFAULT = 10000;
+//    private static final int WHO_IS_INTERVAL_IN_MS_DEFAULT = 10000;
+    private static final int WHO_IS_INTERVAL_IN_MS_DEFAULT = 3000;
 
     private static final Logger LOG = LogManager.getLogger(WhoIsRunnable.class);
 
@@ -51,20 +52,22 @@ public class WhoIsRunnable implements Runnable {
             try {
                 runBroadcast();
             } catch (final SocketException e) {
-                e.printStackTrace();
+                LOG.error(e.getMessage(), e);
             }
 
             try {
+                LOG.info("Sleeping for " + intervalInMS + " ms ...");
                 Thread.sleep(intervalInMS);
+                LOG.info("Sleeping for " + intervalInMS + " ms done.");
             } catch (final InterruptedException e) {
-                e.printStackTrace();
+                LOG.error(e.getMessage(), e);
             }
         }
     }
 
     private static void runBroadcast() throws SocketException {
 
-        LOG.trace("runBroadcast() ...");
+        LOG.info("runBroadcast() ...");
 
         // create the who-is message
         final MessageFactory messageFactory = new DefaultMessageFactory();
@@ -85,16 +88,17 @@ public class WhoIsRunnable implements Runnable {
             try {
                 broadcast(whoIsMessage.getBytes(), a);
             } catch (final IOException e) {
-                e.printStackTrace();
+                LOG.error(e.getMessage(), e);
             }
         });
 
-        LOG.trace("runBroadcast() done.");
+        LOG.info("runBroadcast() done.");
     }
 
     /**
      * Broadcast a message. Broadcasts are sent on the special broadcast address
-     * which ends with 255 in most cases.
+     * which ends with 255 in most cases.<br />
+     * <br />
      * 
      * Remember if networks are connected by routers, routers will be configured by
      * the admins to block broadcasts and to contain them inside local networks to
@@ -110,7 +114,7 @@ public class WhoIsRunnable implements Runnable {
      */
     public static void broadcast(final byte[] buffer, final InetAddress address) throws IOException {
 
-        LOG.trace(">>> broadcast: " + Utils.byteArrayToStringNoPrefix(buffer) + " to address: " + address);
+        LOG.info(">>> broadcast: " + Utils.byteArrayToStringNoPrefix(buffer) + " to address: " + address);
 
         // this socket does not bind on a specific port
         final DatagramSocket socket = new DatagramSocket();

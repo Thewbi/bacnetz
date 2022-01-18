@@ -128,14 +128,6 @@ public class NetworkUtils {
     }
 
     public static List<InetAddress> getBroadcastAddressesByName(final String name) throws SocketException {
-//        final List<InetAddress> allBroadcastAddresses = listAllBroadcastAddresses();
-//
-//        for (final InetAddress inetAddress : allBroadcastAddresses) {
-//
-//            // if (inetAddress.)
-//        }
-//
-//        return null;
 
         final List<InetAddress> broadcastList = new ArrayList<>();
 

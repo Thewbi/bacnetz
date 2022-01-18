@@ -43,6 +43,8 @@ public class ServiceParameter {
 
     public static final int APPLICATION_TAG_REAL = 0x04;
 
+    public static final int APPLICATION_TAG_BIT_STRING = 0x08;
+
     public static final int APPLICATION_TAG_DATE = 0x0A;
 
     public static final int APPLICATION_TAG_TIME = 0x0B;
@@ -176,38 +178,57 @@ public class ServiceParameter {
 
             switch (tagNumber) {
 
+            // 0x01 = 1d
             case APPLICATION_TAG_BOOLEAN:
                 stringBuffer.append(" BOOLEAN");
                 break;
 
+            // 0x02 = 2d
+            case UNSIGNED_INTEGER_CODE:
+                stringBuffer.append(" Unsigned Integer (2) - VALUE: ").append("" + (payload[0] & 0xFF));
+                break;
+
+            // 0x04 = 4d
             case APPLICATION_TAG_REAL:
                 stringBuffer.append(" REAL");
 //                final float realValue = ByteBuffer.wrap(payload).order(ByteOrder.BIG_ENDIAN).getFloat();
 //                stringBuffer.append(" Value: ").append(realValue);
                 break;
 
-            case APPLICATION_TAG_DATE:
-                stringBuffer.append(" DATE");
-                break;
-
-            case APPLICATION_TAG_TIME:
-                stringBuffer.append(" TIME");
-                break;
-
+            // 0x07 = 7d
             case APPLICATION_TAG_NUMBER_CHARACTER_STRING:
                 String temp = new String(payload);
                 temp = StringUtils.trim(temp);
                 stringBuffer.append(" Character String (7) '").append(temp).append("'");
                 break;
 
-            case UNSIGNED_INTEGER_CODE:
-                stringBuffer.append(" Unsigned Integer (2) - VALUE: ").append("" + (payload[0] & 0xFF));
+            // 0x08 = 8d
+            case APPLICATION_TAG_BIT_STRING:
+                stringBuffer.append(" Bit String (8) '");
+                if (payload.length > 0) {
+                    stringBuffer.append(" Payload/Value: ").append(APIUtils.byteArrayToStringNoPrefix(payload));
+                }
                 break;
 
+            // 0x09 = 9d
             case ENUMERATED_CODE:
-                stringBuffer.append(" Enumerated (9)");
+                stringBuffer.append(" Enumerated (9) ");
+                if (payload.length > 0) {
+                    stringBuffer.append(" Payload/Value: ").append(APIUtils.byteArrayToStringNoPrefix(payload));
+                }
                 break;
 
+            // 0x0A = 10d
+            case APPLICATION_TAG_DATE:
+                stringBuffer.append(" DATE");
+                break;
+
+            // 0x0B = 11d
+            case APPLICATION_TAG_TIME:
+                stringBuffer.append(" TIME");
+                break;
+
+            // 0x0C = 12d
             case BACNET_OBJECT_IDENTIFIER:
                 stringBuffer.append(" BACnetObjectIdentifier (12)");
                 // the first ten bit contain the type of object this object identifier describes
@@ -228,6 +249,10 @@ public class ServiceParameter {
                     stringBuffer.append(", ObjectType: binary-input");
                     break;
 
+                case ObjectType.BINARY_VALUE_CODE:
+                    stringBuffer.append(", ObjectType: binary-value");
+                    break;
+
                 case ObjectType.DEVICE_CODE:
                     stringBuffer.append(", ObjectType: device");
                     break;
@@ -240,10 +265,6 @@ public class ServiceParameter {
                     stringBuffer.append(", ObjectType: loop");
                     break;
 
-                case ObjectType.NOTIFICATION_CLASS_CODE:
-                    stringBuffer.append(", ObjectType: notification-class");
-                    break;
-
                 case ObjectType.MULTI_STATE_INPUT_CODE:
                     stringBuffer.append(", ObjectType: multi-state-input");
                     break;
@@ -252,11 +273,15 @@ public class ServiceParameter {
                     stringBuffer.append(", ObjectType: multi-state-output");
                     break;
 
-                case ObjectType.MULTI_STATE_VALUE_CODE:
-                    stringBuffer.append(", ObjectType: multi-state-value");
+                case ObjectType.NOTIFICATION_CLASS_CODE:
+                    stringBuffer.append(", ObjectType: notification-class");
                     break;
 
                 case ObjectType.SCHEDULE_CODE:
+                    stringBuffer.append(", ObjectType: multi-state-value");
+                    break;
+
+                case ObjectType.MULTI_STATE_VALUE_CODE:
                     stringBuffer.append(", ObjectType: multi-state-value");
                     break;
 
@@ -269,7 +294,7 @@ public class ServiceParameter {
                 break;
 
             default:
-                stringBuffer.append("Unknown Application Tag: ").append(tagNumber).append("]");
+                stringBuffer.append(" Unknown Application Tag: ").append(tagNumber).append(" ");
                 if (payload.length > 0) {
                     stringBuffer.append(DevicePropertyType.getByCode(payload[0] & 0xFF));
                 }
@@ -278,32 +303,48 @@ public class ServiceParameter {
 
         case CONTEXT_SPECIFIC_TAG:
 
-            stringBuffer.append("[CONTEXT_SPECIFIC_TAG]");
+            stringBuffer.append("[CONTEXT_SPECIFIC_TAG] lengthValueType = " + lengthValueType);
 
             switch (lengthValueType) {
 
-            case 1:
+            // 0x01 = 1d - Property or TimeRemaining
+            case 0x01:
+                // This is either a property or, in the case of a COV Subscription update, this
+                // is the TIME-REMAINING!
                 final int codeAsUnsignedInt = payload[0] & 0xff;
-                stringBuffer.append(" [DeviceProperty:")
-                        .append(DevicePropertyType.getByCode(codeAsUnsignedInt).getName()).append(", Code: ")
-                        .append(codeAsUnsignedInt).append("]");
+                try {
+                    stringBuffer.append(" [DeviceProperty:")
+                            .append(DevicePropertyType.getByCode(codeAsUnsignedInt).getName()).append(", Code: ")
+                            .append(codeAsUnsignedInt).append("]");
+                } catch (final Exception e) {
+                    ; // ignored
+                }
+                try {
+                    if (payload.length > 0) {
+                        stringBuffer.append(" [TimeRemaining: ").append(APIUtils.byteArrayToStringNoPrefix(payload))
+                                .append("]");
+                    }
+                } catch (final Exception e) {
+                    ; // ignored
+                }
                 break;
 
+            // 0x04 = 4d - ObjectIdentifier
+            case 0x04:
+                final int bufferToInt = APIUtils.bufferToInt(getPayload(), 0);
+                final ObjectType objectType = ObjectType.getByCode(bufferToInt >> 22);
+                final int instanceNumber = (bufferToInt & 0x3FFFFF);
+                stringBuffer.append(" objectType " + objectType + " instanceNumber " + instanceNumber);
+                break;
+
+            // 0x06 = 6d
             case ServiceParameter.OPENING_TAG_CODE:
                 stringBuffer.append(" {[").append(tagNumber).append("]");
                 break;
 
+            // 0x07 = 7d
             case ServiceParameter.CLOSING_TAG_CODE:
                 stringBuffer.append(" }[").append(tagNumber).append("]");
-                break;
-
-            case 0x04:
-
-                final int bufferToInt = APIUtils.bufferToInt(getPayload(), 0);
-
-                final ObjectType objectType = ObjectType.getByCode(bufferToInt >> 22);
-                final int instanceNumber = (bufferToInt & 0x3FFFFF);
-                stringBuffer.append("objectType " + objectType + " instanceNumber " + instanceNumber);
                 break;
 
             default:

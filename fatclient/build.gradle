@@ -5,6 +5,7 @@
 plugins {
     id 'java'
     id 'maven-publish'
+    id 'application'
 }
 
 repositories {
@@ -34,16 +35,16 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-all', version: '2.0.2-beta'
 }
 
+group = 'de.bacnetz'
+version = '0.0.1-SNAPSHOT'
+description = 'fatclient'
+java.sourceCompatibility = JavaVersion.VERSION_1_8
+
 configurations {
     all {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
     }
 }
-
-group = 'de.bacnetz'
-version = '0.0.1-SNAPSHOT'
-description = 'fatclient'
-java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 publishing {
     publications {
@@ -53,6 +54,30 @@ publishing {
     }
 }
 
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+application {
+    mainClass = 'de.bacnetz.fatclient.Main'
+}
+
 test {
     useJUnitPlatform()
+}
+
+task sourceJar(type: Jar, dependsOn: classes) {
+    classifier 'sources'
+    from sourceSets.main.allSource
+}
+
+eclipse {
+    classpath {
+       downloadSources=true
+    }
+}
+
+jar { 
+   from sourceSets.main.output
+   from sourceSets.main.allJava
 }

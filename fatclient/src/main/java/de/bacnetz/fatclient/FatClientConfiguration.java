@@ -1,5 +1,9 @@
 package de.bacnetz.fatclient;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -11,8 +15,11 @@ import de.bacnetz.devices.DefaultDeviceFactory;
 import de.bacnetz.devices.DefaultDeviceService;
 import de.bacnetz.devices.Device;
 import de.bacnetz.devices.DeviceService;
+import de.bacnetz.factory.DefaultMessageFactory;
 import de.bacnetz.factory.Factory;
+import de.bacnetz.factory.MessageFactory;
 import de.bacnetz.fatclient.buttonhandler.TestButtonHandler;
+import de.bacnetz.vendor.VendorMap;
 
 @Configuration
 public class FatClientConfiguration {
@@ -60,6 +67,15 @@ public class FatClientConfiguration {
     @Bean
     public DefaultApplicationListener defaultApplicationListener() {
         return new DefaultApplicationListener();
+    }
+
+    @Bean
+    public MessageFactory DefaultMessageFactory() throws FileNotFoundException, IOException {
+        final Map<Integer, String> vendorMap = VendorMap.processVendorMap();
+
+        final DefaultMessageFactory defaultMessageFactory = new DefaultMessageFactory();
+        defaultMessageFactory.setVendorMap(vendorMap);
+        return defaultMessageFactory;
     }
 
 }

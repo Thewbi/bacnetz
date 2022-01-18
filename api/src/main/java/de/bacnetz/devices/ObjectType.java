@@ -28,6 +28,16 @@ public enum ObjectType {
 	BINARY_INPUT(0x03, "BINARY_INPUT"),
 	
 	/**
+     * 0x04 = 4d
+     */
+    BINARY_OUTPUT(0x04, "BINARY_OUTPUT"),
+	
+	/**
+	 * 0x05 = 5d
+	 */
+	BINARY_VALUE(0x05, "BINARY_VALUE"),
+	
+	/**
      * 0x08 = 8d
      */
     DEVICE(0x08, "DEVICE"),
@@ -76,6 +86,10 @@ public enum ObjectType {
     public static final int ANALOG_VALUE_CODE = 0x02;
 
     public static final int BINARY_INPUT_CODE = 0x03;
+
+    public static final int BINARY_OUTPUT_CODE = 0x04;
+
+    public static final int BINARY_VALUE_CODE = 0x05;
 
     public static final int DEVICE_CODE = 0x08;
 
