@@ -38,3 +38,6 @@ hs_err_pid*
 /bin/**
 gradle/wrapper/gradle-wrapper.properties
 server/storage/jpadb.trace.db
+static/bacnetz
+gradlew
+gradlew.bat
