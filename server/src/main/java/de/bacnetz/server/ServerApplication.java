@@ -36,7 +36,16 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * -- filter out i-am
  * (bacnet || bvlc || bacapp) && !(bacapp.unconfirmed_service == 0)
  * </pre>
- *
+ * 
+ * 
+ * ERROR:
+ * <pre>
+ * java.lang.NoSuchMethodError: javax.ws.rs.core.Application.getProperties()Ljava/util/Map;
+ * </pre>
+ * If you get this error in the server, when you open the angular app using your browser,
+ * then you have two versions of jersey loaded by the JVM. In order to get rid of the old 
+ * version, go to C:\Users\<your_user>\.gradle\caches\modules-2\files-2.1\javax.ws.rs and delete
+ * all old versions from here. After that the error is gone! 
  */
 @SpringBootApplication
 @ComponentScan(basePackages = "de.bacnetz")

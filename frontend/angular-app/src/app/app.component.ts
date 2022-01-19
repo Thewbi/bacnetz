@@ -57,11 +57,12 @@ export class AppComponent {
 
   faDigitalTachograph = faDigitalTachograph;
 
-  //apiUrl = "http://192.168.0.234:8182/bacnetz/api";
-  apiUrl = "http://127.0.0.1:8182/bacnetz/api";
+  apiUrl = "/bacnetz/api";
 
   //websocketUrl = "ws://192.168.0.234:8182/bacnetz/push";
-  websocketUrl = "ws://127.0.0.1:8182/bacnetz/push";
+  //websocketUrl = "ws://127.0.0.1:8182/bacnetz/push";
+  //websocketUrl = "ws://192.168.0.11:8182/bacnetz/push";
+  websocketUrl = "ws:///bacnetz/push";
 
   constructor(private http: HttpClient) {}
 

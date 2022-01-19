@@ -17,13 +17,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import de.bacnetz.devices.DeviceDto;
 import de.bacnetz.devices.DeviceFacade;
 import de.bacnetz.devices.WritePropertyDto;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+//import io.swagger.annotations.Api;
+//import io.swagger.annotations.ApiOperation;
+//import io.swagger.annotations.ApiResponse;
+//import io.swagger.annotations.ApiResponses;
 
 @Path("/device")
-@Api(value = "/device")
+//@Api(value = "/device")
 public class DeviceResource {
 
     private final static Logger LOG = LoggerFactory.getLogger(DeviceResource.class);
@@ -36,8 +36,8 @@ public class DeviceResource {
      * 
      * @return
      */
-    @ApiOperation("Retrieve all devices")
-    @ApiResponses({ @ApiResponse(code = 200, message = "OK", response = List.class) })
+//    @ApiOperation("Retrieve all devices")
+//    @ApiResponses({ @ApiResponse(code = 200, message = "OK", response = List.class) })
     @GET
     @Path("/all")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -46,8 +46,8 @@ public class DeviceResource {
         return deviceFacade.getDevices();
     }
 
-    @ApiOperation("Retrieve detailed device information")
-    @ApiResponses({ @ApiResponse(code = 200, message = "OK", response = DeviceDto.class) })
+//    @ApiOperation("Retrieve detailed device information")
+//    @ApiResponses({ @ApiResponse(code = 200, message = "OK", response = DeviceDto.class) })
     @GET
     @Path("/details/{uid}")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -73,8 +73,8 @@ public class DeviceResource {
      * 
      * @param uid
      */
-    @ApiOperation("Changes a property on a device")
-    @ApiResponses({ @ApiResponse(code = 200, message = "OK") })
+//    @ApiOperation("Changes a property on a device")
+//    @ApiResponses({ @ApiResponse(code = 200, message = "OK") })
     @POST
     @Path("/writeProperty")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -89,8 +89,8 @@ public class DeviceResource {
      * 
      * @param uid
      */
-    @ApiOperation("Toggle specific door open state")
-    @ApiResponses({ @ApiResponse(code = 200, message = "OK") })
+//    @ApiOperation("Toggle specific door open state")
+//    @ApiResponses({ @ApiResponse(code = 200, message = "OK") })
     @POST
     @Path("/toggle/{uid}")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -98,8 +98,8 @@ public class DeviceResource {
         LOG.info("toggle: uid={}", uid);
     }
 
-    @ApiOperation("Toggle all door open states")
-    @ApiResponses({ @ApiResponse(code = 200, message = "OK") })
+//    @ApiOperation("Toggle all door open states")
+//    @ApiResponses({ @ApiResponse(code = 200, message = "OK") })
     @POST
     @Path("/toggle")
     @Consumes(MediaType.APPLICATION_JSON)

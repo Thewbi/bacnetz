@@ -10,12 +10,15 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 public class VendorMap {
-
+	
     public static Map<Integer, String> processVendorMap() throws FileNotFoundException, IOException {
+    	
         // from file from eclipse
-        final String filename = "src/main/resources/BACnetVendors.csv";
-//        final File file = new File(filename);
-//        LOG.info(file.getAbsoluteFile());
+//        final String filename = "src/main/resources/BACnetVendors.csv";
+    	
+    	// for the fat runnable .jar
+    	final String filename = "BACnetVendors.csv";
+        
         final BufferedReader bufferedReader = new BufferedReader(new FileReader(filename));
 
         return readVendorMap(bufferedReader);

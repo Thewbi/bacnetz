@@ -19,7 +19,9 @@ import bacnetzmstp.messages.DefaultMessageListener;
 import bacnetzmstp.messages.MessageListener;
 import de.bacnetz.common.utils.Utils;
 import de.bacnetz.controller.Message;
+import de.bacnetz.controller.MessageController;
 import de.bacnetz.devices.DevicePropertyType;
+import de.bacnetz.devices.DeviceService;
 import de.bacnetz.devices.ObjectType;
 import de.bacnetz.mstp.Header;
 import de.bacnetz.stack.APDU;
@@ -61,8 +63,11 @@ public class DefaultStateMachineTest {
         //
         // Arrange
         //
+    	
+    	final DeviceService deviceService = spy(DeviceService.class);
 
         final MessageListener messageListener = spy(DefaultMessageListener.class);
+        messageListener.setDeviceService(deviceService);
 
         final DefaultStateMachine stateMachine = new DefaultStateMachine();
         stateMachine.setMessageListener(messageListener);
@@ -130,8 +135,11 @@ public class DefaultStateMachineTest {
         //
         // Arrange
         //
+    	
+    	final DeviceService deviceService = spy(DeviceService.class);
 
         final MessageListener messageListener = spy(DefaultMessageListener.class);
+        messageListener.setDeviceService(deviceService);
 
         final DefaultStateMachine stateMachine = new DefaultStateMachine();
         stateMachine.setMessageListener(messageListener);
@@ -190,8 +198,11 @@ public class DefaultStateMachineTest {
         //
         // Arrange
         //
+    	
+    	final DeviceService deviceService = spy(DeviceService.class);
 
         final MessageListener messageListener = spy(DefaultMessageListener.class);
+        messageListener.setDeviceService(deviceService);
 
         final DefaultStateMachine stateMachine = new DefaultStateMachine();
         stateMachine.setMessageListener(messageListener);
@@ -250,8 +261,11 @@ public class DefaultStateMachineTest {
         //
         // Arrange
         //
+    	
+    	final DeviceService deviceService = spy(DeviceService.class);
 
         final MessageListener messageListener = spy(DefaultMessageListener.class);
+    	messageListener.setDeviceService(deviceService);
 
         final DefaultStateMachine stateMachine = new DefaultStateMachine();
         stateMachine.setMessageListener(messageListener);
@@ -311,8 +325,14 @@ public class DefaultStateMachineTest {
         //
         // Arrange
         //
+    	
+    	final DeviceService deviceService = spy(DeviceService.class);
+    	
+    	final MessageController messageController = spy(MessageController.class);
 
         final MessageListener messageListener = spy(DefaultMessageListener.class);
+        messageListener.setDeviceService(deviceService);
+        messageListener.setMessageController(messageController);
 
         final DefaultStateMachine stateMachine = new DefaultStateMachine();
         stateMachine.setMessageListener(messageListener);
@@ -405,8 +425,11 @@ public class DefaultStateMachineTest {
         //
         // Arrange
         //
+    	
+    	final DeviceService deviceService = spy(DeviceService.class);
 
         final MessageListener messageListener = spy(DefaultMessageListener.class);
+        messageListener.setDeviceService(deviceService);
 
         final DefaultStateMachine stateMachine = new DefaultStateMachine();
         stateMachine.setMessageListener(messageListener);
@@ -529,8 +552,14 @@ public class DefaultStateMachineTest {
         //
         // Arrange
         //
+    	
+    	final DeviceService deviceService = spy(DeviceService.class);
+    	
+    	final MessageController messageController = spy(MessageController.class);
 
         final MessageListener messageListener = spy(DefaultMessageListener.class);
+        messageListener.setDeviceService(deviceService);
+        messageListener.setMessageController(messageController);
 
         final DefaultStateMachine stateMachine = new DefaultStateMachine();
         stateMachine.setMessageListener(messageListener);
@@ -623,8 +652,11 @@ public class DefaultStateMachineTest {
         //
         // Arrange
         //
+    	
+    	final DeviceService deviceService = spy(DeviceService.class);
 
         final MessageListener messageListener = spy(DefaultMessageListener.class);
+        messageListener.setDeviceService(deviceService);
 
         final DefaultStateMachine stateMachine = new DefaultStateMachine();
         stateMachine.setMessageListener(messageListener);
@@ -746,8 +778,11 @@ public class DefaultStateMachineTest {
         //
         // Arrange
         //
+    	
+    	final DeviceService deviceService = spy(DeviceService.class);
 
         final MessageListener messageListener = spy(DefaultMessageListener.class);
+        messageListener.setDeviceService(deviceService);
 
         final DefaultStateMachine stateMachine = new DefaultStateMachine();
         stateMachine.setMessageListener(messageListener);
@@ -841,8 +876,14 @@ public class DefaultStateMachineTest {
         //
         // Arrange
         //
+    	
+    	final DeviceService deviceService = spy(DeviceService.class);
+    	
+    	final MessageController messageController = spy(MessageController.class);
 
         final MessageListener messageListener = spy(DefaultMessageListener.class);
+        messageListener.setDeviceService(deviceService);
+        messageListener.setMessageController(messageController);
 
         final DefaultStateMachine stateMachine = new DefaultStateMachine();
         stateMachine.setMessageListener(messageListener);
@@ -934,8 +975,11 @@ public class DefaultStateMachineTest {
         //
         // Arrange
         //
+    	
+    	final DeviceService deviceService = spy(DeviceService.class);
 
         final MessageListener messageListener = spy(DefaultMessageListener.class);
+        messageListener.setDeviceService(deviceService);
 
         final DefaultStateMachine stateMachine = new DefaultStateMachine();
         stateMachine.setMessageListener(messageListener);
@@ -1025,8 +1069,14 @@ public class DefaultStateMachineTest {
         //
         // Arrange
         //
+    	
+    	final DeviceService deviceService = spy(DeviceService.class);
+    	
+    	final MessageController messageController = spy(MessageController.class);
 
         final MessageListener messageListener = spy(DefaultMessageListener.class);
+        messageListener.setDeviceService(deviceService);
+        messageListener.setMessageController(messageController);
 
         final DefaultStateMachine stateMachine = new DefaultStateMachine();
         stateMachine.setMessageListener(messageListener);
@@ -1106,8 +1156,14 @@ public class DefaultStateMachineTest {
         //
         // Arrange
         //
+    	
+    	final DeviceService deviceService = spy(DeviceService.class);
+    	
+    	final MessageController messageController = spy(MessageController.class);
 
         final MessageListener messageListener = spy(DefaultMessageListener.class);
+        messageListener.setDeviceService(deviceService);
+        messageListener.setMessageController(messageController);
 
         final DefaultStateMachine stateMachine = new DefaultStateMachine();
         stateMachine.setMessageListener(messageListener);
@@ -1190,8 +1246,14 @@ public class DefaultStateMachineTest {
         //
         // Arrange
         //
+    	
+    	final DeviceService deviceService = spy(DeviceService.class);
+    	
+    	final MessageController messageController = spy(MessageController.class);
 
         final MessageListener messageListener = spy(DefaultMessageListener.class);
+        messageListener.setDeviceService(deviceService);
+        messageListener.setMessageController(messageController);
 
         final DefaultStateMachine stateMachine = new DefaultStateMachine();
         stateMachine.setMessageListener(messageListener);

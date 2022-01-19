@@ -13,8 +13,7 @@ export class DeviceDetailsComponent implements OnInit {
 
   public device: any;
 
-  //backendUrl = "http://192.168.0.234:8182/bacnetz/api";
-  backendUrl = "http://127.0.0.1:8182/bacnetz/api";
+  backendUrl = "/bacnetz/api";
 
   constructor(private route: ActivatedRoute, private http: HttpClient) {}
 

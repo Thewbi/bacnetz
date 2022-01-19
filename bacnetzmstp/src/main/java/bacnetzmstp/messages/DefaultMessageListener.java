@@ -369,7 +369,6 @@ public class DefaultMessageListener implements MessageListener {
 
         int length = 0;
         final int headerLength = header.toBytes(resultBuffer, length);
-        ;
         length += headerLength;
         length += message.getNpdu().toBytes(resultBuffer, length);
         length += message.getApdu().toBytes(resultBuffer, length);

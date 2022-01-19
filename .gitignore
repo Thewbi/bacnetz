@@ -36,3 +36,5 @@ build/
 hs_err_pid*
 /target/
 /bin/**
+gradle/wrapper/gradle-wrapper.properties
+server/storage/jpadb.trace.db

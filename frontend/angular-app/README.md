@@ -2,6 +2,12 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.0.1.
 
+## installing dependencies
+
+enter the open wlan (The dependencies have to be downloaded and there should be 
+no firewall blocking the requests!)
+npm i
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
@@ -22,7 +28,44 @@ Run `ng generate component component-name` (short: `ng g c component-name`) to g
 
 ## Build
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+Run `ng build` to build the project.
+Use the `--prod` flag for a production build.
+
+The build artifacts will be stored in the `bacnet/static/bacnetz/` directory (C:\aaa_se\bacnetz\static\bacnetz).
+The output folder is configured in angular.json:
+
+```
+"options": {
+            ...
+            "outputPath": "../../static/bacnetz",
+            ...
+},
+```
+
+
+The URL under which the webapp is available is configured in package.json in the script command 'build':
+
+```
+"scripts": {
+    ...
+    "build": "ng build --deploy-url=/bacnetz/",
+    ...
+  },
+```
+
+Also the index.html file has been modified to contain:
+
+```
+<base href="/bacnetz/">
+```
+
+This will tell the browser to append the path /bacnetz when retrieving files.
+
+If you want to update the webapp that is stored in the server application,
+copy all the content of the bacnet/static/bacnetz/ folder into /server/src/main/resources/static/bacnetz
+overriding the currently deployed version in the process.
+
+When the server starts up, it will serve the updated files to a client (Browser)
 
 ## Running unit tests
 

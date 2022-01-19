@@ -15,8 +15,7 @@ export class DeviceTableComponent implements OnInit {
 
   faDigitalTachograph = faDigitalTachograph;
 
-  //backendUrl = "http://192.168.0.234:8182/bacnetz/api";
-  backendUrl = "http://127.0.0.1:8182/bacnetz/api";
+  backendUrl = "/bacnetz/api";
 
   ngOnInit(): void {
 
