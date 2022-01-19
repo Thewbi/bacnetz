@@ -1085,6 +1085,11 @@ public class DefaultStateMachineTest {
         final String npduHexStream = "0104";
         final String apduHexStream = "0273150C0C023FFFFF19D1";
         final String footerHexStream = "4408";
+        
+        // APDU
+        // Byte 1 - Type and Flags
+        // Byte 2 - SegmentationControl
+        // Byte 3 - InvokeID
 
         final byte[] hexStringToByteArray = Utils
                 .hexStringToByteArray(headerHexStream + npduHexStream + apduHexStream + footerHexStream);
@@ -1169,7 +1174,12 @@ public class DefaultStateMachineTest {
         stateMachine.setMessageListener(messageListener);
 
 //        Header: 55 FF 05 02 01 00 0D 11 
-//        Payload: 01 04 02 73 0A 0C 0C 02 3F FF FF 19 4C 
+//        Payload: 01 04 | 02 73 00 0C 0C 02 3F FF FF 19 D1 | C8 85
+        
+        // APDU
+        // Byte 1 - Type and Flags
+        // Byte 2 - SegmentationControl
+        // Byte 3 - InvokeID
 
         final String headerHexStream = "55FF050201000D11";
         final String npduHexStream = "0104";
@@ -1216,9 +1226,11 @@ public class DefaultStateMachineTest {
         // check NPDU
         assertEquals(1, defaultMessage.getNpdu().getVersion());
         assertEquals(4, defaultMessage.getNpdu().getControl());
+        
+        // check APDU
 
         // invoke id
-        assertEquals(21, defaultMessage.getApdu().getInvokeId());
+        assertEquals(0, defaultMessage.getApdu().getInvokeId());
 
         // service choice is readProperty
         assertNull(defaultMessage.getApdu().getUnconfirmedServiceChoice());
@@ -1324,13 +1336,13 @@ public class DefaultStateMachineTest {
         assertNull(apdu.getUnconfirmedServiceChoice());
         assertEquals(ConfirmedServiceChoice.READ_PROPERTY, apdu.getConfirmedServiceChoice());
 
-        // DEBUG
-        System.out.println(defaultMessage.getNpdu().getStructureLength());
-        System.out.println(Utils.bytesToHex(defaultMessage.getNpdu().getBytes()));
-
-        // DEBUG
-        System.out.println(apdu.getStructureLength());
-        System.out.println(Utils.bytesToHex(apdu.getBytes()));
+//        // DEBUG
+//        System.out.println(defaultMessage.getNpdu().getStructureLength());
+//        System.out.println(Utils.bytesToHex(defaultMessage.getNpdu().getBytes()));
+//
+//        // DEBUG
+//        System.out.println(apdu.getStructureLength());
+//        System.out.println(Utils.bytesToHex(apdu.getBytes()));
 
 //        // object identifier (context tag)
 //        final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = defaultMessage.getApdu()

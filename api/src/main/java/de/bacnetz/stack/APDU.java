@@ -268,6 +268,10 @@ public class APDU {
 
         int offset = 0;
         structureLength = 0;
+        
+        //
+        // Byte 1
+        //
 
         //
         // PDU type
@@ -290,22 +294,30 @@ public class APDU {
 
         offset++;
         structureLength++;
-
+        
         // Response Information
         //
         // The ReadProperty request for max-apdu-length-accepted does not set the bit 2
         // but still contains segmentation information
         if (segmentedResponseAccepted || pduType == PDUType.CONFIRMED_SERVICE_REQUEST_PDU) {
 
+        	//
+            // Byte 2 - segmentationControl
+            //
+        	
             segmentationControl = data[startIndex + offset] & 0xFF;
             offset++;
             structureLength++;
 
+            //
+            // Byte 3 - invoke ID
+            //
+            
             // invoke ID
             invokeId = data[startIndex + offset] & 0xFF;
             offset++;
             structureLength++;
-
+            
             // unconfirmed service choice
             final int serviceChoiceCode = data[startIndex + offset] & 0xFF;
             confirmedServiceChoice = ConfirmedServiceChoice.fromInt(serviceChoiceCode);
