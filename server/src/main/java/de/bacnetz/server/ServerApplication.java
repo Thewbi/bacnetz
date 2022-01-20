@@ -52,6 +52,16 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * -- filter out i-am
  * (bacnet || bvlc || bacapp) && !(bacapp.unconfirmed_service == 0)
  * </pre>
+ *
+ * <h1>Running the server</h1>
+ * Edit src/main/resources/application.properties and set your local IP address into
+ * both of the two properties: server.address and bind.ip
+ * 
+ * <h1>Runnable jar</h1>
+ * The gradle spring boot plugin is imported into the gradle file to build the runnable fat jar. 
+ * The jar is placed into the folder: C:\aaa_se\bacnetz\server\build\libs. It is called server-0.0.1-SNAPSHOT.jar.
+ * Running: java -jar server-0.0.1-SNAPSHOT.jar
+ * java -jar server-0.0.1-SNAPSHOT.jar --server.address=192.168.0.11 --bind.ip=192.168.0.11 --multicast.ip=192.168.0.255
  * 
  * 
  * ERROR:
