@@ -19,6 +19,22 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * app. It takes about 15 minutes.)
  * </ol>
  * 
+ * <h1>Build using Gradle</h1>
+ * Make sure you do have unrestricted access to the internet because Gradle needs to 
+ * download dependencies.
+ * Run the Gradle build task for all projects in the order outlined above.
+ * In eclipse, you open the "Gradle Tasks" view and run build tasks from there.
+ * 
+ * After the server was build, the result is the file:
+ * C:\aaa_se\bacnetz\server\build\libs\server-0.0.1-SNAPSHOT.jar.
+ * 
+ * <h1>Running the server</h1>
+ * <pre>
+ * java -jar server-0.0.1-SNAPSHOT.jar
+ * java -jar server-0.0.1-SNAPSHOT.jar --server.address=192.168.0.11 --bind.ip=192.168.0.11 --multicast.ip=192.168.0.255
+ * java -jar server-0.0.1-SNAPSHOT.jar --server.address=192.168.0.108 --bind.ip=192.168.0.108 --multicast.ip=192.168.0.255
+ * </pre>
+ * 
  * <h1>Wireshark display filter bacnet ip</h1>
  * 
  * <pre>
