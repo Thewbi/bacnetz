@@ -9,14 +9,22 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 /**
  * <h1>Build order</h1>
  * <ol>
- * <li />common
- * <li />api
- * <li />bacnetz
- * <li />bacnetzmstp
- * <li />jsonrpc
- * <li />fatclient
- * <li />server (Takes very, very long to build because it packages the angular
- * app. It takes about 15 minutes.)
+ * <li />common  		+ (publishing > publishToMavenLocal)
+ * <li />api  			+ (publishing > publishToMavenLocal)
+ * <li />bacnetz  		+ (publishing > publishToMavenLocal)
+ * <li />bacnetzmstp  	+ (publishing > publishToMavenLocal)
+ * <li />jsonrpc  		+ (publishing > publishToMavenLocal)
+ * <li />fatclient  	+ (publishing > publishToMavenLocal)
+ * <li />server			+ (publishing > publishToMavenLocal)
+ * </ol>
+ * 
+ * <h1>Build order for the server</h1>
+ * If you only want to build the server, the build order is:
+ * <ol>
+ * <li />common 		+ (publishing > publishToMavenLocal)
+ * <li />api  			+ (publishing > publishToMavenLocal)
+ * <li />bacnetz  		+ (publishing > publishToMavenLocal)
+ * <li />server			+ (publishing > publishToMavenLocal)
  * </ol>
  * 
  * <h1>Build using Gradle</h1>
@@ -56,6 +64,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * <h1>Running the server</h1>
  * Edit src/main/resources/application.properties and set your local IP address into
  * both of the two properties: server.address and bind.ip
+ * Or altenatively, use the command line parameters
+ * <pre>
+ * --server.address=192.168.0.11 --bind.ip=192.168.0.11 --multicast.ip=192.168.0.255
+ * </pre>
+ * to override what is configured inside the properties file
  * 
  * <h1>Runnable jar</h1>
  * The gradle spring boot plugin is imported into the gradle file to build the runnable fat jar. 
@@ -63,8 +76,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * Running: java -jar server-0.0.1-SNAPSHOT.jar
  * java -jar server-0.0.1-SNAPSHOT.jar --server.address=192.168.0.11 --bind.ip=192.168.0.11 --multicast.ip=192.168.0.255
  * 
- * 
- * ERROR:
+ * <h1>ERROR: javax.ws.rs.core.Application.getProperties() No such Method Error</h1>
  * <pre>
  * java.lang.NoSuchMethodError: javax.ws.rs.core.Application.getProperties()Ljava/util/Map;
  * </pre>

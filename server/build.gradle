@@ -10,12 +10,6 @@ plugins {
     id 'org.springframework.boot' version '2.0.0.RELEASE'
 }
 
-/*
-application {
-    mainClass = 'de.bacnetz.server.ServerApplication'
-}
-*/
-
 repositories {
     mavenCentral()
     mavenLocal()
@@ -72,9 +66,12 @@ tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
 
+/*
+mainClassName = 'de.bacnetz.server.ServerApplication'
 application {
     mainClass = 'de.bacnetz.server.ServerApplication'
 }
+*/
 
 /*
 test {

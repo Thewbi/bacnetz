@@ -4,22 +4,40 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.core.io.ClassPathResource;
+
+import de.bacnetz.controller.DefaultMessageController;
 
 public class VendorMap {
+	
+	private static final Logger LOG = LogManager.getLogger(VendorMap.class);
 	
     public static Map<Integer, String> processVendorMap() throws FileNotFoundException, IOException {
     	
         // from file from eclipse
 //        final String filename = "src/main/resources/BACnetVendors.csv";
+//      final BufferedReader bufferedReader = new BufferedReader(new FileReader(filename));
     	
     	// for the fat runnable .jar
     	final String filename = "BACnetVendors.csv";
-        
-        final BufferedReader bufferedReader = new BufferedReader(new FileReader(filename));
+    	
+    	LOG.info("Loading from classpath! filename=" + filename);
+    	
+    	ClassPathResource classPathResource = new ClassPathResource(filename);
+    	LOG.info("classPathResource: " + classPathResource);
+    	
+    	InputStreamReader inputStreamReader = new InputStreamReader(classPathResource.getInputStream(), "UTF-8");
+    	LOG.info("inputStreamReader: " + inputStreamReader);
+
+    	final BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+    	LOG.info("bufferedReader: " + bufferedReader);
 
         return readVendorMap(bufferedReader);
     }
