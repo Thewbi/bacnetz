@@ -45,6 +45,15 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * 
  * <h1>Wireshark display filter bacnet ip</h1>
  * 
+ * In order to sniff BACnet/IP traffic, you have to have a router that allows to configure a monitoring
+ * port. When you connect a network cable between that monitoring port and your PC on a second network adapter,
+ * you can then open wireshark on that second network adapter. Wireshark will than receive all the 
+ * sniffed traffic from the monitoring port and it can dissect the BACNet packets.
+ * One router that allows this is the CISCO: ???
+ * 
+ * It is not possible to just open wireshark on the same ethernet adapter that the BACnetz server communicates over!
+ * WireShark will not display any traffic at all! I do not know why!
+ * 
  * <pre>
  * -- bacnet without spam:
  * (bacnet || bvlc || bacapp) && !(bacapp.unconfirmed_service == 8) && !(bacapp.unconfirmed_service == 0)
@@ -83,7 +92,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * If you get this error in the server, when you open the angular app using your browser,
  * then you have two versions of jersey loaded by the JVM. In order to get rid of the old 
  * version, go to C:\Users\<your_user>\.gradle\caches\modules-2\files-2.1\javax.ws.rs and delete
- * all old versions from here. After that the error is gone! 
+ * all old versions from here. After that the error is gone!
+ * 
+ * <h1>COV</h1>
+ * The server will only correctly respond to COV subscriptions to the close_state BinaryInput device!
+ * No other COV is implemented yet! Use the swagger to trigger the REST API or send a request to the
+ * REST API yourself for the /bacnet/api/device/toggle
  */
 @SpringBootApplication
 @ComponentScan(basePackages = "de.bacnetz")

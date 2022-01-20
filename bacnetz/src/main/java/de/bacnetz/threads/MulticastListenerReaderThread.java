@@ -104,11 +104,13 @@ public class MulticastListenerReaderThread extends BaseCommunicationService impl
                 continue;
             }
 
-            // DEBUG
-            LOG.info(">>> Received from inetAddress: " + datagramPacketAddress + " From socketAddress "
-                    + datagramPacketSocketAddress + " Data: "
-                    + Utils.byteArrayToStringNoPrefix(datagramPacket.getData()));
-            LOG.info(">>> " + Utils.byteArrayToStringNoPrefix(data));
+            // DEBUG - output the hex buffer
+            if (LOG.isTraceEnabled()) {
+	            LOG.trace(">>> Received from inetAddress: " + datagramPacketAddress + " From socketAddress "
+	                    + datagramPacketSocketAddress + " Data: "
+	                    + Utils.byteArrayToStringNoPrefix(datagramPacket.getData()));
+	            LOG.trace(">>> " + Utils.byteArrayToStringNoPrefix(data));
+            }
 
             List<Message> responseMessages = null;
             Message request = null;
@@ -116,24 +118,24 @@ public class MulticastListenerReaderThread extends BaseCommunicationService impl
             // parse and process the request message and return a response message
             try {
 
-                LOG.info("datagramPacketSocketAddress: {}, bytesReceived: {}, data: {}", datagramPacketSocketAddress,
+                LOG.trace("datagramPacketSocketAddress: {}, bytesReceived: {}, data: {}", datagramPacketSocketAddress,
                         bytesReceived, Utils.bytesToHex(data));
 
                 // parse the incoming data into a BACnet request message
 
-                LOG.info("calling parseBuffer() ...");
+                LOG.trace("calling parseBuffer() ...");
                 request = parseBuffer(data, bytesReceived);
-                LOG.info("calling parseBuffer() done.");
+                LOG.trace("calling parseBuffer() done.");
 
-                LOG.info("calling setSourceInetSocketAddress() request: {} datagramPacketSocketAddress: {} ...",
+                LOG.trace("calling setSourceInetSocketAddress() request: {} datagramPacketSocketAddress: {} ...",
                         request, datagramPacketSocketAddress);
                 request.setSourceInetSocketAddress((InetSocketAddress) datagramPacketSocketAddress);
-                LOG.info("calling setSourceInetSocketAddress() done.");
+                LOG.trace("calling setSourceInetSocketAddress() done.");
 
                 // tell the controller to compute a response from the request
-                LOG.info("calling sendMessageToController() ...");
+                LOG.trace("calling sendMessageToController() ...");
                 responseMessages = sendMessageToController(request);
-                LOG.info("calling sendMessageToController() done.");
+                LOG.trace("calling sendMessageToController() done.");
 
             } catch (final Exception e) {
                 LOG.error("Cannot process buffer: {}", Utils.byteArrayToStringNoPrefix(data));
@@ -145,7 +147,6 @@ public class MulticastListenerReaderThread extends BaseCommunicationService impl
                 for (final Message response : responseMessages) {
                     sendMessage(datagramPacketAddress, request, response);
                 }
-//                response.stream().forEach(m -> sendMessage(datagramPacketAddress, request, m));
             } else {
                 LOG.trace("Controller returned a null message!");
             }
@@ -295,7 +296,7 @@ public class MulticastListenerReaderThread extends BaseCommunicationService impl
         // After all segments have been reassembled...
         //
         // process service parameters inside the APDU. The APDU will parse the service
-        // parameters dump them to the console and store them in it's service parameter
+        // parameters, dump them to the console and store them in it's service parameter
         // list for further processing
         final byte[] payload = defaultMessage.getApdu().getPayload();
         final int startIndex = 0;

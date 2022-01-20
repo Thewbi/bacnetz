@@ -89,8 +89,8 @@ public abstract class BaseDevice extends BaseCommunicationService implements Dev
 
     /**
      * concurrent HashSet because a subscription set can be cleared (Delete all COV
-     * Subscriptionts) while it is iterated over (during a change of the present
-     * value property
+     * Subscriptions) while it is iterated over (during a change of the present
+     * value property)
      */
     private final Set<COVSubscription> covSubscriptions = ConcurrentHashMap.newKeySet();
 

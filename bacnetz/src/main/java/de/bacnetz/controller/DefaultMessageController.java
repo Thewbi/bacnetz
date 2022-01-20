@@ -69,14 +69,14 @@ public class DefaultMessageController implements MessageController {
     /**
      * BACnet Testing Laboratories - Implementation Guidelines
      * 
-     * 3.7 Device instance number 4194303 is for reading a Device object’s
-     * Object_Identifier Device instance number 4194303 can be used as a “wildcard”
-     * value for reading a Device object’s Object_Identifier property (to determine
+     * 3.7 Device instance number 4194303 is for reading a Device object's
+     * Object_Identifier Device instance number 4194303 can be used as a 'wildcard'
+     * value for reading a Device object's Object_Identifier property (to determine
      * its Device instance). If a ReadProperty or ReadPropertyMultiple request is
      * received for the Object_Identifier property of Device 4194303, the response
-     * shall convey the responding device’s correct Device object instance.
+     * shall convey the responding device's correct Device object instance.
      * 
-     * The ability to respond to instance 4194303 as a “wildcard” value was added in
+     * The ability to respond to instance 4194303 as a 'wildcard' value was added in
      * Addendum 135-2001a; it might not be implemented in devices earlier than
      * Protocol_Revision 4.
      */
@@ -166,7 +166,7 @@ public class DefaultMessageController implements MessageController {
             switch (confirmedServiceChoice) {
 
             case READ_PROPERTY:
-                LOG.info(">>> READ_PROPERTY received!");
+                LOG.trace(">>> READ_PROPERTY received!");
                 return processReadProperty(mstpHeader, message);
 
             case READ_PROPERTY_MULTIPLE:
@@ -178,11 +178,12 @@ public class DefaultMessageController implements MessageController {
                 return processWriteProperty(message);
 
             case REINITIALIZE_DEVICE:
-                LOG.info(">>> REINITIALIZE_DEVICE received!");
+                LOG.trace(">>> REINITIALIZE_DEVICE received!");
                 return processReinitializeDevice(message);
 
             case SUBSCRIBE_COV:
-                LOG.info(">>> SUBSCRIBE_COV received! {}", message);
+                LOG.trace(">>> SUBSCRIBE_COV received! {}", message);
+                LOG.info(">>> SUBSCRIBE_COV received! {}");
                 return processSubscribeCov(message);
 
             case ADD_LIST_ELEMENT:
@@ -193,8 +194,8 @@ public class DefaultMessageController implements MessageController {
                 return processConfirmedCOVNotification();
 
             default:
-                LOG.info(message);
-                LOG.info("Not implemented: {} ", confirmedServiceChoice);
+                LOG.error(message);
+                LOG.error("Not implemented: {} ", confirmedServiceChoice);
                 break;
             }
 
@@ -338,17 +339,22 @@ public class DefaultMessageController implements MessageController {
 
         final ServiceParameter subscriberProcessIdServiceParameter = serviceParameters.get(0);
 
-        // when there are only two service parameters, that means the list of properties
-        // to subscribe to is empty which means no subscription should survive. This
-        // means that a message to delete all COV subscriptions was just received
-        // packaged inside a COV subscription message
+        // delete or add a subscription
         if (serviceParameters.size() == 2) {
+        	
+        	// when there are only two service parameters, that means the list of properties
+            // to subscribe to is empty which means no subscription should survive! 
+        	// This means that this message is in fact a request delete all COV subscriptions.
 
-            LOG.info("Deleting all COV subscriptions from device {}", findDevice);
+            LOG.info("Deleting all COV subscriptions from the device: \"{}\" HashCode: {}", findDevice, findDevice.hashCode());
+            LOG.info("ParentDevice: \"{}\" HashCode: {}", findDevice.getParentDevice().getObjectIdentifierServiceParameter(), findDevice.getParentDevice().hashCode());
 
             findDevice.getCovSubscriptions().clear();
 
         } else {
+        	
+        	LOG.info("Adding a new COV subscription to the device: \"{}\" HashCode: {}", findDevice.getObjectIdentifierServiceParameter(), findDevice.hashCode());
+        	LOG.info("ParentDevice: \"{}\" HashCode: {}", findDevice.getParentDevice().getObjectIdentifierServiceParameter(), findDevice.getParentDevice().hashCode());
 
             // TODO: factory
             final DefaultCOVSubscription covSubscription = new DefaultCOVSubscription();
@@ -731,16 +737,16 @@ public class DefaultMessageController implements MessageController {
 
     private List<Message> processReadProperty(final Header mstpHeader, final Message requestMessage) {
 
-        LOG.info("processReadProperty()");
+        LOG.trace("processReadProperty()");
 
         final int propertyIdentifierCode = requestMessage.getApdu().getPropertyIdentifier();
 
-        LOG.info("Property Identifier: {}", propertyIdentifierCode);
+        LOG.trace("Property Identifier: {}", propertyIdentifierCode);
 
         final ObjectIdentifierServiceParameter objectIdentifierServiceParameter = requestMessage.getApdu()
                 .getFirstObjectIdentifierServiceParameter();
 
-        LOG.info(">>> Property Identifier: {} ({}) Object Identifier: {}", propertyIdentifierCode,
+        LOG.trace(">>> Property Identifier: {} ({}) Object Identifier: {}", propertyIdentifierCode,
                 DevicePropertyType.getByCode(propertyIdentifierCode).getName(),
                 objectIdentifierServiceParameter.toString());
 

@@ -209,24 +209,24 @@ public class App {
         deviceCreationDescriptor.setDeviceType(DeviceType.TZ320);
         deviceCreationDescriptor.setDeviceName("TZ320");
         deviceCreationDescriptor.setModelName("IO 420");
-        deviceCreationDescriptor.setAmountOfDevices(3);
+        deviceCreationDescriptor.setAmountOfDevices(1);
         deviceCreationDescriptor.setStartDeviceId(10000);
         deviceCreationDescriptor.setDeviceIdIncrement(1);
         deviceCreationDescriptor.setDeviceIdOffset(0);
         deviceCreationDescriptor.setVendorId(VendorType.GEZE_GMBH.getCode());
         deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
 
-        // NEC_CORPORATION
-        deviceCreationDescriptor = new DeviceCreationDescriptor();
-        deviceCreationDescriptor.setDeviceType(DeviceType.TZ320);
-        deviceCreationDescriptor.setDeviceName("TZ320");
-        deviceCreationDescriptor.setModelName("IO 420");
-        deviceCreationDescriptor.setAmountOfDevices(3);
-        deviceCreationDescriptor.setStartDeviceId(20000);
-        deviceCreationDescriptor.setDeviceIdIncrement(1);
-        deviceCreationDescriptor.setDeviceIdOffset(0);
-        deviceCreationDescriptor.setVendorId(VendorType.NEC_CORPORATION.getCode());
-        deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
+//        // NEC_CORPORATION
+//        deviceCreationDescriptor = new DeviceCreationDescriptor();
+//        deviceCreationDescriptor.setDeviceType(DeviceType.TZ320);
+//        deviceCreationDescriptor.setDeviceName("TZ320");
+//        deviceCreationDescriptor.setModelName("IO 420");
+//        deviceCreationDescriptor.setAmountOfDevices(3);
+//        deviceCreationDescriptor.setStartDeviceId(20000);
+//        deviceCreationDescriptor.setDeviceIdIncrement(1);
+//        deviceCreationDescriptor.setDeviceIdOffset(0);
+//        deviceCreationDescriptor.setVendorId(VendorType.NEC_CORPORATION.getCode());
+//        deviceService.createDevices(vendorMap, localIp, deviceCreationDescriptor);
     }
 
     public static void setupCento(final Map<Integer, String> vendorMap, final DeviceService deviceService,
@@ -403,7 +403,6 @@ public class App {
 
         final DefaultMessageController defaultMessageController = new DefaultMessageController();
         defaultMessageController.setDeviceService(deviceService);
-
         defaultMessageController.setMessageFactory(messageFactory);
         defaultMessageController.setVendorMap(vendorMap);
         defaultMessageController.setCommunicationService(multicastListenerReaderThread);

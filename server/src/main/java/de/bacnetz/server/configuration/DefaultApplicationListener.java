@@ -20,12 +20,15 @@ import de.bacnetz.server.persistence.covsubscriptions.COVSubscriptionRepository;
 import de.bacnetz.threads.MulticastListenerReaderThread;
 import de.bacnetz.vendor.VendorMap;
 
+/**
+ * This class is part of the Spring infrastructure and it is called when the spring boot
+ * server has started.
+ * <br /><br />
+ * This class is used to create the bacnet devices that the server will provide to the bacnet.
+ * It also starts the thread that binds to a network interface and listens for packets.
+ */
 @Component
 public class DefaultApplicationListener implements ApplicationListener<ContextRefreshedEvent> {
-
-    private static final int START_DEVICE_ID = 20000;
-
-    private static final int AMOUNT_OF_DEVICES = 2;
 
     private final static Logger LOG = LoggerFactory.getLogger(DefaultApplicationListener.class);
 
@@ -62,25 +65,6 @@ public class DefaultApplicationListener implements ApplicationListener<ContextRe
         try {
 
             final Map<Integer, String> vendorMap = VendorMap.processVendorMap();
-
-//            // create watchdogs
-//            final DeviceCreationDescriptor deviceCreationDescriptor = new DeviceCreationDescriptor();
-//            deviceCreationDescriptor.setDeviceType(DeviceType.WATCHDOG);
-//            deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
-//            deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID + 100);
-//            deviceCreationDescriptor.setDeviceIdIncrement(1);
-//            deviceCreationDescriptor.setDeviceIdOffset(0);
-//            @SuppressWarnings("unused")
-//            List<Device> devices = deviceService.createDevices(vendorMap, bindIp, deviceCreationDescriptor);
-//
-//            // create TZ320
-//            deviceCreationDescriptor.setDeviceType(DeviceType.TZ320);
-//            deviceCreationDescriptor.setAmountOfDevices(AMOUNT_OF_DEVICES);
-//            deviceCreationDescriptor.setStartDeviceId(START_DEVICE_ID + 200);
-//            deviceCreationDescriptor.setDeviceIdIncrement(1);
-//            deviceCreationDescriptor.setDeviceIdOffset(0);
-//            devices = deviceService.createDevices(vendorMap, bindIp, deviceCreationDescriptor);
-
 //            App.setupCento(vendorMap, deviceService, bindIp);
             App.setupVendorTest(vendorMap, deviceService, bindIp);
 
@@ -97,6 +81,7 @@ public class DefaultApplicationListener implements ApplicationListener<ContextRe
 
     @SuppressWarnings("unused")
     private void testDatabase() {
+    	
         final Iterable<COVSubscriptionData> findAll = covSubscriptionRepository.findAll();
         final boolean parallel = false;
         StreamSupport.stream(findAll.spliterator(), parallel)

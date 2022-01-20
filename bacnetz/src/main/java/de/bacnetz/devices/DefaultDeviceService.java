@@ -49,6 +49,8 @@ public class DefaultDeviceService implements DeviceService {
             final Device device = deviceFactory.create(deviceType, deviceMap, vendorMap, deviceId, deviceName,
                     modelName, vendorId);
             devices.add(device);
+            
+            LOG.info("Created Device: {} - {}", device, device.hashCode());
 
             // device starts it's own server on it's own port, because BACnet Ids are not
             // globally unique but only locally unique within a device. One server cannot

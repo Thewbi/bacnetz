@@ -2,11 +2,17 @@ package de.bacnetz.devices;
 
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import de.bacnetz.controller.DefaultMessage;
 import de.bacnetz.factory.MessageType;
 import de.bacnetz.stack.BACnetServicesSupportedBitString;
 import de.bacnetz.stack.ObjectIdentifierServiceParameter;
 
 public class TZ320DeviceFactory extends DefaultDeviceFactory {
+	
+	private static final Logger LOG = LogManager.getLogger(TZ320DeviceFactory.class);
 
     @SuppressWarnings("unchecked")
     @Override
@@ -59,7 +65,12 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
 
         addListenersToDevice(device);
 
-        deviceMap.put(device.getObjectIdentifierServiceParameter(), device);
+        ObjectIdentifierServiceParameter objectIdentifierServiceParameter = device.getObjectIdentifierServiceParameter();
+        if (deviceMap.containsKey(objectIdentifierServiceParameter)) {
+        	throw new RuntimeException("Device already exists! " + objectIdentifierServiceParameter);
+        }
+        LOG.info("Adding device {}, {} ", objectIdentifierServiceParameter, device);
+        deviceMap.put(objectIdentifierServiceParameter, device);
 
         return device;
     }

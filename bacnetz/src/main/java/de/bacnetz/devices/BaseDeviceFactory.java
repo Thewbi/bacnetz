@@ -193,7 +193,7 @@ public abstract class BaseDeviceFactory implements Factory<Device> {
             @Override
             public void event(final Object sender, final Object... args) {
 
-                LOG.info("ParentLogicListener Listener executing ...");
+            	LOG.info("ParentLogicListener Listener executing ...");
 
                 final Device senderDevice = (Device) sender;
                 final DeviceProperty<Object> presentValueDeviceProperty = (DeviceProperty<Object>) args[0];
@@ -201,8 +201,10 @@ public abstract class BaseDeviceFactory implements Factory<Device> {
                 final Object oldPresentValue = args[2];
 
                 // notify the parent which will execute domain-specific logic
-                if (device.getParentDevice() != null) {
-                    device.getParentDevice().onValueChanged(senderDevice, presentValueDeviceProperty, newPresentValue,
+                Device parentDevice = device.getParentDevice();
+                if (parentDevice != null) {
+                	LOG.info("ParentLogicListener Listener executing ... sender: {}, device: {}, parentDevice: {}", sender, device, parentDevice);
+                	parentDevice.onValueChanged(senderDevice, presentValueDeviceProperty, newPresentValue,
                             oldPresentValue);
                 }
 
@@ -218,11 +220,13 @@ public abstract class BaseDeviceFactory implements Factory<Device> {
             public void event(final Object sender, final Object... args) {
 
                 LOG.info("COV Listener executing ...");
-
+                
                 final Device senderDevice = (Device) sender;
                 final DeviceProperty<Object> presentValueDeviceProperty = (DeviceProperty<Object>) args[0];
                 final Object newPresentValue = args[1];
                 final Object oldPresentValue = args[2];
+                
+                LOG.info("COV - The device {} - {} has {} subcriptions!", senderDevice, senderDevice.hashCode(), senderDevice.getCovSubscriptions().size());
 
                 if (CollectionUtils.isNotEmpty(senderDevice.getCovSubscriptions())) {
 
