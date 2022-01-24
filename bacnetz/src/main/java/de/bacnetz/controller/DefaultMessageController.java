@@ -183,7 +183,6 @@ public class DefaultMessageController implements MessageController {
 
             case SUBSCRIBE_COV:
                 LOG.trace(">>> SUBSCRIBE_COV received! {}", message);
-                LOG.info(">>> SUBSCRIBE_COV received! {}");
                 return processSubscribeCov(message);
 
             case ADD_LIST_ELEMENT:
@@ -329,10 +328,12 @@ public class DefaultMessageController implements MessageController {
         final Device findDevice = deviceService.getDeviceMap().get(objectIdentifierServiceParameter);
 
         // DEBUG
-        final String msg = "processSubscribeCov() - COV subscription received! Object: "
-                + objectIdentifierServiceParameter.toString();
-        LOG.info(msg);
-        LOG.info(requestMessage);
+        if (LOG.isTraceEnabled()) {
+		    final String msg = "processSubscribeCov() - COV subscription received! Object: "
+		            + objectIdentifierServiceParameter.toString();
+		    LOG.trace(msg);
+		    LOG.trace(requestMessage);
+        }
 
         // find which properties have been subscribed / deleted from to
         final List<ServiceParameter> serviceParameters = requestMessage.getApdu().getServiceParameters();
@@ -353,10 +354,12 @@ public class DefaultMessageController implements MessageController {
 
         } else {
         	
-        	LOG.info("Adding a new COV subscription to the device: \"{}\" HashCode: {}", findDevice.getObjectIdentifierServiceParameter(), findDevice.hashCode());
-        	LOG.info("ParentDevice: \"{}\" HashCode: {}", findDevice.getParentDevice().getObjectIdentifierServiceParameter(), findDevice.getParentDevice().hashCode());
-
-            // TODO: factory
+        	if (LOG.isTraceEnabled()) {
+	        	LOG.info("Adding a new COV subscription to the device: \"{}\" HashCode: {}", findDevice.getObjectIdentifierServiceParameter(), findDevice.hashCode());
+	        	LOG.info("ParentDevice: \"{}\" HashCode: {}", findDevice.getParentDevice().getObjectIdentifierServiceParameter(), findDevice.getParentDevice().hashCode());
+        	}
+        	
+            // TODO: create a factory that creates COVSubscriptions
             final DefaultCOVSubscription covSubscription = new DefaultCOVSubscription();
             covSubscription.setClientIp(requestMessage.getSourceInetSocketAddress().getHostString());
 //            covSubscription.setPort(requestMessage.get);

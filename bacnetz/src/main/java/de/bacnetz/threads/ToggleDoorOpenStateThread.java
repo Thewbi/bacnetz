@@ -87,8 +87,7 @@ public class ToggleDoorOpenStateThread implements Runnable {
             final Map<Integer, String> vendorMap, final Message initialSubscriptionMessage, final String targetIp,
             final int targetPort, final CommunicationService communicationService, final NPDU originalNpdu) {
 
-        final String msg = "Sending COV update to targetIp:" + targetIp + " and Port: " + targetPort;
-        LOG.info(msg);
+        LOG.trace("Sending COV update to targetIp: {} and Port: {}", targetIp, targetPort);
 
         final VirtualLinkControl virtualLinkControl = new VirtualLinkControl();
         virtualLinkControl.setType(0x81);
@@ -240,8 +239,10 @@ public class ToggleDoorOpenStateThread implements Runnable {
 
         virtualLinkControl.setLength(responseMessage.getDataLength());
 
-        LOG.info("<<< SENDING COV RESPONSE TO SUBSCRIBER:");
-        LOG.info(responseMessage);
+        if (LOG.isTraceEnabled()) {
+	        LOG.trace("<<< SENDING COV RESPONSE TO SUBSCRIBER:");
+	        LOG.trace(responseMessage);
+        }
 
         try {
             final InetAddress datagramPacketAddress = InetAddress.getByName(targetIp);

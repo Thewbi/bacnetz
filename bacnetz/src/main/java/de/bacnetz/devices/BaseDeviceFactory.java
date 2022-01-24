@@ -193,7 +193,7 @@ public abstract class BaseDeviceFactory implements Factory<Device> {
             @Override
             public void event(final Object sender, final Object... args) {
 
-            	LOG.info("ParentLogicListener Listener executing ...");
+            	LOG.trace("ParentLogicListener Listener executing ...");
 
                 final Device senderDevice = (Device) sender;
                 final DeviceProperty<Object> presentValueDeviceProperty = (DeviceProperty<Object>) args[0];
@@ -203,12 +203,12 @@ public abstract class BaseDeviceFactory implements Factory<Device> {
                 // notify the parent which will execute domain-specific logic
                 Device parentDevice = device.getParentDevice();
                 if (parentDevice != null) {
-                	LOG.info("ParentLogicListener Listener executing ... sender: {}, device: {}, parentDevice: {}", sender, device, parentDevice);
+                	LOG.trace("ParentLogicListener Listener executing ... sender: {}, device: {}, parentDevice: {}", sender, device, parentDevice);
                 	parentDevice.onValueChanged(senderDevice, presentValueDeviceProperty, newPresentValue,
                             oldPresentValue);
                 }
 
-                LOG.info("ParentLogicListener Listener executing done.");
+                LOG.trace("ParentLogicListener Listener executing done.");
             }
 
         });
@@ -219,14 +219,14 @@ public abstract class BaseDeviceFactory implements Factory<Device> {
             @Override
             public void event(final Object sender, final Object... args) {
 
-                LOG.info("COV Listener executing ...");
+                LOG.trace("COV Listener executing ...");
                 
                 final Device senderDevice = (Device) sender;
                 final DeviceProperty<Object> presentValueDeviceProperty = (DeviceProperty<Object>) args[0];
                 final Object newPresentValue = args[1];
                 final Object oldPresentValue = args[2];
                 
-                LOG.info("COV - The device {} - {} has {} subcriptions!", senderDevice, senderDevice.hashCode(), senderDevice.getCovSubscriptions().size());
+                LOG.info("COV Listener executing - The device {} - {} has {} subcriptions!", senderDevice, senderDevice.hashCode(), senderDevice.getCovSubscriptions().size());
 
                 if (CollectionUtils.isNotEmpty(senderDevice.getCovSubscriptions())) {
 
@@ -236,7 +236,7 @@ public abstract class BaseDeviceFactory implements Factory<Device> {
                     });
                 }
 
-                LOG.info("COV Listener executing done.");
+                LOG.trace("COV Listener executing done.");
             }
         });
 

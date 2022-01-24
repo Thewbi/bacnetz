@@ -67,7 +67,7 @@ public class DefaultMessageFactory implements MessageFactory {
     @Override
     public Message create(final Object... args) {
 
-        LOG.info("Create: " + args);
+        LOG.trace("Create: " + args);
 
         DeviceProperty<?> deviceProperty;
         Device device;

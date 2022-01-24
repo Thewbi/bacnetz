@@ -33,7 +33,7 @@ public class TZ320Device extends BaseDevice {
     public void onValueChanged(final Device device, final DeviceProperty<Object> presentValueDeviceProperty,
             final Object oldPresentValue, final Object newPresentValue) {
 
-        LOG.info("OnValueChange: Device: {}, DeviceProperty: {}, oldValue: {}, newValue: {}", device,
+        LOG.trace("OnValueChange: Device: {}, DeviceProperty: {}, oldValue: {}, newValue: {}", device,
                 presentValueDeviceProperty, oldPresentValue, newPresentValue);
 
         Device tz320State = null;
