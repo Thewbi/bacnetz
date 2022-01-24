@@ -82,8 +82,14 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * <h1>Runnable jar</h1>
  * The gradle spring boot plugin is imported into the gradle file to build the runnable fat jar. 
  * The jar is placed into the folder: C:\aaa_se\bacnetz\server\build\libs. It is called server-0.0.1-SNAPSHOT.jar.
- * Running: java -jar server-0.0.1-SNAPSHOT.jar
+ * The jar is automatically build when the build-goal of the server gradle project is run.
+ * 
+ * <h1>Running</h1>
+ * <pre>
+ * java -jar server-0.0.1-SNAPSHOT.jar
  * java -jar server-0.0.1-SNAPSHOT.jar --server.address=192.168.0.11 --bind.ip=192.168.0.11 --multicast.ip=192.168.0.255
+ * java -jar server-0.0.1-SNAPSHOT.jar --server.address=192.168.2.11 --bind.ip=192.168.2.11 --multicast.ip=192.168.2.255
+ * </pre>
  * 
  * <h1>ERROR: javax.ws.rs.core.Application.getProperties() No such Method Error</h1>
  * <pre>

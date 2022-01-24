@@ -69,7 +69,11 @@ public class TZ320DeviceFactory extends DefaultDeviceFactory {
         if (deviceMap.containsKey(objectIdentifierServiceParameter)) {
         	throw new RuntimeException("Device already exists! " + objectIdentifierServiceParameter);
         }
-        LOG.info("Adding device {}, {} ", objectIdentifierServiceParameter, device);
+        
+        if (LOG.isTraceEnabled()) {
+        	LOG.trace("Adding device {}, {} ", objectIdentifierServiceParameter, device);
+        }
+        
         deviceMap.put(objectIdentifierServiceParameter, device);
 
         return device;
